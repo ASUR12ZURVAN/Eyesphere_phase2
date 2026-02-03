@@ -1,0 +1,112 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}Register | EyeSphere Optometrist{% endblock title %}
+
+{% block content %}
+<div class="glass-card animate-fade-in" style="max-width: 550px;">
+    <h1>Join EyeSphere</h1>
+    <p class="subtitle">Create your professional account today</p>
+
+    <form id="registerForm">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" placeholder="Dr. John Doe" required>
+            </div>
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="tel" id="phone_number" name="phone_number" placeholder="+1234567890" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address (Optional)</label>
+            <input type="email" id="email" name="email" placeholder="john.doe@example.com">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <div class="form-group">
+            <label for="confirm_password">Confirm Password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="registerBtn" style="margin-top: 1rem;">
+            <span>Create Account</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="8.5" cy="7" r="4"></circle>
+                <line x1="20" y1="8" x2="20" y2="14"></line>
+                <line x1="17" y1="11" x2="23" y2="11"></line>
+            </svg>
+        </button>
+    </form>
+
+    <div class="footer-link">
+        Already have an account? <a href="{% url 'optometrist_login_page' %}">Sign in here</a>
+    </div>
+</div>
+
+<script>
+    const registerForm = document.getElementById('registerForm');
+    const registerBtn = document.getElementById('registerBtn');
+
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(registerForm);
+        const data = Object.fromEntries(formData.entries());
+
+        if (data.password !== data.confirm_password) {
+            alert('Passwords do not match!');
+            return;
+        }
+
+        // Disable button
+        registerBtn.disabled = true;
+        registerBtn.querySelector('span').innerText = 'Creating Account...';
+
+        try {
+            // Note: This assumes the register API is at /optometrist/api/register/
+            const response = await fetch('/optometrist/api/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': data.csrfmiddlewaretoken
+                },
+                body: JSON.stringify({
+                    name: data.name,
+                    phone_number: data.phone_number,
+                    email: data.email || null,
+                    password: data.password
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('Account created successfully! Please sign in.');
+                window.location.href = '{% url "optometrist_login_page" %}';
+            } else {
+                // Formatting errors from DRF
+                let errorMsg = '';
+                for (const [key, value] of Object.entries(result)) {
+                    errorMsg += `${key}: ${value}\n`;
+                }
+                alert('Error:\n' + errorMsg);
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            registerBtn.disabled = false;
+            registerBtn.querySelector('span').innerText = 'Create Account';
+        }
+    });
+</script>
+{% endblock content %}

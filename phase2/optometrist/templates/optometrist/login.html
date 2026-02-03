@@ -1,0 +1,87 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}Login | EyeSphere Optometrist{% endblock title %}
+
+{% block content %}
+<div class="glass-card animate-fade-in">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Enter your credentials to access your portal</p>
+
+    <form id="loginForm" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="phone_number">Phone Number</label>
+            <input type="tel" id="phone_number" name="phone_number" placeholder="+1 (555) 000-0000" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="loginBtn">
+            <span>Sign In</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </button>
+    </form>
+
+    <div class="footer-link">
+        Don't have an account? <a href="{% url 'optometrist_register_page' %}">Register now</a>
+    </div>
+</div>
+
+<script>
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(loginForm);
+        const data = Object.fromEntries(formData.entries());
+
+        // Disable button
+        loginBtn.disabled = true;
+        loginBtn.querySelector('span').innerText = 'Signing In...';
+
+        try {
+            // Note: This assumes the login API is at /optometrist/api/login/
+            const response = await fetch('/optometrist/api/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': data.csrfmiddlewaretoken
+                },
+                body: JSON.stringify({
+                    phone_number: data.phone_number,
+                    password: data.password
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Save tokens
+                localStorage.setItem('access_token', result.access);
+                localStorage.setItem('refresh_token', result.refresh);
+                localStorage.setItem('user', JSON.stringify(result.user));
+
+                // Redirect to dashboard
+                window.location.href = '{% url "optometrist_dashboard" %}';
+            } else {
+                alert('Error: ' + (result.error || 'Invalid credentials'));
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.querySelector('span').innerText = 'Sign In';
+        }
+    });
+</script>
+{% endblock content %}

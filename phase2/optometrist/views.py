@@ -5,6 +5,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.hashers import check_password
 from .models import Optometrist
 from .serializers import OptometristSerializer, OptometristProfileSerializer
+from django.views.generic import TemplateView
+
+class OptometristLoginPageView(TemplateView):
+    template_name = 'optometrist/login.html'
+
+class OptometristRegisterPageView(TemplateView):
+    template_name = 'optometrist/register.html'
+
+class OptometristDashboardPageView(TemplateView):
+    template_name = 'optometrist/dashboard.html'
 
 class RegisterOptometrist(generics.CreateAPIView):
     queryset = Optometrist.objects.all()
