@@ -10,14 +10,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --secondary: #ec4899;
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #db2777;
+            --bg-gradient: #f8fafc;
+            --glass-bg: #ffffff;
+            --glass-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
         }
 
         * {
@@ -28,7 +29,7 @@
         }
 
         body {
-            background: var(--bg-gradient);
+            background-color: var(--bg-gradient);
             min-height: 100vh;
             color: var(--text-main);
             display: flex;
@@ -46,30 +47,25 @@
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
             padding: 3rem;
             width: 100%;
             max-width: 480px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--card-shadow);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .glass-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--text-main);
             text-align: center;
         }
 
@@ -94,18 +90,17 @@
         input {
             width: 100%;
             padding: 0.8rem 1rem;
-            background: rgba(255, 255, 255, 0.03);
+            background: #ffffff;
             border: 1px solid var(--glass-border);
             border-radius: 12px;
-            color: white;
+            color: var(--text-main);
             outline: none;
             transition: all 0.2s ease;
         }
 
         input:focus {
             border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         .btn {
@@ -131,7 +126,7 @@
         .btn-primary:hover {
             background: var(--primary-hover);
             transform: scale(1.02);
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
         }
 
         .footer-link {
@@ -148,7 +143,7 @@
         }
 
         .footer-link a:hover {
-            color: #818cf8;
+            color: var(--primary-hover);
             text-decoration: underline;
         }
 
@@ -185,8 +180,8 @@
 
 <body>
     <header style="padding: 2rem; text-align: center;">
-        <div
-            style="font-size: 1.5rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+        <a href="{% url 'landing_page' %}"
+            style="font-size: 1.5rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
             <div
                 style="width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
@@ -197,7 +192,7 @@
                 </svg>
             </div>
             <span>EyeSphere</span>
-        </div>
+        </a>
     </header>
     <div class="container"
         style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem 2rem 4rem 2rem;">

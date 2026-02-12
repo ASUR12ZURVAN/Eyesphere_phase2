@@ -1,0 +1,383 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}New Consultation | EyeSphere{% endblock title %}
+
+{% block content %}
+<div class="glass-card animate-fade-in" style="max-width: 1000px; margin: 2rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1>New Eye Examination</h1>
+        <a href="{% url 'optometrist_dashboard' %}" class="btn"
+            style="width: auto; background: rgba(255,255,255,0.1);">Back to Dashboard</a>
+    </div>
+
+    <form id="examForm" method="POST">
+        {% csrf_token %}
+
+        <!-- SECTION 1: Patient Information -->
+        <h3 class="section-title">Patient Information</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Age</label>
+                <input type="number" name="age" required min="0">
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select name="gender" class="form-control">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone_number" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                    placeholder="1234567890">
+            </div>
+            <div class="form-group full-width">
+                <label>Address</label>
+                <input type="text" name="address">
+            </div>
+        </div>
+
+        <!-- SECTION 2: Chief Complaints & History -->
+        <h3 class="section-title">History & Complaints</h3>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>Chief Complaints</label>
+                <textarea name="chief_complaints" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Systemic History</label>
+                <input type="text" name="systemic_history" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Screen Time</label>
+                <input type="number" name="screen_time" placeholder="e.g. 8 hrs/day">
+            </div>
+            <div class="form-group">
+                <label>H/o Eye Disease</label>
+                <input type="text" name="history_eye_disease" value="NA">
+            </div>
+            <div class="form-group">
+                <label>H/o Eye Surgery</label>
+                <input type="text" name="history_eye_surgery" value="NA">
+            </div>
+        </div>
+
+        <!-- SECTION 3: Visual Acuity -->
+        <h3 class="section-title">Visual Acuity</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Right Eye (OD)</th>
+                    <th>Left Eye (OS)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Uncorrected Vision</td>
+                    <td><input type="text" name="uncorrected_vision_re" placeholder="6/6"></td>
+                    <td><input type="text" name="uncorrected_vision_le" placeholder="6/6"></td>
+                </tr>
+                <tr>
+                    <td>Pinhole Vision</td>
+                    <td><input type="text" name="pinhole_vision_re"></td>
+                    <td><input type="text" name="pinhole_vision_le"></td>
+                </tr>
+                <tr>
+                    <td>Corrected Vision</td>
+                    <td><input type="text" name="corrected_vision_re"></td>
+                    <td><input type="text" name="corrected_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 4: Refraction -->
+        <h3 class="section-title">Refraction</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="4" style="text-align: center;">Right Eye</th>
+                    <th colspan="4" style="text-align: center;">Left Eye</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Distance (DV)</strong></td>
+                    <td><input type="text" name="dv_sph_re" placeholder="-0.00"></td>
+                    <td><input type="text" name="dv_cyl_re"></td>
+                    <td><input type="text" name="dv_axis_re"></td>
+                    <td><input type="text" name="dv_vision_re"></td>
+                    <!-- LE -->
+                    <td><input type="text" name="dv_sph_le" placeholder="-0.00"></td>
+                    <td><input type="text" name="dv_cyl_le"></td>
+                    <td><input type="text" name="dv_axis_le"></td>
+                    <td><input type="text" name="dv_vision_le"></td>
+                </tr>
+                <tr>
+                    <td><strong>Near (Add)</strong></td>
+                    <td><input type="text" name="nv_sph_re"></td>
+                    <td><input type="text" name="nv_cyl_re"></td>
+                    <td><input type="text" name="nv_axis_re"></td>
+                    <td><input type="text" name="nv_vision_re"></td>
+                    <!-- LE -->
+                    <td><input type="text" name="nv_sph_le"></td>
+                    <td><input type="text" name="nv_cyl_le"></td>
+                    <td><input type="text" name="nv_axis_le"></td>
+                    <td><input type="text" name="nv_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 5: Investigations Performed -->
+        <h3 class="section-title">Investigations</h3>
+        <div class="checkbox-grid">
+            <label><input type="checkbox" name="performed_ar_assessment"> AR Assessment</label>
+            <label><input type="checkbox" name="performed_refraction" checked> Refraction</label>
+            <label><input type="checkbox" name="performed_schirmer"> Schirmer Strip Test</label>
+            <label><input type="checkbox" name="performed_tbut"> Tear Breakup Time</label>
+            <label><input type="checkbox" name="performed_slit_lamp" checked> Slit Lamp Eval</label>
+            <label><input type="checkbox" name="performed_fundus" checked> Fundus Exam</label>
+            <label><input type="checkbox" name="performed_iop"> IOP Test</label>
+        </div>
+
+        <table class="data-table" style="margin-top: 1rem;">
+            <thead>
+                <tr>
+                    <th>Findings</th>
+                    <th>Right Eye</th>
+                    <th>Left Eye</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Schirmer Strip</td>
+                    <td><input type="text" name="schirmer_re"></td>
+                    <td><input type="text" name="schirmer_le"></td>
+                </tr>
+                <tr>
+                    <td>Tear Breakup Time (TBUT)</td>
+                    <td><input type="text" name="tbut_re"></td>
+                    <td><input type="text" name="tbut_le"></td>
+                </tr>
+                <tr>
+                    <td>Slit Lamp</td>
+                    <td><input type="text" name="slit_lamp_re" value="NORMAL"></td>
+                    <td><input type="text" name="slit_lamp_le" value="NORMAL"></td>
+                </tr>
+                <tr>
+                    <td>Fundus</td>
+                    <td><input type="text" name="fundus_re" value="Normal"></td>
+                    <td><input type="text" name="fundus_le" value="Normal"></td>
+                </tr>
+                <tr>
+                    <td>IOP</td>
+                    <td><input type="text" name="iop_re"></td>
+                    <td><input type="text" name="iop_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 6: Diagnosis & Advice -->
+        <h3 class="section-title">Diagnosis & Advice</h3>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>Provisional Diagnosis</label>
+                <input type="text" name="provisional_diagnosis">
+            </div>
+            <div class="form-group full-width">
+                <label>Advice / Notes</label>
+                <textarea name="advice" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- SECTION 7: Helper / Doctor Assignment -->
+        <h3 class="section-title">Doctor Assignment</h3>
+        <div class="form-grid">
+            <div class="form-group full-width">
+                <label>Assign to Doctor</label>
+                <select name="consultant_id" required>
+                    <option value="" disabled selected>Select a Doctor</option>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.id }}">Dr. {{ doctor.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="btn-group" style="margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">Save Consultation Report</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .section-title {
+        color: var(--secondary);
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
+        margin: 2rem 0 1rem 0;
+        font-size: 1.25rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.4rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .form-control,
+    input[type="text"],
+    input[type="number"],
+    input[type="tel"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 0.6rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        color: var(--text-main);
+        outline: none;
+    }
+
+    select {
+        background: #1e1b4b;
+        /* Fallback for select options readability in dark mode if needed, but we are in white theme now? No, base.html is white theme now. */
+        background: #ffffff;
+        color: #0f172a;
+    }
+
+    textarea {
+        resize: vertical;
+    }
+
+    /* Table Styles */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        border: 1px solid var(--glass-border);
+        padding: 0.5rem;
+        text-align: left;
+    }
+
+    .data-table th {
+        background: rgba(37, 99, 235, 0.05);
+        /* Primary tint */
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .checkbox-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .checkbox-grid label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+    }
+</style>
+
+<script>
+    document.getElementById('examForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const originalText = btn.innerText;
+        btn.innerText = 'Saving...';
+        btn.disabled = true;
+
+        const formData = new FormData(e.target);
+
+        // Convert to JSON
+        const data = {};
+        formData.forEach((value, key) => {
+            // Checkbox handling
+            if (e.target.elements[key].type === 'checkbox') {
+                data[key] = true;
+            } else {
+                data[key] = value;
+            }
+        });
+
+        // Handle unchecked checkboxes
+        const checkboxes = e.target.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (!cb.checked) data[cb.name] = false;
+        });
+
+        // Add user token auth if needed, but we rely on session/cookie usually?
+        // Wait, the views use APIView which might require Bearer token if not session authenticated.
+        // The existing login implementation stores 'access_token' in localStorage.
+
+        const accessToken = localStorage.getItem('access_token');
+
+        try {
+            const response = await fetch('{% url "create_exam_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert('Examination Report Saved Successfully!');
+                window.location.href = '{% url "optometrist_dashboard" %}';
+            } else {
+                const err = await response.json();
+                alert('Error: ' + JSON.stringify(err));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to save report.');
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock content %}

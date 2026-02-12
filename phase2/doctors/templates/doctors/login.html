@@ -1,11 +1,11 @@
 {% extends "optometrist/base.html" %}
 
-{% block title %}Login | EyeSphere Optometrist{% endblock title %}
+{% block title %}Doctor Login | EyeSphere{% endblock title %}
 
 {% block content %}
 <div class="glass-card animate-fade-in">
-    <h1>Welcome Back</h1>
-    <p class="subtitle">Enter your credentials to access your portal</p>
+    <h1 style="color: var(--secondary);">Doctor Portal</h1>
+    <p class="subtitle">Access your specialist dashboard</p>
 
     <form id="loginForm" method="POST">
         {% csrf_token %}
@@ -19,7 +19,7 @@
             <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
 
-        <button type="submit" class="btn btn-primary" id="loginBtn">
+        <button type="submit" class="btn" style="background: var(--secondary); color: white;" id="loginBtn">
             <span>Sign In</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -29,7 +29,10 @@
         </button>
     </form>
 
-    <!-- Register link removed as credentials are managed via admin portal -->
+    <div class="footer-link">
+        Are you an optometrist? <a href="{% url 'optometrist_login_page' %}" style="color: var(--primary);">Go to
+            Optometrist Portal</a>
+    </div>
 </div>
 
 <script>
@@ -42,12 +45,10 @@
         const formData = new FormData(loginForm);
         const data = Object.fromEntries(formData.entries());
 
-        // Disable button
         loginBtn.disabled = true;
         loginBtn.querySelector('span').innerText = 'Signing In...';
 
         try {
-            // Post to the same URL where the backend code is set
             const response = await fetch(window.location.pathname, {
                 method: 'POST',
                 headers: {
@@ -63,13 +64,13 @@
             const result = await response.json();
 
             if (response.ok) {
-                // Save tokens
                 localStorage.setItem('access_token', result.access);
                 localStorage.setItem('refresh_token', result.refresh);
                 localStorage.setItem('user', JSON.stringify(result.user));
 
-                // Redirect to dashboard
-                window.location.href = '{% url "optometrist_dashboard" %}';
+                const urlParams = new URLSearchParams(window.location.search);
+                const nextUrl = urlParams.get('next');
+                window.location.href = nextUrl || '{% url "doctor_dashboard" %}';
             } else {
                 alert('Error: ' + (result.error || 'Invalid credentials'));
             }

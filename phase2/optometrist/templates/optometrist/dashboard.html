@@ -22,10 +22,7 @@
         font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
-        background: linear-gradient(to right, #818cf8, #c084fc);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--text-main);
     }
 
     .welcome-text p {
@@ -42,22 +39,22 @@
 
     .stat-card {
         background: var(--glass-bg);
-        backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         border-radius: 20px;
         padding: 1.5rem;
         transition: transform 0.3s ease;
+        box-shadow: var(--card-shadow);
     }
 
     .stat-card:hover {
         transform: translateY(-5px);
-        border-color: rgba(99, 102, 241, 0.3);
+        border-color: var(--primary);
     }
 
     .stat-card .icon {
         width: 48px;
         height: 48px;
-        background: rgba(99, 102, 241, 0.1);
+        background: rgba(37, 99, 235, 0.05);
         border-radius: 12px;
         display: flex;
         align-items: center;
@@ -70,6 +67,7 @@
         font-size: 1.8rem;
         font-weight: 700;
         margin-bottom: 0.25rem;
+        color: var(--text-main);
     }
 
     .stat-card .label {
@@ -86,10 +84,10 @@
     .main-panel,
     .side-panel {
         background: var(--glass-bg);
-        backdrop-filter: blur(12px);
         border: 1px solid var(--glass-border);
         border-radius: 24px;
         padding: 2rem;
+        box-shadow: var(--card-shadow);
     }
 
     .panel-title {
@@ -99,6 +97,7 @@
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        color: var(--text-main);
     }
 
     .appointment-item {
@@ -115,7 +114,7 @@
     }
 
     .appointment-item:hover {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(37, 99, 235, 0.02);
     }
 
     .patient-info {
@@ -127,18 +126,19 @@
     .patient-avatar {
         width: 40px;
         height: 40px;
-        background: #334155;
+        background: #f1f5f9;
         border-radius: 10px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 600;
-        color: #94a3b8;
+        color: var(--primary);
     }
 
     .patient-details .name {
         font-weight: 500;
         display: block;
+        color: var(--text-main);
     }
 
     .patient-details .time {
@@ -154,15 +154,15 @@
     }
 
     .status-upcoming {
-        background: rgba(99, 102, 241, 0.1);
-        color: #818cf8;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--primary);
     }
 
     .btn-logout {
         padding: 0.6rem 1.2rem;
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(239, 68, 68, 0.05);
         color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.1);
         border-radius: 10px;
         font-weight: 600;
         cursor: pointer;
@@ -287,15 +287,14 @@
 
         <div class="side-panel">
             <h3 class="panel-title">Quick Actions</h3>
-            <button class="btn btn-primary" style="margin-bottom: 1rem;">New Appointment</button>
+            <a href="{% url 'new_examination_page' %}" class="btn btn-primary"
+                style="margin-bottom: 1rem; text-decoration: none;">New Examination</a>
             <button class="btn"
-                style="background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--glass-border); margin-bottom: 1rem;">View
+                style="background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--glass-border); margin-bottom: 1rem; width: 100%;">View
                 All Patients</button>
-            <button class="btn"
-                style="background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--glass-border);">Generate
-                Reports</button>
         </div>
     </div>
+
 </div>
 
 <script>

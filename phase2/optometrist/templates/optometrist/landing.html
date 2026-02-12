@@ -1,0 +1,174 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}Welcome | EyeSphere Portal{% endblock title %}
+
+{% block content %}
+<div class="landing-container animate-fade-in">
+    <div class="landing-header">
+        <h1>Welcome to EyeSphere</h1>
+        <p class="subtitle">Please select your portal to continue</p>
+    </div>
+
+    <div class="options-grid">
+        <!-- Doctor Option -->
+        <a href="{% url 'doctor_login_page' %}" class="option-card doctor-card">
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                </svg>
+            </div>
+            <h3>Doctor</h3>
+            <p>Access patient records and specialist tools</p>
+            <div class="card-footer">
+                <span>Enter Portal</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Optometrist Option -->
+        <a href="{% url 'optometrist_login_page' %}" class="option-card optometrist-card">
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+            </div>
+            <h3>Optometrist</h3>
+            <p>Manage eye exams and primary vision care</p>
+            <div class="card-footer">
+                <span>Enter Portal</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
+    </div>
+</div>
+
+<style>
+    .landing-container {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .landing-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 1rem;
+    }
+
+    .option-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 2.5rem;
+        text-decoration: none;
+        color: var(--text-main);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+
+    .option-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .option-card:hover {
+        transform: translateY(-10px);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    .option-card:hover::before {
+        opacity: 1;
+    }
+
+    .card-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(37, 99, 235, 0.05);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+        transition: all 0.3s ease;
+    }
+
+    .doctor-card .card-icon {
+        background: rgba(219, 39, 119, 0.05);
+        color: var(--secondary);
+    }
+
+    .option-card:hover .card-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .option-card h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-main);
+    }
+
+    .option-card p {
+        color: var(--text-muted);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    .card-footer {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--primary);
+        transition: gap 0.3s ease;
+    }
+
+    .doctor-card .card-footer {
+        color: var(--secondary);
+    }
+
+    .option-card:hover .card-footer {
+        gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+        .options-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock content %}
