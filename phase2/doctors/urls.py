@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LoginDoctor, DoctorDashboardPageView, DoctorListView
+from .views import LoginDoctor, DoctorDashboardPageView, DoctorListView ,AcceptAndConsultView
 from django.views.generic import RedirectView
 
 urlpatterns = [
@@ -10,4 +10,5 @@ urlpatterns = [
     # API endpoints
     path('api/list/', DoctorListView.as_view(), name='doctor_list_api'),
     path('dashboard/', RedirectView.as_view(pattern_name='doctor_dashboard', permanent=True)),
+    path('consult/<int:pk>/', AcceptAndConsultView.as_view(), name='doctor_consult_entry'),
 ]

@@ -137,6 +137,7 @@ class EyeExamination(models.Model):
     iop_le = models.CharField(max_length=50, blank=True)
     
     # 6. Diagnosis & Advice
+    diagnosis_notes = models.TextField(blank=True, help_text="Doctor's detailed observations and notes")
     provisional_diagnosis = models.TextField(blank=True)
     advice = models.TextField(blank=True)
     
