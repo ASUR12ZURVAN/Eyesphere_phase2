@@ -4,20 +4,32 @@
 
 {% block extra_head %}
 <style>
+    /* Override base.html container constraints for dashboard */
+    .container {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+    }
+
     .dashboard-container {
-        width: 100%;
-        max-width: 1200px;
+        width: 98%;
+        max-width: 1900px;
         margin: 0 auto;
+        padding: 1rem 0 5rem 0;
     }
 
     .glass-card {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.4);
-        border-radius: 24px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        border-radius: 28px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        max-width: none !important;
+        /* Critical: Remove the 480px limit from base.html */
+        width: 100%;
     }
 
     .stats-card {
@@ -53,16 +65,16 @@
 
     .patient-table td,
     .patient-table th {
-        padding: 1.25rem;
+        padding: 1.5rem;
         text-align: left;
     }
 
     .patient-table th {
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-muted);
         text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.05em;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
     }
 
     .patient-table tr td:first-child {
@@ -108,13 +120,38 @@
     .modal-content {
         background: white;
         width: 100%;
-        max-width: 650px;
+        max-width: 1100px;
         border-radius: 24px;
         position: relative;
-        padding: 2.5rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-        max-height: 90vh;
+        padding: 3rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+        max-height: 95vh;
         overflow-y: auto;
+    }
+
+    .modal-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2.5rem;
+    }
+
+    .clinical-section {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+
+    .clinical-section h3 {
+        color: var(--secondary);
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 2px solid rgba(219, 39, 119, 0.1);
+        padding-bottom: 0.5rem;
     }
 
     .detail-row {
@@ -245,12 +282,12 @@
                     <tr onclick="showPatientDetails({
                         name: '{{ exam.patient.name|escapejs }}',
                         age: '{{ exam.patient.age }}',
-                        gender: '{{ exam.patient.gender|title }}',
+                        gender: '{{ exam.patient.gender|title|escapejs }}',
                         optometrist: '{{ exam.optometrist.name|escapejs }}',
                         complaint: '{{ exam.chief_complaints|escapejs }}',
                         findings: '{{ exam.provisional_diagnosis|escapejs }}',
                         notes: '{{ exam.advice|default:" No extra notes"|escapejs }}',
-                        date: '{{ exam.created_at|date:"d M Y, H:i" }}' , va: { uncorrected: {
+                        date: '{{ exam.created_at|date:"d M Y, H:i"|escapejs }}' , va: { uncorrected: {
                         re: '{{ exam.uncorrected_vision_re|escapejs }}' ,
                         le: '{{ exam.uncorrected_vision_le|escapejs }}' }, pinhole: {
                         re: '{{ exam.pinhole_vision_re|escapejs }}' , le: '{{ exam.pinhole_vision_le|escapejs }}' },
@@ -310,139 +347,184 @@
                 <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
         </span>
-        <h2 id="modalPatientName" style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem;">Patient Details
-        </h2>
-        <div id="modalDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Referral Date
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div class="detail-row">
-                <div class="detail-label">Age / Gender</div>
-                <div id="modalAgeGender" class="detail-value">-</div>
+        <div class="modal-grid">
+            <!-- Left Column: Patient Info & Summary -->
+            <div class="modal-left">
+                <h2 id="modalPatientName"
+                    style="text-align: left; margin-bottom: 0.5rem; font-size: 2.2rem; color: var(--text-main);">Patient
+                    Details</h2>
+                <div id="modalDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Referral
+                    Date</div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                    <div class="detail-row">
+                        <div class="detail-label">Age / Gender</div>
+                        <div id="modalAgeGender" class="detail-value" style="font-weight: 600;">-</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Referring Optometrist</div>
+                        <div id="modalOptometrist" class="detail-value" style="font-weight: 600;">-</div>
+                    </div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">Chief Complaint</div>
+                    <div id="modalComplaint" class="detail-value" style="font-style: italic; color: #475569;">-</div>
+                </div>
+
+                <div class="detail-row" style="border-bottom: none;">
+                    <div class="detail-label">Optometrist findings summary</div>
+                    <div id="modalFindings" class="detail-value"
+                        style="padding: 1.25rem; background: #fff1f2; border-radius: 12px; border-left: 5px solid var(--secondary); color: #9d174d; font-weight: 500;">
+                        -</div>
+                </div>
+
+                <div class="detail-row" style="border-bottom: none; margin-top: 1rem;">
+                    <div class="detail-label">Additional advice & Notes</div>
+                    <div id="modalNotes" class="detail-value"
+                        style="padding: 1rem; background: #f1f5f9; border-radius: 12px; font-size: 0.95rem;">-</div>
+                </div>
+
+                <div style="margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="btn btn-primary"
+                        style="height: 56px; font-size: 1.1rem; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);">Accept
+                        Patient Case</button>
+                    <button class="btn" style="background: white; border: 1px solid #e2e8f0; color: #64748b;"
+                        onclick="closeModal()">Back to List</button>
+                </div>
             </div>
-            <div class="detail-row">
-                <div class="detail-label">Referring Optometrist</div>
-                <div id="modalOptometrist" class="detail-value">-</div>
+
+            <!-- Right Column: Clinical Tables -->
+            <div class="modal-right">
+                <!-- Visual Acuity -->
+                <div class="clinical-section">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        Visual Acuity
+                    </h3>
+                    <table style="width:100%; font-size:0.95rem; border-collapse: collapse;">
+                        <tr
+                            style="background:#f1f5f9; color:var(--text-muted); font-weight:600; text-transform: uppercase; font-size: 0.75rem;">
+                            <td style="padding:0.75rem; border-radius: 8px 0 0 8px;">Test Type</td>
+                            <td style="padding:0.75rem;">Right Eye (RE)</td>
+                            <td style="padding:0.75rem; border-radius: 0 8px 8px 0;">Left Eye (LE)</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border-bottom:1px solid #e2e8f0; font-weight: 500;">Uncorrected
+                            </td>
+                            <td id="modVaUnRe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modVaUnLe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border-bottom:1px solid #e2e8f0; font-weight: 500;">Pinhole</td>
+                            <td id="modVaPhRe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modVaPhLe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; font-weight: 500;">Corrected</td>
+                            <td id="modVaCorRe" style="padding:0.75rem;">-</td>
+                            <td id="modVaCorLe" style="padding:0.75rem;">-</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Refraction -->
+                <div class="clinical-section">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 12h8" />
+                        </svg>
+                        Refraction Details
+                    </h3>
+                    <table style="width:100%; font-size:0.85rem; border-collapse: collapse; text-align:center;">
+                        <tr style="background:#f1f5f9; color:var(--text-muted); font-weight:600; font-size: 0.75rem;">
+                            <td style="padding:0.5rem; text-align: left;">TYPE</td>
+                            <td colspan="4" style="padding:0.5rem; border-right:1px solid #e2e8f0;">RIGHT EYE</td>
+                            <td colspan="4" style="padding:0.5rem;">LEFT EYE</td>
+                        </tr>
+                        <tr style="background:#f8fafc; color:var(--text-muted); font-size:0.7rem; font-weight: 700;">
+                            <td style="padding:0.2rem;"></td>
+                            <td>SPH</td>
+                            <td>CYL</td>
+                            <td>AXIS</td>
+                            <td style="border-right:1px solid #e2e8f0;">VIS</td>
+                            <td>SPH</td>
+                            <td>CYL</td>
+                            <td>AXIS</td>
+                            <td>VIS</td>
+                        </tr>
+                        <tr>
+                            <td
+                                style="padding:0.75rem; text-align:left; font-weight:600; border-bottom:1px solid #e2e8f0;">
+                                DV (Distance)</td>
+                            <td id="modRefDvReSph" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvReCyl" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvReAx" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvReVis"
+                                style="border-bottom:1px solid #e2e8f0; border-right:1px solid #e2e8f0; font-weight: 700; color: var(--primary);">
+                                -</td>
+                            <td id="modRefDvLeSph" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvLeCyl" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvLeAx" style="border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modRefDvLeVis"
+                                style="border-bottom:1px solid #e2e8f0; font-weight: 700; color: var(--primary);">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; text-align:left; font-weight:600;">NV (Near)</td>
+                            <td id="modRefNvReSph">-</td>
+                            <td id="modRefNvReCyl">-</td>
+                            <td id="modRefNvReAx">-</td>
+                            <td id="modRefNvReVis"
+                                style="border-right:1px solid #e2e8f0; font-weight: 700; color: var(--primary);">-</td>
+                            <td id="modRefNvLeSph">-</td>
+                            <td id="modRefNvLeCyl">-</td>
+                            <td id="modRefNvLeAx">-</td>
+                            <td id="modRefNvLeVis" style="font-weight: 700; color: var(--primary);">-</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Investigations -->
+                <div class="clinical-section" style="margin-bottom: 0;">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                        Investigations
+                    </h3>
+                    <table style="width:100%; font-size:0.95rem; border-collapse: collapse;">
+                        <tr
+                            style="background:#f1f5f9; color:var(--text-muted); font-weight:600; text-transform: uppercase; font-size: 0.75rem;">
+                            <td style="padding:0.75rem; border-radius: 8px 0 0 8px;">Examination</td>
+                            <td style="padding:0.75rem;">Right Eye</td>
+                            <td style="padding:0.75rem; border-radius: 0 8px 8px 0;">Left Eye</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border-bottom:1px solid #e2e8f0; font-weight: 500;">Slit Lamp
+                            </td>
+                            <td id="modSlitRe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modSlitLe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; border-bottom:1px solid #e2e8f0; font-weight: 500;">Fundus</td>
+                            <td id="modFundusRe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                            <td id="modFundusLe" style="padding:0.75rem; border-bottom:1px solid #e2e8f0;">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.75rem; font-weight: 500;">IOP</td>
+                            <td id="modIopRe" style="padding:0.75rem;">-</td>
+                            <td id="modIopLe" style="padding:0.75rem;">-</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Chief Complaint</div>
-            <div id="modalComplaint" class="detail-value">-</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Optometrist Findings</div>
-            <div id="modalFindings" class="detail-value"
-                style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--primary);">
-                -</div>
-        </div>
-
-        <!-- Expanded Clinical Data -->
-        <h3
-            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
-            Visual Acuity</h3>
-        <table style="width:100%; font-size:0.9rem; margin-bottom:1.5rem; border-collapse: collapse;">
-            <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
-                <td style="padding:0.5rem;"></td>
-                <td style="padding:0.5rem;">Right Eye</td>
-                <td style="padding:0.5rem;">Left Eye</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Uncorrected</td>
-                <td id="modVaUnRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modVaUnLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Pinhole</td>
-                <td id="modVaPhRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modVaPhLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Corrected</td>
-                <td id="modVaCorRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modVaCorLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-        </table>
-
-        <!-- Refraction -->
-        <h3
-            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
-            Refraction</h3>
-        <table
-            style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
-            <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
-                <td style="padding:0.5rem;"></td>
-                <td colspan="4" style="padding:0.5rem; border-right:1px solid #eee;">Right Eye</td>
-                <td colspan="4" style="padding:0.5rem;">Left Eye</td>
-            </tr>
-            <tr style="background:#f8fafc; color:var(--text-muted); font-size:0.75rem;">
-                <td style="padding:0.2rem;"></td>
-                <td>Sph</td>
-                <td>Cyl</td>
-                <td>Ax</td>
-                <td style="border-right:1px solid #eee;">Vis</td>
-                <td>Sph</td>
-                <td>Cyl</td>
-                <td>Ax</td>
-                <td>Vis</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">DV</td>
-                <td id="modRefDvReSph" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvReCyl" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvReAx" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
-
-                <td id="modRefDvLeSph" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvLeCyl" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvLeAx" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefDvLeVis" style="border-bottom:1px solid #eee;">-</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">NV</td>
-                <td id="modRefNvReSph" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvReCyl" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvReAx" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
-
-                <td id="modRefNvLeSph" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvLeCyl" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvLeAx" style="border-bottom:1px solid #eee;">-</td>
-                <td id="modRefNvLeVis" style="border-bottom:1px solid #eee;">-</td>
-            </tr>
-        </table>
-
-        <h3
-            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
-            Investigations</h3>
-        <table style="width:100%; font-size:0.9rem; margin-bottom:1.5rem; border-collapse: collapse;">
-            <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
-                <td style="padding:0.5rem;">test</td>
-                <td style="padding:0.5rem;">Right Eye</td>
-                <td style="padding:0.5rem;">Left Eye</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Slit Lamp</td>
-                <td id="modSlitRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modSlitLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Fundus</td>
-                <td id="modFundusRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modFundusLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-            <tr>
-                <td style="padding:0.5rem; border-bottom:1px solid #eee;">IOP</td>
-                <td id="modIopRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-                <td id="modIopLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
-            </tr>
-        </table>
-        <div class="detail-row" style="border-bottom: none;">
-            <div class="detail-label">Additional Notes</div>
-            <div id="modalNotes" class="detail-value">-</div>
-        </div>
-        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-            <button class="btn btn-primary" style="flex: 1;">Accept Case</button>
-            <button class="btn" style="flex: 1; background: #f1f5f9; color: var(--text-main);"
-                onclick="closeModal()">Close Details</button>
         </div>
     </div>
 </div>
