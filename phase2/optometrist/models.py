@@ -21,7 +21,7 @@ class Optometrist(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True, blank=True, null=True)
     role = models.CharField(
         max_length=20,
-        choices=[('optometrist', 'Optometrist'), ('doctor', 'Doctor')],
+        choices=[('optometrist', 'Optometrist'), ('doctor', 'Doctor'), ('patient', 'Patient')],
         default='optometrist'
     )
 
@@ -140,6 +140,8 @@ class EyeExamination(models.Model):
     diagnosis_notes = models.TextField(blank=True, help_text="Doctor's detailed observations and notes")
     provisional_diagnosis = models.TextField(blank=True)
     advice = models.TextField(blank=True)
+    
+    is_completed = models.BooleanField(default=False, help_text="Set to True when the doctor finalizes consultation")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

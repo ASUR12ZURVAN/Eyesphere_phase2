@@ -156,19 +156,24 @@
 <div class="dashboard-container animate-fade-in">
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
         <div>
-            <h1 style="text-align: left; font-size: 2.5rem; margin-bottom: 0.5rem; margin-top: 0;">Specialist Dashboard</h1>
+            <h1 style="text-align: left; font-size: 2.5rem; margin-bottom: 0.5rem; margin-top: 0;">Specialist Dashboard
+            </h1>
             <p style="color: var(--text-muted); font-size: 1.1rem;">
-                Welcome, <span id="doctorNameDisplay" style="color: var(--secondary); font-weight: 600;">Dr. Loading...</span>
+                Welcome, <span id="doctorNameDisplay" style="color: var(--secondary); font-weight: 600;">Dr.
+                    Loading...</span>
             </p>
         </div>
-        <button onclick="logout()" class="btn" style="width: auto; height: 48px; padding: 0 1.5rem; background: white; border: 1px solid #e2e8f0; color: #ef4444; font-weight: 600;">
+        <button onclick="logout()" class="btn"
+            style="width: auto; height: 48px; padding: 0 1.5rem; background: white; border: 1px solid #e2e8f0; color: #ef4444; font-weight: 600;">
             Logout
         </button>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
         <div class="glass-card stats-card" style="display: flex; align-items: center; gap: 1.5rem;">
-            <div style="width: 56px; height: 56px; background: rgba(219, 39, 119, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
+            <div
+                style="width: 56px; height: 56px; background: rgba(219, 39, 119, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--secondary);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
@@ -183,7 +188,8 @@
         </div>
 
         <div class="glass-card stats-card" style="display: flex; align-items: center; gap: 1.5rem;">
-            <div style="width: 56px; height: 56px; background: rgba(37, 99, 235, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+            <div
+                style="width: 56px; height: 56px; background: rgba(37, 99, 235, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                     <line x1="16" y1="2" x2="16" y2="6" />
@@ -198,7 +204,8 @@
         </div>
 
         <div class="glass-card stats-card" style="display: flex; align-items: center; gap: 1.5rem;">
-            <div style="width: 56px; height: 56px; background: rgba(5, 150, 105, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #059669;">
+            <div
+                style="width: 56px; height: 56px; background: rgba(5, 150, 105, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #059669;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                 </svg>
@@ -250,25 +257,47 @@
                             nv: { re: { sph: '{{ exam.nv_sph_re|escapejs }}', cyl: '{{ exam.nv_cyl_re|escapejs }}', axis: '{{ exam.nv_axis_re|escapejs }}', vision: '{{ exam.nv_vision_re|escapejs }}' }, le: { sph: '{{ exam.nv_sph_le|escapejs }}', cyl: '{{ exam.nv_cyl_le|escapejs }}', axis: '{{ exam.nv_axis_le|escapejs }}', vision: '{{ exam.nv_vision_le|escapejs }}' } } 
                         },
                         investigations: { 
+                            schirmer: { re: '{{ exam.schirmer_re|escapejs }}', le: '{{ exam.schirmer_le|escapejs }}' },
+                            tbut: { re: '{{ exam.tbut_re|escapejs }}', le: '{{ exam.tbut_le|escapejs }}' },
                             slitlamp: { re: '{{ exam.slit_lamp_re|escapejs }}', le: '{{ exam.slit_lamp_le|escapejs }}' }, 
                             fundus: { re: '{{ exam.fundus_re|escapejs }}', le: '{{ exam.fundus_le|escapejs }}' }, 
                             iop: { re: '{{ exam.iop_re|escapejs }}', le: '{{ exam.iop_le|escapejs }}' } 
-                        } 
+                        },
+                        performed: {
+                            ar_assessment: {% if exam.performed_ar_assessment %}true{% else %}false{% endif %},
+                            refraction: {% if exam.performed_refraction %}true{% else %}false{% endif %},
+                            schirmer: {% if exam.performed_schirmer %}true{% else %}false{% endif %},
+                            tbut: {% if exam.performed_tbut %}true{% else %}false{% endif %},
+                            slit_lamp: {% if exam.performed_slit_lamp %}true{% else %}false{% endif %},
+                            fundus: {% if exam.performed_fundus %}true{% else %}false{% endif %},
+                            iop: {% if exam.performed_iop %}true{% else %}false{% endif %}
+                        },
+                        isCompleted: {% if exam.is_completed %}true{% else %}false{% endif %}
                     })">
+
                         <td style="font-weight: 600;">{{ exam.patient.name }}</td>
                         <td>{{ exam.patient.age }}y / {{ exam.patient.gender|title }}</td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <div style="width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--primary);">
+                                <div
+                                    style="width: 24px; height: 24px; background: #f1f5f9; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; color: var(--primary);">
                                     {{ exam.optometrist.name|slice:":1"|upper }}
                                 </div>
                                 {{ exam.optometrist.name }}
                             </div>
                         </td>
                         <td style="color: var(--text-muted);">{{ exam.created_at|date:"d M Y" }}</td>
-                        <td><span class="badge badge-pink">Pending Review</span></td>
                         <td>
-                            <button class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--primary); color: white;" onclick="event.stopPropagation(); this.closest('tr').click();">
+                            {% if exam.is_completed %}
+                            <span class="badge badge-blue">Completed</span>
+                            {% else %}
+                            <span class="badge badge-pink">Pending Review</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn"
+                                style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--primary); color: white;"
+                                onclick="event.stopPropagation(); this.closest('tr').click();">
                                 View Details
                             </button>
                         </td>
@@ -294,8 +323,10 @@
                 <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
         </span>
-        <h2 id="modalPatientName" style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem;">Patient Details</h2>
-        <div id="modalDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Referral Date</div>
+        <h2 id="modalPatientName" style="text-align: left; margin-bottom: 0.5rem; font-size: 1.8rem;">Patient Details
+        </h2>
+        <div id="modalDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">Referral Date
+        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
             <div class="detail-row">
                 <div class="detail-label">Age / Gender</div>
@@ -312,10 +343,14 @@
         </div>
         <div class="detail-row">
             <div class="detail-label">Optometrist Findings</div>
-            <div id="modalFindings" class="detail-value" style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--primary);">-</div>
+            <div id="modalFindings" class="detail-value"
+                style="padding: 1rem; background: #f8fafc; border-radius: 12px; border-left: 4px solid var(--primary);">
+                -</div>
         </div>
 
-        <h3 style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">Visual Acuity</h3>
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            Visual Acuity</h3>
         <table style="width:100%; font-size:0.9rem; margin-bottom:1.5rem; border-collapse: collapse;">
             <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
                 <td style="padding:0.5rem;"></td>
@@ -339,8 +374,11 @@
             </tr>
         </table>
 
-        <h3 style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">Refraction</h3>
-        <table style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            Refraction</h3>
+        <table
+            style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
             <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
                 <td style="padding:0.5rem;"></td>
                 <td colspan="4" style="padding:0.5rem; border-right:1px solid #eee;">Right Eye</td>
@@ -381,12 +419,29 @@
             </tr>
         </table>
 
-        <h3 style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">Investigations</h3>
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            Investigations Performed</h3>
+        <div id="performedTests" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.5rem;"></div>
+
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            Investigation Findings</h3>
         <table style="width:100%; font-size:0.9rem; margin-bottom:1.5rem; border-collapse: collapse;">
             <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
                 <td style="padding:0.5rem;">test</td>
                 <td style="padding:0.5rem;">Right Eye</td>
                 <td style="padding:0.5rem;">Left Eye</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; border-bottom:1px solid #eee;">Schirmer</td>
+                <td id="modSchirmerRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modSchirmerLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; border-bottom:1px solid #eee;">TBUT</td>
+                <td id="modTbutRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modTbutLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
             </tr>
             <tr>
                 <td style="padding:0.5rem; border-bottom:1px solid #eee;">Slit Lamp</td>
@@ -408,9 +463,11 @@
             <div class="detail-label">Additional Notes</div>
             <div id="modalNotes" class="detail-value">-</div>
         </div>
-        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-            <button class="btn btn-primary" style="flex: 1;" onclick="acceptCase()">Accept Case</button>
-            <button class="btn" style="flex: 1; background: #f1f5f9; color: var(--text-main);" onclick="closeModal()">Close Details</button>
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;" id="modalActions">
+            <button class="btn btn-primary" style="flex: 1;" id="acceptCaseBtn" onclick="acceptCase()">Accept
+                Case</button>
+            <button class="btn" style="flex: 1; background: #f1f5f9; color: var(--text-main);"
+                onclick="closeModal()">Close Details</button>
         </div>
     </div>
 </div>
@@ -436,6 +493,27 @@
         document.getElementById('modalFindings').innerText = data.findings;
         document.getElementById('modalNotes').innerText = data.notes;
         document.getElementById('modalDate').innerText = `Referral received on: ${data.date}`;
+
+        // Populate performed tests
+        if (data.performed) {
+            const tests = [
+                { key: 'ar_assessment', label: 'AR Assessment' },
+                { key: 'refraction', label: 'Refraction' },
+                { key: 'schirmer', label: 'Schirmer Strip Test' },
+                { key: 'tbut', label: 'Tear Breakup Time' },
+                { key: 'slit_lamp', label: 'Slit Lamp Eval' },
+                { key: 'fundus', label: 'Fundus Exam' },
+                { key: 'iop', label: 'IOP Test' }
+            ];
+            const container = document.getElementById('performedTests');
+            container.innerHTML = tests.map(t => {
+                const done = data.performed[t.key];
+                const bg = done ? 'rgba(37,99,235,0.1)' : 'rgba(100,116,139,0.1)';
+                const color = done ? 'var(--primary)' : 'var(--text-muted)';
+                const icon = done ? '✓' : '✗';
+                return `<span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; background:${bg}; color:${color};">${icon} ${t.label}</span>`;
+            }).join('');
+        }
 
         if (data.va) {
             document.getElementById('modVaUnRe').innerText = data.va.uncorrected.re || '-';
@@ -466,12 +544,30 @@
         }
 
         if (data.investigations) {
+            document.getElementById('modSchirmerRe').innerText = data.investigations.schirmer.re || '-';
+            document.getElementById('modSchirmerLe').innerText = data.investigations.schirmer.le || '-';
+            document.getElementById('modTbutRe').innerText = data.investigations.tbut.re || '-';
+            document.getElementById('modTbutLe').innerText = data.investigations.tbut.le || '-';
             document.getElementById('modSlitRe').innerText = data.investigations.slitlamp.re || '-';
             document.getElementById('modSlitLe').innerText = data.investigations.slitlamp.le || '-';
             document.getElementById('modFundusRe').innerText = data.investigations.fundus.re || '-';
             document.getElementById('modFundusLe').innerText = data.investigations.fundus.le || '-';
             document.getElementById('modIopRe').innerText = data.investigations.iop.re || '-';
             document.getElementById('modIopLe').innerText = data.investigations.iop.le || '-';
+        }
+
+        // Handle completed case
+        const acceptBtn = document.getElementById('acceptCaseBtn');
+        if (data.isCompleted) {
+            acceptBtn.innerText = 'Case Completed';
+            acceptBtn.disabled = true;
+            acceptBtn.style.background = '#9ca3af';
+            acceptBtn.style.cursor = 'not-allowed';
+        } else {
+            acceptBtn.innerText = 'Accept Case';
+            acceptBtn.disabled = false;
+            acceptBtn.style.background = '';
+            acceptBtn.style.cursor = '';
         }
 
         document.getElementById('patientDetailModal').style.display = 'flex';

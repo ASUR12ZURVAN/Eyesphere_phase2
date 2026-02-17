@@ -603,6 +603,51 @@
 
         <!-- Investigations Table -->
         <h3 class="section-title">Investigations</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem;">
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_ar_assessment %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_ar_assessment %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_ar_assessment %}&#10003;{% else %}&#10007;{% endif %} AR Assessment
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_refraction %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_refraction %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_refraction %}&#10003;{% else %}&#10007;{% endif %} Refraction
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_schirmer %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_schirmer %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_schirmer %}&#10003;{% else %}&#10007;{% endif %} Schirmer Strip Test
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_tbut %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_tbut %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_tbut %}&#10003;{% else %}&#10007;{% endif %} Tear Breakup Time
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_slit_lamp %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_slit_lamp %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_slit_lamp %}&#10003;{% else %}&#10007;{% endif %} Slit Lamp Eval
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_fundus %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_fundus %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_fundus %}&#10003;{% else %}&#10007;{% endif %} Fundus Exam
+            </span>
+
+            <span style="padding:0.35rem 0.8rem; border-radius:8px; font-size:0.82rem; font-weight:500; 
+        background: {% if exam.performed_iop %}rgba(37,99,235,0.1){% else %}rgba(100,116,139,0.1){% endif %}; 
+        color: {% if exam.performed_iop %}#2563eb{% else %}#64748b{% endif %};">
+                {% if exam.performed_iop %}&#10003;{% else %}&#10007;{% endif %} IOP Test
+            </span>
+        </div>
+        <p style="font-weight:600; font-size:0.82rem; color:#64748b; margin-bottom:0.4rem;">Findings</p>
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
@@ -613,6 +658,16 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr>
+                        <td><strong>Schirmer</strong></td>
+                        <td>{{ exam.schirmer_re|default:"-" }}</td>
+                        <td>{{ exam.schirmer_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TBUT</strong></td>
+                        <td>{{ exam.tbut_re|default:"-" }}</td>
+                        <td>{{ exam.tbut_le|default:"-" }}</td>
+                    </tr>
                     <tr>
                         <td><strong>Slit Lamp</strong></td>
                         <td>{{ exam.slit_lamp_re|default:"-" }}</td>

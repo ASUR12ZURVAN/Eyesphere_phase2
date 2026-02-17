@@ -75,9 +75,16 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Fetch the specific exam passed in URL
-        context['exam'] = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
+        exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
+        context['exam'] = exam
+        context['is_completed'] = exam.is_completed
         return context
+
+    def dispatch(self, request, *args, **kwargs):
+        exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
+        if exam.is_completed:
+            return redirect('doctor_dashboard')
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
@@ -86,11 +93,13 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         exam.diagnosis_notes = request.POST.get('diagnosis_notes', '')
         exam.provisional_diagnosis = request.POST.get('provisional_diagnosis')
         exam.advice = request.POST.get('advice')
+        exam.is_completed = True
         exam.save()
 
         # Handle Medications with all fields
         med_names = request.POST.getlist('med_name[]')
         if med_names:
+            # Clear old medications if re-submitting
             exam.medications.all().delete()
             
             # Get all medication field arrays
