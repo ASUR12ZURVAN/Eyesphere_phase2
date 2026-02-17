@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-53(3dg4towtgp1$-sv8)0^^9rmrm2gvvj_65v7zs6nc7@2$i@#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["https://eyesphere-phase2.onrender.com/"]
+ALLOWED_HOSTS = [*]
 
 
 # Application definition
