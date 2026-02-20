@@ -30,6 +30,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = ["https://eyesphere-phase2-mpko.onrender.com"]
+
 
 # Application definition
 
