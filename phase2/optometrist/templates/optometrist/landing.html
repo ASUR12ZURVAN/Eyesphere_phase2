@@ -51,13 +51,34 @@
                 </svg>
             </div>
         </a>
+
+        <!-- Patient Option -->
+        <a href="{% url 'patient_login_page' %}" class="option-card patient-card">
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <h3>Patient</h3>
+            <p>View your appointment records and prescriptions</p>
+            <div class="card-footer">
+                <span>Enter Portal</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+            </div>
+        </a>
     </div>
 </div>
 
 <style>
     .landing-container {
         width: 100%;
-        max-width: 900px;
+        max-width: 1100px;
         margin: 0 auto;
     }
 
@@ -68,7 +89,7 @@
 
     .options-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
         gap: 2rem;
         padding: 1rem;
     }
@@ -130,6 +151,11 @@
         color: var(--secondary);
     }
 
+    .patient-card .card-icon {
+        background: rgba(5, 150, 105, 0.05);
+        color: #059669;
+    }
+
     .option-card:hover .card-icon {
         transform: scale(1.1) rotate(5deg);
     }
@@ -161,11 +187,19 @@
         color: var(--secondary);
     }
 
+    .patient-card .card-footer {
+        color: #059669;
+    }
+
+    .patient-card:hover {
+        border-color: #059669;
+    }
+
     .option-card:hover .card-footer {
         gap: 1rem;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 900px) {
         .options-grid {
             grid-template-columns: 1fr;
         }
