@@ -78,17 +78,27 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
         context['exam'] = exam
         context['is_completed'] = exam.is_completed
+        # Fetch patient history (past exams) for this patient by phone number
+        context['past_exams'] = EyeExamination.objects.filter(
+            patient__phone_number=exam.patient.phone_number
+        ).exclude(id=exam.id).order_by('-created_at')
         return context
 
     def dispatch(self, request, *args, **kwargs):
-        exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
-        if exam.is_completed:
-            return redirect('doctor_dashboard')
+        # We allow viewing and updating even if completed
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         exam = get_object_or_404(EyeExamination, id=self.kwargs['pk'], consultant=self.request.user)
         
+        # Update Patient Records if changed
+        patient = exam.patient
+        patient.name = request.POST.get('patient_name', patient.name)
+        patient.age = request.POST.get('patient_age', patient.age)
+        patient.gender = request.POST.get('patient_gender', patient.gender)
+        patient.address = request.POST.get('patient_address', patient.address)
+        patient.save()
+
         # Update Diagnosis Notes, Diagnosis and Advice
         exam.diagnosis_notes = request.POST.get('diagnosis_notes', '')
         exam.provisional_diagnosis = request.POST.get('provisional_diagnosis')

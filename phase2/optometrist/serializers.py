@@ -62,15 +62,24 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         medications_data = validated_data.pop('medications', [])
         
-        # Patient Handling
-        patient = validated_data.pop('patient', None)
-        
         # Extract patient fields validation data
         name = validated_data.pop('name', None)
         age = validated_data.pop('age', 0)
         gender = validated_data.pop('gender', 'Other')
         phone = validated_data.pop('phone_number', '')
         addr = validated_data.pop('address', '')
+        
+        # Patient Handling - Track by phone number
+        patient = None
+        if phone:
+            patient = Patient.objects.filter(phone_number=phone).first()
+            if patient:
+                # Update existing patient info
+                patient.name = name or patient.name
+                patient.age = age or patient.age
+                patient.gender = gender or patient.gender
+                patient.address = addr or patient.address
+                patient.save()
         
         if not patient and name:
             # Create new patient
@@ -83,23 +92,41 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
             )
         
         if not patient:
-            raise serializers.ValidationError("Patient must be provided or created (name is required).")
+            # Check if patient_id was provided (from PrimaryKeyRelatedField source='patient')
+            patient = validated_data.get('patient')
+            
+        if not patient:
+            raise serializers.ValidationError({"error": "Patient must be provided or created (phone number or name is required)."})
             
         validated_data['patient'] = patient
         
         # Consultant Handling
-        # If consultant_id was passed, it's already validated and put into validated_data key 'consultant' by source='consultant'
-        if 'consultant' not in validated_data:
+        consultant = validated_data.get('consultant')
+        if not consultant:
             # Fallback: Auto-assign a doctor (Consultant)
             doctor = Optometrist.objects.filter(role='doctor', is_active=True).first()
             if doctor:
                 validated_data['consultant'] = doctor
+                consultant = doctor
             else:
-                 # Optional: Raise error if no doctor available and none selected
-                 pass
+                 raise serializers.ValidationError({"error": "No available doctor to assign."})
         
-        # Create Exam
-        exam = EyeExamination.objects.create(**validated_data)
+        # Check if an examination for this patient already exists for this doctor and is not completed
+        # The prompt says "if it had previously been sent to doctor then replace it with updated one"
+        # We'll update the existing one if it exists.
+        existing_exam = EyeExamination.objects.filter(patient=patient, consultant=consultant, is_completed=False).first()
+        
+        if existing_exam:
+            # Update existing exam
+            for attr, value in validated_data.items():
+                setattr(existing_exam, attr, value)
+            existing_exam.save()
+            exam = existing_exam
+            # Clear old medications as they will be re-added
+            exam.medications.all().delete()
+        else:
+            # Create New Exam
+            exam = EyeExamination.objects.create(**validated_data)
         
         # Create Medications
         for med_data in medications_data:

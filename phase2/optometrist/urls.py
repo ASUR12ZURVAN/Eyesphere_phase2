@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     RegisterOptometrist, LoginOptometrist, OptometristListView, OptometristDetailView,
-    OptometristDashboardPageView, LandingPageView, EyeExaminationCreateAPIView, NewExaminationPageView
+    OptometristDashboardPageView, LandingPageView, EyeExaminationCreateAPIView, NewExaminationPageView,
+    EyeExaminationDetailView, ExaminationByPhoneView, PatientHistoryAPIView
 )
 
 urlpatterns = [
@@ -11,6 +12,9 @@ urlpatterns = [
     path('api/list/', OptometristListView.as_view(), name='list_api'),
     path('api/<int:pk>/', OptometristDetailView.as_view(), name='detail_api'),
     path('api/exams/create/', EyeExaminationCreateAPIView.as_view(), name='create_exam_api'),
+    path('api/exams/<int:pk>/', EyeExaminationDetailView.as_view(), name='exam_detail_api'),
+    path('api/exams/by-phone/<str:phone_number>/', ExaminationByPhoneView.as_view(), name='exam_by_phone_api'),
+    path('api/patient-history/<str:phone_number>/', PatientHistoryAPIView.as_view(), name='patient_history_api'),
     
     # Template pages
     path('', LandingPageView.as_view(), name='landing_page'),

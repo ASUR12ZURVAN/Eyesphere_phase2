@@ -17,6 +17,11 @@ class OptometristDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, Temp
     def test_func(self):
         return self.request.user.role == 'optometrist'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['examinations'] = EyeExamination.objects.filter(optometrist=self.request.user).select_related('patient', 'consultant').order_by('-created_at')
+        return context
+
 class LandingPageView(TemplateView):
     template_name = 'optometrist/landing.html'
 
@@ -82,6 +87,38 @@ class EyeExaminationCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         # Assign the logged-in optometrist
         serializer.save(optometrist=self.request.user)
+
+class EyeExaminationDetailView(generics.RetrieveUpdateAPIView):
+    queryset = EyeExamination.objects.all()
+    serializer_class = EyeExaminationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class ExaminationByPhoneView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, phone_number):
+        exam = EyeExamination.objects.filter(patient__phone_number=phone_number, is_completed=False).order_by('-created_at').first()
+        if not exam:
+            return Response({"detail": "No pending examination found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = EyeExaminationSerializer(exam)
+        return Response(serializer.data)
+
+class PatientHistoryAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request, phone_number):
+        exams = EyeExamination.objects.filter(patient__phone_number=phone_number).order_by('-created_at')
+        data = []
+        for e in exams:
+            data.append({
+                "id": e.id,
+                "date": e.created_at.strftime("%d %M %Y"),
+                "consultant": e.consultant.name if e.consultant else "N/A",
+                "diagnosis": e.provisional_diagnosis or "Pending...",
+                "is_completed": e.is_completed
+            })
+        return Response(data)
+        return Response({'message': 'No pending examination found'}, status=404)
 
 class NewExaminationPageView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'optometrist/new_examination.html'

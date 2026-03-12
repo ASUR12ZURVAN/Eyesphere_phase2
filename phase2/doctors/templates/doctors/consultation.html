@@ -496,25 +496,60 @@
         <div class="detail-grid">
             <div class="detail-item">
                 <div class="detail-label">Patient Name</div>
-                <div class="detail-value">{{ exam.patient.name }}</div>
+                <input type="text" name="patient_name" value="{{ exam.patient.name }}" class="form-control"
+                    style="padding: 0.5rem; height: auto;">
             </div>
             <div class="detail-item">
                 <div class="detail-label">Age / Gender</div>
-                <div class="detail-value">{{ exam.patient.age }} years / {{ exam.patient.gender|title }}</div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="number" name="patient_age" value="{{ exam.patient.age }}" class="form-control"
+                        style="padding: 0.5rem; height: auto; width: 80px;">
+                    <select name="patient_gender" class="form-control" style="padding: 0.5rem; height: auto;">
+                        <option value="male" {% if exam.patient.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if exam.patient.gender == 'female' %}selected{% endif %}>Female</option>
+                        <option value="other" {% if exam.patient.gender == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Phone Number</div>
-                <div class="detail-value">{{ exam.patient.phone_number|default:"Not provided" }}</div>
+                <input type="text" name="patient_phone" value="{{ exam.patient.phone_number|default:'' }}"
+                    class="form-control" style="padding: 0.5rem; height: auto;" readonly>
+                <small style="font-size: 0.7rem; color: var(--text-muted);">Read-only (Link key)</small>
             </div>
             <div class="detail-item">
                 <div class="detail-label">Referring Optometrist</div>
                 <div class="detail-value">Dr. {{ exam.optometrist.name }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Patient Address</div>
+                <input type="text" name="patient_address" value="{{ exam.patient.address|default:'' }}"
+                    class="form-control" style="padding: 0.5rem; height: auto;">
             </div>
         </div>
 
         <div class="detail-item" style="margin-bottom: 1rem;">
             <div class="detail-label">Chief Complaints</div>
             <div class="detail-value">{{ exam.chief_complaints|default:"Not specified" }}</div>
+        </div>
+
+        <div class="detail-grid" style="margin-bottom: 1.5rem;">
+            <div class="detail-item">
+                <div class="detail-label">Systemic History</div>
+                <div class="detail-value">{{ exam.systemic_history|default:"NA" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Screen Time</div>
+                <div class="detail-value">{{ exam.screen_time|default:"-" }} hrs/day</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">H/o Eye Disease</div>
+                <div class="detail-value">{{ exam.history_eye_disease|default:"NA" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">H/o Eye Surgery</div>
+                <div class="detail-value">{{ exam.history_eye_surgery|default:"NA" }}</div>
+            </div>
         </div>
 
         <div class="detail-item">
@@ -752,6 +787,34 @@
                         </tr>
                     </thead>
                     <tbody id="medicationBody">
+                        {% for med in exam.medications.all %}
+                        <tr class="med-row">
+                            <td class="med-sr-no">{{ forloop.counter }}</td>
+                            <td><input type="text" name="med_name[]" value="{{ med.name }}" placeholder="E/D Trehalube"
+                                    class="med-input"></td>
+                            <td><input type="text" name="med_quantity[]" value="{{ med.quantity }}" placeholder="1"
+                                    class="med-input"></td>
+                            <td><input type="text" name="med_frequency[]" value="{{ med.frequency }}"
+                                    placeholder="3 times a day" class="med-input"></td>
+                            <td>
+                                <select name="med_eye[]" class="med-input">
+                                    <option value="Both eyes" {% if med.eye == 'Both eyes' %}selected{% endif %}>Both eyes
+                                    </option>
+                                    <option value="Right eye" {% if med.eye == 'Right eye' %}selected{% endif %}>Right eye
+                                    </option>
+                                    <option value="Left eye" {% if med.eye == 'Left eye' %}selected{% endif %}>Left eye
+                                    </option>
+                                    <option value="-" {% if med.eye == '-' %}selected{% endif %}>-</option>
+                                </select>
+                            </td>
+                            <td><input type="text" name="med_duration[]" value="{{ med.duration }}"
+                                    placeholder="30 Days" class="med-input"></td>
+                            <td><input type="text" name="med_instructions[]" value="{{ med.instructions }}"
+                                    placeholder="Optional notes" class="med-input"></td>
+                            <td><button type="button" class="btn-remove" onclick="removeMedRow(this)">Remove</button>
+                            </td>
+                        </tr>
+                        {% empty %}
                         <tr class="med-row">
                             <td class="med-sr-no">1</td>
                             <td><input type="text" name="med_name[]" placeholder="E/D Trehalube" class="med-input"></td>
@@ -768,16 +831,51 @@
                             </td>
                             <td><input type="text" name="med_duration[]" placeholder="30 Days" class="med-input"></td>
                             <td><input type="text" name="med_instructions[]" placeholder="Optional notes"
-                                    class="med-input">
-                            </td>
+                                    class="med-input"></td>
                             <td><button type="button" class="btn-remove" onclick="removeMedRow(this)">Remove</button>
                             </td>
                         </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
             <button type="button" class="btn-add-med" onclick="addMedRow()">+ Add Medication Row</button>
         </div>
+
+        {% if past_exams %}
+        <!-- Patient History Section -->
+        <div class="form-section">
+            <h3 style="color: var(--secondary);">Clinical History (Past Visits)</h3>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Doctor</th>
+                            <th>Diagnosis</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p_exam in past_exams %}
+                        <tr>
+                            <td>{{ p_exam.created_at|date:"d M Y" }}</td>
+                            <td>Dr. {{ p_exam.consultant.name }}</td>
+                            <td>{{ p_exam.provisional_diagnosis|default:"-" }}</td>
+                            <td>
+                                {% if p_exam.is_completed %}
+                                <span style="color: #059669; font-weight: 600;">Completed</span>
+                                {% else %}
+                                <span style="color: #d97706; font-weight: 600;">Pending</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Submit Section -->
         <div class="submit-section">

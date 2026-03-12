@@ -249,39 +249,37 @@
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                 </svg>
-                Upcoming Appointments
+                Recent Examinations
             </h3>
             <div id="appointmentsList">
+                {% for exam in examinations %}
                 <div class="appointment-item">
                     <div class="patient-info">
-                        <div class="patient-avatar">SJ</div>
+                        <div class="patient-avatar">{{ exam.patient.name|slice:":2"|upper }}</div>
                         <div class="patient-details">
-                            <span class="name">Sarah Johnson</span>
-                            <span class="time">10:30 AM - General Checkup</span>
+                            <span class="name">{{ exam.patient.name }}</span>
+                            <span class="time">{{ exam.date_of_visit }} - Dr. {{ exam.consultant.name }}</span>
                         </div>
                     </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
-                </div>
-                <div class="appointment-item">
-                    <div class="patient-info">
-                        <div class="patient-avatar">MB</div>
-                        <div class="patient-details">
-                            <span class="name">Michael Brown</span>
-                            <span class="time">11:15 AM - Lens Fitting</span>
-                        </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        {% if exam.is_completed %}
+                        <span class="status-badge status-upcoming"
+                            style="background: rgba(5, 150, 105, 0.1); color: #059669;">Completed</span>
+                        <button class="btn"
+                            style="padding: 0.4rem 0.8rem; font-size: 0.75rem; width: auto; background: var(--glass-border); color: var(--text-main);"
+                            onclick="viewExam('{{ exam.id }}')">View</button>
+                        {% else %}
+                        <span class="status-badge status-upcoming">Sent to Doctor</span>
+                        {% endif %}
+                        <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; width: auto;"
+                            onclick="editExam('{{ exam.patient.phone_number }}', '{{ exam.consultant.id }}')">Edit</button>
                     </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
                 </div>
-                <div class="appointment-item">
-                    <div class="patient-info">
-                        <div class="patient-avatar">EM</div>
-                        <div class="patient-details">
-                            <span class="name">Emily Miller</span>
-                            <span class="time">02:00 PM - Vision Therapy</span>
-                        </div>
-                    </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
+                {% empty %}
+                <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                    No examinations found.
                 </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -295,6 +293,37 @@
         </div>
     </div>
 
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="glass-card" style="max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 id="resultPatientName">Patient Result</h3>
+                <button onclick="closeResultModal()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="resultContent">
+                <div class="form-group">
+                    <label>Provisional Diagnosis</label>
+                    <div id="resDiagnosis" class="detail-value"
+                        style="background: rgba(0,0,0,0.03); padding: 0.75rem; border-radius: 8px;"></div>
+                </div>
+                <div class="form-group">
+                    <label>Doctor's Advice</label>
+                    <div id="resAdvice" class="detail-value"
+                        style="background: rgba(0,0,0,0.03); padding: 0.75rem; border-radius: 8px; white-space: pre-wrap;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Medications</label>
+                    <div id="resMedications" style="margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button class="btn btn-primary" onclick="closeResultModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -316,5 +345,51 @@
         localStorage.removeItem('user');
         window.location.href = '{% url "optometrist_login_page" %}';
     });
+
+    function editExam(phoneNumber, consultantId) {
+        // Pre-filling normally requires fetching the latest data.
+        // For simplicity and since we track by phone number, we can redirect to new_examination with a 'prefill' flag
+        // and fetch the details there if we want, or just pass the phone number.
+        window.location.href = `{% url 'new_examination_page' %}?phone=${phoneNumber}&consultant=${consultantId}`;
+    }
+
+    async function viewExam(examId) {
+        const accessToken = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`/api/exams/${examId}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('resultPatientName').innerText = `Result for ${data.patient.name}`;
+                document.getElementById('resDiagnosis').innerText = data.provisional_diagnosis || 'Pending...';
+                document.getElementById('resAdvice').innerText = data.advice || 'No advice provided yet.';
+
+                const medList = document.getElementById('resMedications');
+                if (data.medications && data.medications.length > 0) {
+                    medList.innerHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                        <tr style="border-bottom: 1px solid #ddd; text-align: left;">
+                            <th>Name</th><th>Freq</th><th>Eye</th><th>Dur</th>
+                        </tr>
+                        ${data.medications.map(m => `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td>${m.name}</td><td>${m.frequency}</td><td>${m.eye}</td><td>${m.duration}</td>
+                        </tr>
+                        `).join('')}
+                    </table>`;
+                } else {
+                    medList.innerHTML = '<p style="color: var(--text-muted);">No medications prescribed.</p>';
+                }
+
+                document.getElementById('resultModal').style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('Failed to fetch exam result', err);
+        }
+    }
+
+    function closeResultModal() {
+        document.getElementById('resultModal').style.display = 'none';
+    }
 </script>
 {% endblock content %}
