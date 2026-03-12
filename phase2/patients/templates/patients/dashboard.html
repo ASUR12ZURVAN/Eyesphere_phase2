@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #059669;
@@ -644,6 +645,50 @@
         .animate-in {
             animation: fadeInUp 0.5s ease forwards;
         }
+
+        /* Chart Styling */
+        .chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .metric-select {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .metric-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
     </style>
 </head>
 
@@ -708,6 +753,28 @@
         </div>
 
         {% if examinations %}
+        <div class="chart-container animate-in" style="animation-delay: 150ms;">
+            <div class="chart-controls">
+                <div class="chart-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                    </svg>
+                    Health Progress Trends
+                </div>
+                <select id="metricSelector" class="metric-select">
+                    <option value="iop">Intraocular Pressure (IOP)</option>
+                    <option value="schirmer">Schirmer Test (Dry Eye)</option>
+                    <option value="tbut">TBUT Findings</option>
+                    <option value="sph">Refraction Power (SPH)</option>
+                    <option value="cyl">Refraction Power (CYL)</option>
+                </select>
+            </div>
+            <div style="height: 300px; width: 100%;">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+
         <div class="queue-card animate-in" style="animation-delay: 200ms;">
             <div class="queue-header">
                 <h2>Appointment History</h2>
@@ -1117,6 +1184,145 @@
     </div>
 
     <script>
+        // Prepare Data for Charts
+        const rawExams = [
+            {% for exam in examinations %}
+        {
+            date: "{{ exam.date_of_visit|date:'d M Y' }}",
+                iop_re: parseFloat("{{ exam.iop_re }}") || null,
+                    iop_le: parseFloat("{{ exam.iop_le }}") || null,
+                        schirmer_re: parseFloat("{{ exam.schirmer_re }}") || null,
+                            schirmer_le: parseFloat("{{ exam.schirmer_le }}") || null,
+                                tbut_re: parseFloat("{{ exam.tbut_re }}") || null,
+                                    tbut_le: parseFloat("{{ exam.tbut_le }}") || null,
+                                        sph_re: parseFloat("{{ exam.dv_sph_re }}") || null,
+                                            sph_le: parseFloat("{{ exam.dv_sph_le }}") || null,
+                                                cyl_re: parseFloat("{{ exam.dv_cyl_re }}") || null,
+                                                    cyl_le: parseFloat("{{ exam.dv_cyl_le }}") || null,
+            },
+        {% endfor %}
+        ].reverse(); // Show oldest to newest
+
+        let currentChart = null;
+
+        function updateChart(metric) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const labels = rawExams.map(e => e.date);
+            let labelRE = 'Right Eye';
+            let labelLE = 'Left Eye';
+            let dataRE = [];
+            let dataLE = [];
+            let unit = '';
+
+            switch (metric) {
+                case 'iop':
+                    dataRE = rawExams.map(e => e.iop_re);
+                    dataLE = rawExams.map(e => e.iop_le);
+                    unit = ' mmHg';
+                    break;
+                case 'schirmer':
+                    dataRE = rawExams.map(e => e.schirmer_re);
+                    dataLE = rawExams.map(e => e.schirmer_le);
+                    unit = ' mm';
+                    break;
+                case 'tbut':
+                    dataRE = rawExams.map(e => e.tbut_re);
+                    dataLE = rawExams.map(e => e.tbut_le);
+                    unit = ' sec';
+                    break;
+                case 'sph':
+                    dataRE = rawExams.map(e => e.sph_re);
+                    dataLE = rawExams.map(e => e.sph_le);
+                    unit = ' D';
+                    break;
+                case 'cyl':
+                    dataRE = rawExams.map(e => e.cyl_re);
+                    dataLE = rawExams.map(e => e.cyl_le);
+                    unit = ' D';
+                    break;
+            }
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Right Eye (RE)',
+                            data: dataRE,
+                            borderColor: '#2563eb',
+                            backgroundColor: '#2563eb20',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            fill: true
+                        },
+                        {
+                            label: 'Left Eye (LE)',
+                            data: dataLE,
+                            borderColor: '#db2777',
+                            backgroundColor: '#db277720',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: { family: 'Outfit', size: 12, weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { family: 'Outfit', size: 14 },
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + unit;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { family: 'Outfit' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Outfit' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize chart
+        if (rawExams.length > 0) {
+            updateChart('iop');
+            document.getElementById('metricSelector').addEventListener('change', (e) => {
+                updateChart(e.target.value);
+            });
+        }
+
         function openModal(id) {
             document.getElementById(id).classList.add('active');
             document.body.style.overflow = 'hidden';
