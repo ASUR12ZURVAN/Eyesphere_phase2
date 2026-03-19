@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blink Rate Test | EyeSphere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#059669;--primary-light:#d1fae5;--primary-hover:#047857;--text-main:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--bg:#f0fdf4;--bg-card:#fff;--shadow:0 4px 20px -4px rgba(0,0,0,.08);}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;}
+        body{background:var(--bg);min-height:100vh;color:var(--text-main);}
+        .top-bar{background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+        .back-btn{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--primary);font-weight:600;font-size:.95rem;padding:.5rem 1rem;border-radius:10px;border:1px solid var(--border);transition:all .2s;}
+        .back-btn:hover{background:var(--primary-light);}
+        .top-bar h1{font-size:1.3rem;font-weight:700;flex:1;text-align:center;}
+        .container{max-width:800px;margin:0 auto;padding:2rem 1.5rem;text-align:center;}
+
+        .card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:2rem;margin-bottom:1.5rem;}
+
+        .info-card{border-left:5px solid var(--primary);}
+        .info-card h2{font-size:1.4rem;font-weight:700;margin-bottom:.8rem;}
+        .info-card p{color:var(--text-muted);line-height:1.6;margin-bottom:.5rem;text-align:left;}
+
+        .start-btn{display:inline-block;background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;border:none;padding:.8rem 2.5rem;border-radius:12px;font-weight:600;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);margin-top:1rem;}
+        .start-btn:hover{transform:translateY(-2px);}
+
+        .webcam-container{position:relative;display:inline-block;border-radius:16px;overflow:hidden;box-shadow:0 8px 25px rgba(0,0,0,.15);margin:1rem auto;}
+        #webcam{border-radius:16px;display:block;max-width:100%;transform:scaleX(-1);}
+        #canvas{display:none;}
+
+        .overlay-stats{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;pointer-events:none;}
+        .stat-pill{background:rgba(0,0,0,.65);backdrop-filter:blur(10px);color:#fff;padding:.4rem 1rem;border-radius:50px;font-size:.85rem;font-weight:600;}
+
+        .timer-ring{width:100px;height:100px;margin:1rem auto;position:relative;}
+        .timer-ring svg{transform:rotate(-90deg);}
+        .timer-ring circle{fill:none;stroke-width:6;}
+        .timer-ring .bg{stroke:rgba(5,150,105,.15);}
+        .timer-ring .fg{stroke:var(--primary);stroke-dasharray:283;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear;stroke-linecap:round;}
+        .timer-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.8rem;font-weight:700;color:var(--primary);}
+
+        .blink-indicator{width:20px;height:20px;border-radius:50%;display:inline-block;margin-left:.5rem;transition:all .2s;}
+        .blink-indicator.open{background:#4ade80;box-shadow:0 0 10px #4ade80;}
+        .blink-indicator.closed{background:#f87171;box-shadow:0 0 10px #f87171;}
+
+        .results-card .result-header{background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;padding:2rem;border-radius:20px 20px 0 0;margin:-2rem -2rem 1.5rem;}
+        .result-header h2{font-size:1.5rem;font-weight:700;}
+        .big-number{font-size:3rem;font-weight:700;color:var(--primary);}
+        .result-label{font-size:1rem;color:var(--text-muted);}
+        .severity-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:50px;font-weight:700;font-size:1rem;margin-top:.5rem;}
+        .severity-normal{background:var(--primary-light);color:var(--primary);}
+        .severity-low{background:#fef3c7;color:#d97706;}
+        .severity-vlow{background:#fecaca;color:#dc2626;}
+        .severity-high{background:#dbeafe;color:#2563eb;}
+
+        .result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1.5rem 0;}
+        .result-item{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;}
+        .result-item .value{font-size:1.5rem;font-weight:700;color:var(--text-main);}
+        .result-item .label{font-size:.8rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;letter-spacing:.5px;}
+
+        .nav-buttons{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;}
+        .nav-buttons a{text-decoration:none;}
+        .nav-buttons button{padding:.7rem 1.5rem;border-radius:12px;border:none;font-weight:600;cursor:pointer;font-size:.9rem;transition:all .2s;box-shadow:var(--shadow);}
+        .nav-buttons .primary{background:var(--primary);color:#fff;}
+        .nav-buttons .secondary{background:#fff;color:var(--text-main);border:1px solid var(--border);}
+        .nav-buttons button:hover{transform:translateY(-2px);}
+
+        @media(max-width:768px){.container{padding:1rem;}.card{padding:1.5rem;}}
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a href="{% url 'patient_dashboard' %}" class="back-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
+    <h1>Blink Rate Detection</h1><span></span>
+</div>
+<div class="container">
+
+    <!-- Intro -->
+    <div class="card info-card" id="introCard">
+        <h2>😉 Blink Rate Test</h2>
+        <p>This test uses your camera and AI to detect your blink rate over 30 seconds.</p>
+        <p><strong>Normal blink rate:</strong> 15-20 blinks per minute. Lower rates can indicate digital eye strain or dry eye.</p>
+        <p><strong>Instructions:</strong> Look at the camera naturally. The AI will count your blinks automatically.</p>
+        <button class="start-btn" onclick="startTest()">Start Blink Test</button>
+    </div>
+
+    <!-- Test Section -->
+    <div id="testSection" style="display:none;">
+        <div class="card">
+            <div class="timer-ring">
+                <svg width="100" height="100"><circle class="bg" cx="50" cy="50" r="45"/><circle class="fg" id="timerCircle" cx="50" cy="50" r="45"/></svg>
+                <div class="timer-text" id="timerText">30</div>
+            </div>
+            <div class="webcam-container">
+                <video id="webcam" width="480" height="360" autoplay playsinline></video>
+                <canvas id="canvas" width="480" height="360"></canvas>
+                <div class="overlay-stats">
+                    <div class="stat-pill">Blinks: <span id="blinkCount">0</span></div>
+                    <div class="stat-pill">Status: <span id="eyeStatus">Open</span> <span class="blink-indicator open" id="blinkDot"></span></div>
+                </div>
+            </div>
+            <p style="margin-top:1rem;color:var(--text-muted);font-size:.9rem;">Keep looking at the camera naturally...</p>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card results-card" id="resultsCard" style="display:none;">
+        <div class="result-header"><h2>Your Blink Rate Results</h2></div>
+        <div class="big-number" id="resultBPM">0</div>
+        <div class="result-label">blinks per minute</div>
+        <div class="severity-badge" id="resultSeverity">Normal</div>
+
+        <div class="result-grid">
+            <div class="result-item"><div class="value" id="totalBlinks">0</div><div class="label">Total Blinks</div></div>
+            <div class="result-item"><div class="value" id="testDuration">30s</div><div class="label">Duration</div></div>
+            <div class="result-item"><div class="value" id="avgInterval">-</div><div class="label">Avg Interval</div></div>
+        </div>
+
+        <div style="text-align:left;background:#f8fafc;border-radius:12px;padding:1rem;margin:1rem 0;border:1px solid var(--border);">
+            <p style="font-weight:600;margin-bottom:.5rem;">What does this mean?</p>
+            <p style="font-size:.9rem;color:var(--text-muted);line-height:1.6;" id="resultAdvice"></p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="{% url 'patient_dashboard' %}"><button class="primary" type="button">Back to Dashboard</button></a>
+            <button class="secondary" onclick="restartTest()">Retake Test</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<script>
+let blinkCount=0,isBlinking=false,testRunning=false,timeRemaining=30,timerInterval=null,blinkTimes=[];
+const video=document.getElementById('webcam'),canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const EAR_THRESHOLD=0.21,CONSEC_FRAMES=2;let earBelowCount=0;
+
+function getCookie(name){let v=null;if(document.cookie){document.cookie.split(';').forEach(c=>{c=c.trim();if(c.startsWith(name+'='))v=decodeURIComponent(c.substring(name.length+1));});}return v;}
+
+function calcEAR(landmarks,indices){
+    const p=indices.map(i=>landmarks[i]);
+    const vd1=Math.sqrt(Math.pow(p[1].x-p[5].x,2)+Math.pow(p[1].y-p[5].y,2));
+    const vd2=Math.sqrt(Math.pow(p[2].x-p[4].x,2)+Math.pow(p[2].y-p[4].y,2));
+    const hd=Math.sqrt(Math.pow(p[0].x-p[3].x,2)+Math.pow(p[0].y-p[3].y,2));
+    return(vd1+vd2)/(2.0*hd);
+}
+
+const leftEyeIndices=[33,160,158,133,153,144];
+const rightEyeIndices=[362,385,387,263,373,380];
+
+let faceMesh;
+function initFaceMesh(){
+    faceMesh=new FaceMesh({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
+    faceMesh.setOptions({maxNumFaces:1,refineLandmarks:true,minDetectionConfidence:0.5,minTrackingConfidence:0.5});
+    faceMesh.onResults(onResults);
+}
+
+function onResults(results){
+    if(!testRunning)return;
+    if(results.multiFaceLandmarks&&results.multiFaceLandmarks.length>0){
+        const lm=results.multiFaceLandmarks[0];
+        const leftEAR=calcEAR(lm,leftEyeIndices);const rightEAR=calcEAR(lm,rightEyeIndices);
+        const avgEAR=(leftEAR+rightEAR)/2;
+
+        if(avgEAR<EAR_THRESHOLD){
+            earBelowCount++;
+            if(earBelowCount>=CONSEC_FRAMES&&!isBlinking){
+                isBlinking=true;blinkCount++;blinkTimes.push(Date.now());
+                document.getElementById('blinkCount').textContent=blinkCount;
+                document.getElementById('eyeStatus').textContent='Closed';
+                document.getElementById('blinkDot').className='blink-indicator closed';
+            }
+        }else{
+            if(isBlinking)isBlinking=false;
+            earBelowCount=0;
+            document.getElementById('eyeStatus').textContent='Open';
+            document.getElementById('blinkDot').className='blink-indicator open';
+        }
+    }
+}
+
+async function startCamera(){
+    try{
+        const stream=await navigator.mediaDevices.getUserMedia({video:{width:480,height:360,facingMode:'user'}});
+        video.srcObject=stream;
+        await new Promise(resolve=>video.onloadedmetadata=resolve);
+
+        async function processFrame(){
+            if(!testRunning)return;
+            await faceMesh.send({image:video});
+            requestAnimationFrame(processFrame);
+        }
+        processFrame();
+    }catch(err){alert('Camera access required for this test. Please allow camera permissions.');console.error(err);}
+}
+
+function startTest(){
+    document.getElementById('introCard').style.display='none';document.getElementById('testSection').style.display='block';
+    blinkCount=0;isBlinking=false;earBelowCount=0;timeRemaining=30;blinkTimes=[];testRunning=true;
+    document.getElementById('blinkCount').textContent='0';document.getElementById('timerText').textContent='30';
+    initFaceMesh();startCamera();startTimer();
+}
+
+function startTimer(){
+    const circumference=2*Math.PI*45;
+    document.getElementById('timerCircle').style.strokeDasharray=circumference;
+    document.getElementById('timerCircle').style.strokeDashoffset=0;
+
+    timerInterval=setInterval(()=>{
+        timeRemaining--;document.getElementById('timerText').textContent=timeRemaining;
+        const progress=((30-timeRemaining)/30)*circumference;
+        document.getElementById('timerCircle').style.strokeDashoffset=progress;
+
+        if(timeRemaining<=0){clearInterval(timerInterval);testRunning=false;showResults();}
+    },1000);
+}
+
+function showResults(){
+    const stream=video.srcObject;if(stream)stream.getTracks().forEach(t=>t.stop());
+    const bpm=blinkCount*2; // 30s to 1min
+    let severity,severityClass,advice;
+    if(bpm>=15&&bpm<=20){severity='Normal';severityClass='severity-normal';advice='Your blink rate is within the normal range (15-20 bpm). Keep up good eye habits!';}
+    else if(bpm>=10&&bpm<15){severity='Slightly Low';severityClass='severity-low';advice='Your blink rate is slightly below normal. Consider taking more breaks from screens and consciously blinking more often.';}
+    else if(bpm<10){severity='Very Low';severityClass='severity-vlow';advice='Your blink rate is significantly below normal, which may contribute to dry eye symptoms. Consider the 20-20-20 rule and consult an eye care professional.';}
+    else{severity='Above Normal';severityClass='severity-high';advice='Your blink rate is above the typical range. This could indicate eye irritation or dryness. If you experience discomfort, consult an eye care professional.';}
+
+    document.getElementById('resultBPM').textContent=bpm;
+    const badge=document.getElementById('resultSeverity');badge.textContent=severity;badge.className='severity-badge '+severityClass;
+    document.getElementById('totalBlinks').textContent=blinkCount;
+    document.getElementById('testDuration').textContent='30s';
+    if(blinkTimes.length>1){const intervals=[];for(let i=1;i<blinkTimes.length;i++)intervals.push(blinkTimes[i]-blinkTimes[i-1]);const avg=intervals.reduce((a,b)=>a+b,0)/intervals.length;document.getElementById('avgInterval').textContent=(avg/1000).toFixed(1)+'s';}
+    document.getElementById('resultAdvice').textContent=advice;
+
+    document.getElementById('testSection').style.display='none';document.getElementById('resultsCard').style.display='block';
+
+    fetch("{% url 'save_screening_result' %}",{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},body:JSON.stringify({test_type:'blink',score:`${bpm} bpm - ${severity}`,result_data:{blinks_per_minute:bpm,total_blinks:blinkCount,duration_seconds:30,severity:severity}})}).catch(e=>console.error(e));
+}
+
+function restartTest(){document.getElementById('resultsCard').style.display='none';document.getElementById('introCard').style.display='block';}
+</script>
+</body>
+</html>

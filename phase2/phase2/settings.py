@@ -134,7 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 # Reverting to default to avoid changing all table IDs
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

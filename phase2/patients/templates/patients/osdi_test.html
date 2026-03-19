@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSDI Dry Eye Test | EyeSphere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#059669;--primary-light:#d1fae5;--primary-hover:#047857;--text-main:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--bg:#f0fdf4;--bg-card:#fff;--shadow:0 4px 20px -4px rgba(0,0,0,.08);}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;}
+        body{background:var(--bg);min-height:100vh;color:var(--text-main);}
+        .top-bar{background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+        .back-btn{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--primary);font-weight:600;font-size:.95rem;padding:.5rem 1rem;border-radius:10px;border:1px solid var(--border);transition:all .2s;}
+        .back-btn:hover{background:var(--primary-light);}
+        .top-bar h1{font-size:1.3rem;font-weight:700;flex:1;text-align:center;}
+        .container{max-width:800px;margin:0 auto;padding:2rem 1.5rem;}
+
+        .intro-card{background:var(--bg-card);border-radius:20px;box-shadow:var(--shadow);padding:2rem;text-align:center;margin-bottom:2rem;border:1px solid var(--border);}
+        .intro-card h2{font-size:1.6rem;font-weight:700;margin-bottom:.5rem;}
+        .intro-card p{color:var(--text-muted);line-height:1.6;margin-bottom:1.5rem;}
+        .start-btn{display:inline-block;background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;border:none;padding:.8rem 2.5rem;border-radius:12px;font-weight:600;font-size:1rem;cursor:pointer;transition:all .2s;box-shadow:var(--shadow);}
+        .start-btn:hover{transform:translateY(-2px);}
+
+        .question-card{background:var(--bg-card);border-radius:20px;box-shadow:var(--shadow);padding:2rem;margin-bottom:1.5rem;border:1px solid var(--border);display:none;animation:fadeUp .4s ease;}
+        .question-card.active{display:block;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+        .question-card h3{font-size:1.1rem;font-weight:700;margin-bottom:.4rem;color:var(--primary);}
+        .question-text{font-size:1rem;margin-bottom:1.2rem;line-height:1.5;}
+        .options{display:flex;flex-direction:column;gap:.6rem;}
+        .option{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;font-size:.95rem;}
+        .option:hover{border-color:var(--primary);background:var(--primary-light);}
+        .option.selected{border-color:var(--primary);background:var(--primary-light);font-weight:600;}
+        .option input{display:none;}
+        .option-circle{width:22px;height:22px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+        .option.selected .option-circle{background:var(--primary);border-color:var(--primary);}
+        .option.selected .option-circle::after{content:'✓';color:#fff;font-size:.7rem;font-weight:700;}
+
+        .progress-bar{background:rgba(5,150,105,.1);border-radius:20px;height:10px;margin:1.5rem 0;overflow:hidden;}
+        .progress-fill{background:linear-gradient(90deg,var(--primary),#38ef7d);height:100%;border-radius:20px;transition:width .5s ease;}
+        .progress-text{text-align:center;font-size:.85rem;color:var(--text-muted);font-weight:600;margin-bottom:.5rem;}
+
+        .nav-buttons{display:flex;justify-content:space-between;gap:1rem;margin-top:1rem;}
+        .nav-btn{padding:.7rem 1.5rem;border-radius:12px;border:none;font-weight:600;cursor:pointer;font-size:.9rem;transition:all .2s;}
+        .nav-btn:disabled{opacity:.4;cursor:not-allowed;}
+        .nav-btn.prev{background:#fff;color:var(--text-main);border:1px solid var(--border);}
+        .nav-btn.next{background:var(--primary);color:#fff;}
+        .nav-btn:hover:not(:disabled){transform:translateY(-2px);}
+
+        .results-card{background:var(--bg-card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;display:none;border:1px solid var(--border);}
+        .results-header{background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;padding:2rem;text-align:center;}
+        .results-header h2{font-size:1.5rem;font-weight:700;}
+        .results-body{padding:2rem;}
+        .score-display{text-align:center;margin-bottom:2rem;}
+        .score-number{font-size:3rem;font-weight:700;color:var(--primary);}
+        .score-label{font-size:1rem;color:var(--text-muted);}
+        .severity-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:50px;font-weight:700;font-size:1rem;margin-top:.5rem;}
+        .severity-normal{background:var(--primary-light);color:var(--primary);}
+        .severity-mild{background:#fef3c7;color:#d97706;}
+        .severity-moderate{background:#fed7aa;color:#ea580c;}
+        .severity-severe{background:#fecaca;color:#dc2626;}
+        .answers-summary{margin:1.5rem 0;}
+        .answers-summary h3{font-size:1.1rem;font-weight:700;margin-bottom:1rem;color:var(--primary);}
+        .answer-item{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid #f1f5f9;font-size:.9rem;}
+        .answer-item:last-child{border-bottom:none;}
+        .answer-q{flex:1;color:var(--text-muted);}
+        .answer-v{font-weight:600;}
+        .results-actions{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;}
+        .results-actions a{text-decoration:none;}
+        .results-actions button{padding:.7rem 1.5rem;border-radius:12px;border:none;font-weight:600;cursor:pointer;font-size:.9rem;transition:all .2s;box-shadow:var(--shadow);}
+        .results-actions button:hover{transform:translateY(-2px);}
+        .results-actions .primary{background:var(--primary);color:#fff;}
+        .results-actions .secondary{background:#fff;color:var(--text-main);border:1px solid var(--border);}
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a href="{% url 'patient_dashboard' %}" class="back-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
+    <h1>OSDI Dry Eye Assessment</h1><span></span>
+</div>
+<div class="container">
+    <div class="intro-card" id="introCard">
+        <h2>💧 Dry Eye Disease Assessment</h2>
+        <p>The Ocular Surface Disease Index (OSDI) is a 12-question validated questionnaire to assess the severity of dry eye symptoms. Answer all questions based on how your eyes have felt in the <strong>past week</strong>.</p>
+        <button class="start-btn" onclick="startTest()">Begin Assessment</button>
+    </div>
+
+    <div id="testSection" style="display:none;">
+        <div class="progress-text" id="progressText">Question 1 of 12</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:8.33%"></div></div>
+        <div id="questionsContainer"></div>
+        <div class="nav-buttons">
+            <button class="nav-btn prev" id="prevBtn" disabled onclick="prevQuestion()">← Previous</button>
+            <button class="nav-btn next" id="nextBtn" onclick="nextQuestion()">Next →</button>
+        </div>
+    </div>
+
+    <div class="results-card" id="resultsCard">
+        <div class="results-header"><h2>Your OSDI Results</h2></div>
+        <div class="results-body">
+            <div class="score-display">
+                <div class="score-number" id="scoreNumber">0</div>
+                <div class="score-label">out of 100</div>
+                <div class="severity-badge" id="severityBadge">Normal</div>
+            </div>
+            <div class="answers-summary"><h3>Your Responses</h3><div id="answersSummary"></div></div>
+            <div class="results-actions">
+                <a href="{% url 'patient_dashboard' %}"><button class="primary" type="button">Back to Dashboard</button></a>
+                <button class="secondary" onclick="restartTest()">Retake Test</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const questions=[
+    {id:1,section:'Ocular Symptoms',text:'Have you experienced sensitivity to light?'},
+    {id:2,section:'Ocular Symptoms',text:'Have your eyes felt gritty?'},
+    {id:3,section:'Ocular Symptoms',text:'Have your eyes been painful or sore?'},
+    {id:4,section:'Ocular Symptoms',text:'Have you had blurred vision?'},
+    {id:5,section:'Ocular Symptoms',text:'Have you had poor vision?'},
+    {id:6,section:'Vision-Related Function',text:'Have you had problems reading?'},
+    {id:7,section:'Vision-Related Function',text:'Have you had problems driving at night?'},
+    {id:8,section:'Vision-Related Function',text:'Have you had problems working with a computer or ATM?'},
+    {id:9,section:'Vision-Related Function',text:'Have you had problems watching TV?'},
+    {id:10,section:'Environmental Triggers',text:'Have your eyes felt uncomfortable in windy conditions?'},
+    {id:11,section:'Environmental Triggers',text:'Have your eyes felt uncomfortable in dry areas (low humidity)?'},
+    {id:12,section:'Environmental Triggers',text:'Have your eyes felt uncomfortable in air-conditioned areas?'}
+];
+const options=['All of the time','Most of the time','Half of the time','Some of the time','None of the time'];
+const scores=[4,3,2,1,0];
+let currentQ=0,answers=new Array(12).fill(null);
+
+function startTest(){document.getElementById('introCard').style.display='none';document.getElementById('testSection').style.display='block';renderQuestions();}
+function renderQuestions(){const c=document.getElementById('questionsContainer');c.innerHTML='';questions.forEach((q,i)=>{const d=document.createElement('div');d.className=`question-card${i===0?' active':''}`;d.id=`q-${i}`;d.innerHTML=`<h3>${q.section}</h3><p class="question-text">${q.id}. ${q.text}</p><div class="options">${options.map((o,j)=>`<div class="option${answers[i]===j?' selected':''}" onclick="selectOption(${i},${j},this)"><div class="option-circle"></div><span>${o}</span><input type="radio" name="q${i}" value="${j}"></div>`).join('')}</div>`;c.appendChild(d);});}
+function selectOption(qi,oi,el){answers[qi]=oi;const opts=el.parentElement.querySelectorAll('.option');opts.forEach(o=>o.classList.remove('selected'));el.classList.add('selected');}
+function updateUI(){document.querySelectorAll('.question-card').forEach((c,i)=>{c.classList.toggle('active',i===currentQ);});document.getElementById('progressText').textContent=`Question ${currentQ+1} of 12`;document.getElementById('progressFill').style.width=`${((currentQ+1)/12)*100}%`;document.getElementById('prevBtn').disabled=(currentQ===0);document.getElementById('nextBtn').textContent=(currentQ===11)?'Submit':'Next →';}
+function nextQuestion(){if(answers[currentQ]===null){alert('Please select an answer before proceeding.');return;}if(currentQ===11){showResults();return;}currentQ++;updateUI();}
+function prevQuestion(){if(currentQ>0){currentQ--;updateUI();}}
+function getCookie(name){let v=null;if(document.cookie){document.cookie.split(';').forEach(c=>{c=c.trim();if(c.startsWith(name+'='))v=decodeURIComponent(c.substring(name.length+1));});}return v;}
+
+function showResults(){
+    const answeredQs=answers.filter(a=>a!==null);const totalScore=answeredQs.reduce((s,a)=>s+scores[a],0);const maxScore=answeredQs.length*4;
+    const osdiScore=answeredQs.length>0?Math.round((totalScore/maxScore)*100):0;
+    let severity,badgeClass;
+    if(osdiScore<=12){severity='Normal';badgeClass='severity-normal';}
+    else if(osdiScore<=22){severity='Mild Dry Eye';badgeClass='severity-mild';}
+    else if(osdiScore<=32){severity='Moderate Dry Eye';badgeClass='severity-moderate';}
+    else{severity='Severe Dry Eye';badgeClass='severity-severe';}
+    document.getElementById('scoreNumber').textContent=osdiScore;
+    const badge=document.getElementById('severityBadge');badge.textContent=severity;badge.className='severity-badge '+badgeClass;
+    let summary='';questions.forEach((q,i)=>{summary+=`<div class="answer-item"><span class="answer-q">${q.text}</span><span class="answer-v">${answers[i]!==null?options[answers[i]]:'Not answered'}</span></div>`;});
+    document.getElementById('answersSummary').innerHTML=summary;
+    document.getElementById('testSection').style.display='none';document.getElementById('resultsCard').style.display='block';
+
+    fetch("{% url 'save_screening_result' %}",{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},body:JSON.stringify({test_type:'dryeye',score:`OSDI: ${osdiScore}/100 - ${severity}`,result_data:{osdi_score:osdiScore,severity:severity,answers:answers.map((a,i)=>({question:questions[i].text,answer:a!==null?options[a]:'N/A',score:a!==null?scores[a]:0}))}})}).catch(e=>console.error(e));
+}
+function restartTest(){currentQ=0;answers=new Array(12).fill(null);document.getElementById('resultsCard').style.display='none';document.getElementById('testSection').style.display='block';renderQuestions();updateUI();}
+</script>
+</body>
+</html>

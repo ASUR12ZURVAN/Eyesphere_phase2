@@ -1,12 +1,16 @@
 from rest_framework import status, permissions
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
+from .models import ScreeningTestResult
+import json
+from django.shortcuts import redirect
 
 
 class RegisterPatient(APIView):
@@ -105,6 +109,74 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             'medications'
         ).order_by('-created_at')
 
+        # Fetch screening test results for this user
+        screening_results = ScreeningTestResult.objects.filter(user=user).order_by('-created_at')
+
         context['patient_records'] = patient_records
         context['examinations'] = examinations
+        context['screening_results'] = screening_results
         return context
+
+
+# ============ Screening Test Page Views ============
+
+class PatientTestMixin(LoginRequiredMixin, UserPassesTestMixin):
+    login_url = '/patient/api/login/'
+
+    def test_func(self):
+        return self.request.user.role == 'patient'
+
+
+class VisionTestView(PatientTestMixin, TemplateView):
+    template_name = 'patients/vision_test.html'
+
+
+class ColorBlindTestView(PatientTestMixin, TemplateView):
+    template_name = 'patients/color_blind_test.html'
+
+
+class OSDITestView(PatientTestMixin, TemplateView):
+    template_name = 'patients/osdi_test.html'
+
+
+class BlinkTestView(PatientTestMixin, TemplateView):
+    template_name = 'patients/blink_test.html'
+
+
+# ============ API to Save Screening Results ============
+
+class CsrfExemptSessionAuth(SessionAuthentication):
+    """Skip CSRF check for session auth — our templates already send X-CSRFToken header."""
+    def enforce_csrf(self, request):
+        return  # Skip CSRF enforcement since we handle it via JS headers
+
+
+class SaveScreeningResultView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            test_type = data.get('test_type', '')
+            result_data = data.get('result_data', {})
+            score = data.get('score', '')
+
+            if test_type not in ['vision', 'colorblind', 'dryeye', 'blink']:
+                return Response({'status': 'error', 'message': 'Invalid test type'}, status=status.HTTP_400_BAD_REQUEST)
+
+            ScreeningTestResult.objects.create(
+                user=request.user,
+                test_type=test_type,
+                result_data=result_data,
+                score=score,
+            )
+
+            return Response({'status': 'success', 'message': 'Result saved successfully!'})
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def patient_logout(request):
+    logout(request)
+    return redirect('patient_login_page')
