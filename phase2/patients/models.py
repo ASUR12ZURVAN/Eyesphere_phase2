@@ -27,3 +27,34 @@ class ScreeningTestResult(models.Model):
 
     def __str__(self):
         return f"{self.user.name} - {self.get_test_type_display()} - {self.created_at.strftime('%d %b %Y')}"
+
+class OnlineSessionRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='session_requests'
+    )
+    doctor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='handled_session_requests',
+        limit_choices_to={'role': 'doctor'}
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    scheduled_time = models.DateTimeField(null=True, blank=True)
+    meet_link = models.URLField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Request from {self.user.name} - {self.status}"

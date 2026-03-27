@@ -216,6 +216,18 @@
                 <label>Advice / Notes</label>
                 <textarea name="advice" rows="3"></textarea>
             </div>
+            <div class="form-group">
+                <label>Eye Health Rating (1 to 5 Stars)</label>
+                <input type="number" name="eye_health_rating" min="1" max="5" placeholder="Out of 5">
+            </div>
+            <div class="form-group">
+                <label>Patient Risk Factor</label>
+                <select name="risk_factor" class="form-control">
+                    <option value="low">Low Risk</option>
+                    <option value="moderate">Moderate Risk</option>
+                    <option value="high">High Risk</option>
+                </select>
+            </div>
         </div>
 
         <!-- SECTION 7: Helper / Doctor Assignment -->
@@ -371,7 +383,7 @@
             'dv_sph_re', 'dv_cyl_re', 'dv_axis_re', 'dv_vision_re', 'dv_sph_le', 'dv_cyl_le', 'dv_axis_le', 'dv_vision_le',
             'nv_sph_re', 'nv_cyl_re', 'nv_axis_re', 'nv_vision_re', 'nv_sph_le', 'nv_cyl_le', 'nv_axis_le', 'nv_vision_le',
             'schirmer_re', 'schirmer_le', 'tbut_re', 'tbut_le', 'slit_lamp_re', 'slit_lamp_le', 'fundus_re', 'fundus_le', 'iop_re', 'iop_le',
-            'provisional_diagnosis', 'advice'
+            'provisional_diagnosis', 'advice', 'eye_health_rating'
         ];
 
         fields.forEach(f => {

@@ -48,6 +48,7 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
     gender = serializers.CharField(write_only=True, required=False)
     phone_number = serializers.CharField(write_only=True, required=False)
     address = serializers.CharField(write_only=True, required=False)
+    risk_factor = serializers.CharField(write_only=True, required=False)
     
     # Consultant selection
     consultant_id = serializers.PrimaryKeyRelatedField(
@@ -68,6 +69,7 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
         gender = validated_data.pop('gender', 'Other')
         phone = validated_data.pop('phone_number', '')
         addr = validated_data.pop('address', '')
+        risk_factor = validated_data.pop('risk_factor', 'low')
         
         # Patient Handling - Track by phone number
         patient = None
@@ -79,6 +81,7 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
                 patient.age = age or patient.age
                 patient.gender = gender or patient.gender
                 patient.address = addr or patient.address
+                patient.risk_factor = risk_factor or patient.risk_factor
                 patient.save()
         
         if not patient and name:
@@ -88,7 +91,8 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
                 age=age,
                 gender=gender,
                 phone_number=phone,
-                address=addr
+                address=addr,
+                risk_factor=risk_factor
             )
         
         if not patient:

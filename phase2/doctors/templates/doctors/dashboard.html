@@ -332,6 +332,81 @@
             </table>
         </div>
     </div>
+
+    <!-- Online Sessions Section -->
+    <div class="glass-card" style="padding: 2.5rem; width: 100%; max-width: 96%; margin: 2rem auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 style="font-size: 1.5rem; text-align: left;">Online Session Requests</h2>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="patient-table">
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Status</th>
+                        <th>Requested Date</th>
+                        <th>Scheduled Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in session_requests %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ req.user.name }}</td>
+                        <td>
+                            {% if req.status == 'approved' %}
+                            <span class="badge badge-green" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Approved</span>
+                            {% else %}
+                            <span class="badge badge-amber" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted);">{{ req.created_at|date:"d M Y, H:i" }}</td>
+                        <td style="color: var(--text-muted);">
+                            {% if req.scheduled_time %}
+                            {{ req.scheduled_time|date:"d M Y, H:i" }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if req.status == 'pending' %}
+                            <button onclick="openScheduleModal('{{ req.id }}')" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">Schedule</button>
+                            {% else %}
+                            <a href="{{ req.meet_link }}" target="_blank" class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--secondary); color: white; border: none; border-radius: 8px; cursor: pointer; text-decoration: none;">Join Meet</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                            <p>No online session requests.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Session Modal -->
+<div id="scheduleModal" class="modal">
+    <div class="modal-content animate-fade-in" style="max-width: 500px;">
+        <span class="close-modal" onclick="closeScheduleModal()">×</span>
+        <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Schedule Online Session</h2>
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Scheduled Time</label>
+                <input type="datetime-local" id="schedTime" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Google Meet Link</label>
+                <input type="url" id="schedMeet" placeholder="https://meet.google.com/..." style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+            </div>
+        </div>
+        
+        <button onclick="submitSchedule()" class="btn" style="width: 100%; padding: 0.8rem; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Confirm Schedule</button>
+    </div>
 </div>
 
 <div id="patientDetailModal" class="modal">
@@ -526,6 +601,54 @@
 
 <script>
     let currentExamId = null;
+    let currentScheduleId = null;
+
+    function openScheduleModal(id) {
+        currentScheduleId = id;
+        document.getElementById('scheduleModal').style.display = 'flex';
+        document.getElementById('schedTime').value = '';
+        document.getElementById('schedMeet').value = '';
+    }
+
+    function closeScheduleModal() {
+        document.getElementById('scheduleModal').style.display = 'none';
+        currentScheduleId = null;
+    }
+
+    async function submitSchedule() {
+        if (!currentScheduleId) return;
+        
+        const time = document.getElementById('schedTime').value;
+        const meet = document.getElementById('schedMeet').value;
+        
+        if (!time || !meet) {
+            alert('Please provide both time and Google Meet link');
+            return;
+        }
+
+        try {
+            const resp = await fetch(`/doctor/api/schedule-session/${currentScheduleId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    scheduled_time: time,
+                    meet_link: meet
+                })
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                closeScheduleModal();
+                window.location.reload();
+            } else {
+                alert(data.error || data.message || 'Failed to schedule session');
+            }
+        } catch(err) {
+            console.error(err);
+            alert('An error occurred');
+        }
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         const user = JSON.parse(localStorage.getItem('user'));

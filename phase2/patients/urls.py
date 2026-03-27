@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     RegisterPatient, LoginPatient, PatientDashboardView,
     VisionTestView, ColorBlindTestView, OSDITestView, BlinkTestView,
-    SaveScreeningResultView, patient_logout,
+    SaveScreeningResultView, patient_logout, RequestOnlineSessionView
 )
 
 urlpatterns = [
@@ -20,5 +20,6 @@ urlpatterns = [
 
     # API endpoints
     path('api/save-screening-result/', SaveScreeningResultView.as_view(), name='save_screening_result'),
+    path('api/request-session/', RequestOnlineSessionView.as_view(), name='request_online_session'),
 ]
 

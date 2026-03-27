@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from optometrist.models import Optometrist, Patient, EyeExamination  # Using the same user model and Patient model
+from patients.models import OnlineSessionRequest
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 class DoctorDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -19,6 +20,14 @@ class DoctorDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, TemplateV
         context = super().get_context_data(**kwargs)
         # Fetch examinations (referrals) assigned to this doctor
         context['examinations'] = EyeExamination.objects.filter(consultant=self.request.user).select_related('patient', 'optometrist').order_by('-created_at')
+        
+        # Pending session requests and accepted by this doctor
+        # We'll just pass all session requests that are pending, or approved by this doctor
+        from django.db.models import Q
+        context['session_requests'] = OnlineSessionRequest.objects.filter(
+            Q(status='pending') | Q(doctor=self.request.user)
+        ).select_related('user').order_by('-created_at')
+        
         return context
 
 class LoginDoctor(APIView):
@@ -135,3 +144,27 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         
         return redirect('doctor_dashboard')
 
+from patients.views import CsrfExemptSessionAuth
+
+class ScheduleSessionView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, pk):
+        if request.user.role != 'doctor':
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        session_request = get_object_or_404(OnlineSessionRequest, pk=pk)
+        scheduled_time = request.data.get('scheduled_time')
+        meet_link = request.data.get('meet_link')
+        
+        if not scheduled_time or not meet_link:
+            return Response({'error': 'Time and Meet link are required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        session_request.doctor = request.user
+        session_request.scheduled_time = scheduled_time
+        session_request.meet_link = meet_link
+        session_request.status = 'approved'
+        session_request.save()
+        
+        return Response({'status': 'success', 'message': 'Session scheduled successfully'})

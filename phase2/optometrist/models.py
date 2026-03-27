@@ -41,6 +41,11 @@ class Optometrist(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Gamification Fields
+    coins = models.IntegerField(default=0)
+    last_coin_login_date = models.DateField(null=True, blank=True)
+    last_coin_test_date = models.DateField(null=True, blank=True)
 
     objects = OptometristManager()
 
@@ -64,6 +69,12 @@ class Patient(models.Model):
     )
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    risk_factor = models.CharField(
+        max_length=20, 
+        choices=[('low', 'Low Risk'), ('moderate', 'Moderate Risk'), ('high', 'High Risk')], 
+        default='low',
+        help_text="Categorize patients based on risk for future segregation"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -142,6 +153,8 @@ class EyeExamination(models.Model):
     advice = models.TextField(blank=True)
     
     is_completed = models.BooleanField(default=False, help_text="Set to True when the doctor finalizes consultation")
+    
+    eye_health_rating = models.IntegerField(blank=True, null=True, help_text="Star rating out of 5")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

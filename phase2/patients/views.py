@@ -8,9 +8,11 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
-from .models import ScreeningTestResult
+from .models import ScreeningTestResult, OnlineSessionRequest
 import json
 from django.shortcuts import redirect
+from django.utils import timezone
+from datetime import timedelta
 
 
 class RegisterPatient(APIView):
@@ -69,6 +71,13 @@ class LoginPatient(APIView):
 
             # Log user into session
             login(request, user)
+            
+            # Reward daily login coins
+            today = timezone.now().date()
+            if not user.last_coin_login_date or user.last_coin_login_date < today:
+                user.coins += 5
+                user.last_coin_login_date = today
+                user.save()
 
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -97,6 +106,13 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
+        # Daily Login Coin Check
+        today = timezone.localdate()
+        if user.last_coin_login_date != today:
+            user.coins += 10
+            user.last_coin_login_date = today
+            user.save(update_fields=['coins', 'last_coin_login_date'])
+
         # Find patient records matching the logged-in user's phone number
         patient_records = Patient.objects.filter(phone_number=user.phone_number)
 
@@ -115,6 +131,7 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context['patient_records'] = patient_records
         context['examinations'] = examinations
         context['screening_results'] = screening_results
+        context['session_requests'] = OnlineSessionRequest.objects.filter(user=user).order_by('-created_at')
         return context
 
 
@@ -171,6 +188,14 @@ class SaveScreeningResultView(APIView):
                 result_data=result_data,
                 score=score,
             )
+            
+            # Reward test coins (20 coins max once every 3 days)
+            today = timezone.now().date()
+            user = request.user
+            if not user.last_coin_test_date or user.last_coin_test_date <= today - timedelta(days=3):
+                user.coins += 20
+                user.last_coin_test_date = today
+                user.save()
 
             return Response({'status': 'success', 'message': 'Result saved successfully!'})
         except Exception as e:
@@ -180,3 +205,17 @@ class SaveScreeningResultView(APIView):
 def patient_logout(request):
     logout(request)
     return redirect('patient_login_page')
+
+class RequestOnlineSessionView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            OnlineSessionRequest.objects.create(
+                user=request.user,
+                status='pending'
+            )
+            return Response({'status': 'success', 'message': 'approval request sent'})
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

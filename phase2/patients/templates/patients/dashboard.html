@@ -1052,6 +1052,14 @@
                 </svg>
                 Reports
             </a>
+            <a href="#" data-tab="redeem" onclick="switchTab('redeem',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                Redeem Coins
+            </a>
             <a href="{% url 'patient_logout' %}" style="margin-top:auto;color:rgba(255,255,255,.6);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -1065,7 +1073,7 @@
             <div class="sidebar-user-avatar">{{ user.name|first }}</div>
             <div class="sidebar-user-info">
                 <div class="sidebar-user-name">{{ user.name }}</div>
-                <div class="sidebar-user-role">Patient</div>
+                <div class="sidebar-user-role" style="display: flex; align-items: center; gap: 4px;">Patient &bull; <span style="color: #fbbf24; font-weight: 700;">{{ user.coins }} 🪙</span></div>
             </div>
         </div>
     </aside>
@@ -1076,9 +1084,15 @@
 
             <!-- ==================== TAB 1: DASHBOARD ==================== -->
             <div class="tab-content active" id="tab-dashboard">
-                <div class="page-header">
-                    <h1>Welcome, {{ user.name }} 👋</h1>
-                    <p>Your eye health overview and progress tracking</p>
+                <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <h1>Welcome, {{ user.name }} </h1>
+                        <p>Your eye health overview and progress tracking</p>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fef08a, #f59e0b); color: #78350f; padding: 0.6rem 1.4rem; border-radius: 50px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <span style="font-size: 1.4rem;">🪙</span>
+                        <span style="font-size: 1.1rem;">{{ user.coins }} Coins</span>
+                    </div>
                 </div>
 
                 <div class="stats-row">
@@ -1111,15 +1125,27 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon purple">
+                        <div class="stat-icon amber">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
                         <div>
-                            <div class="stat-label">Status</div>
-                            <div class="stat-value">Active</div>
+                            <div class="stat-label">Risk Factor</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">
+                                {% if patient_records %}
+                                    {% if patient_records.first.risk_factor == 'high' %}
+                                        <span style="color: #dc2626;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% elif patient_records.first.risk_factor == 'moderate' %}
+                                        <span style="color: #d97706;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% else %}
+                                        <span style="color: #059669;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: #64748b;">Unknown</span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1185,10 +1211,29 @@
                 <!-- Screening Results Section -->
                 <div class="card" style="margin-top:2rem;">
                     <div class="card-header">
-                        <h2>🔬 Screening Results</h2>
+                        <h2> Screening Results</h2>
                         <span>Your self-test history</span>
                     </div>
                     <div class="card-body">
+                        
+                        {% if screening_results %}
+                        <div class="chart-controls" style="margin-bottom:1.5rem">
+                            <div class="chart-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                Screening Trends
+                            </div>
+                            <select id="screeningMetricSelector" class="metric-select">
+                                <option value="vision">Vision Acuity (Denominator)</option>
+                                <option value="colorblind">Color Blindness Score</option>
+                                <option value="dryeye">OSDI Score (Dry Eye)</option>
+                                <option value="blink">Blink Rate</option>
+                            </select>
+                        </div>
+                        <div style="height:300px;width:100%;margin-bottom:2rem;"><canvas id="screeningTrendsChart"></canvas></div>
+                        {% endif %}
+
                         <div class="filter-tabs">
                             <button class="filter-tab active" onclick="filterResults('all',this)">All Tests</button>
                             <button class="filter-tab" onclick="filterResults('vision',this)">👁️ Vision</button>
@@ -1262,13 +1307,65 @@
                     </div>
                 </div>
 
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>Online Sessions</h2>
+                        <span>Request a Google Meet session with a doctor</span>
+                    </div>
+                    <div class="card-body">
+                        <button onclick="requestOnlineSession()" class="btn" style="background:var(--primary);color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;margin-bottom:1.5rem;">Book Online Session</button>
+                        
+                        <div id="sessionResponse" style="display:none;padding:1rem;background:#d1fae5;color:#065f46;border-radius:10px;margin-bottom:1rem;font-weight:600;">Approval request sent</div>
+                        
+                        {% if session_requests %}
+                        <div style="overflow-x:auto;">
+                            <table class="queue-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Date Requested</th>
+                                        <th>Scheduled Time</th>
+                                        <th>Meet Link</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in session_requests %}
+                                    <tr>
+                                        <td>
+                                            {% if req.status == 'approved' %}
+                                            <span class="badge badge-green">Approved</span>
+                                            {% elif req.status == 'rejected' %}
+                                            <span class="badge badge-amber" style="background:#fee2e2;color:#b91c1c;">Rejected</span>
+                                            {% else %}
+                                            <span class="badge badge-amber">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="color:var(--text-muted)">{{ req.created_at|date:"d M Y, H:i" }}</td>
+                                        <td>
+                                            {% if req.scheduled_time %}{{ req.scheduled_time|date:"d M Y, H:i" }}{% else %}-{% endif %}
+                                        </td>
+                                        <td>
+                                            {% if req.meet_link %}
+                                            <a href="{{ req.meet_link }}" target="_blank" style="color:var(--secondary);text-decoration:none;font-weight:600;">Join Meet</a>
+                                            {% else %}-{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p style="color:var(--text-muted);">No online sessions requested yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
 
             </div>
 
             <!-- ==================== TAB 3: SCREENING CAMPS ==================== -->
             <div class="tab-content" id="tab-screening">
                 <div class="page-header">
-                    <h1>Screening Camps 🔬</h1>
+                    <h1>Screening Camps </h1>
                     <p>Take self-service eye screening tests from the comfort of your home</p>
                 </div>
                 <div class="test-grid">
@@ -1410,10 +1507,8 @@
                                     <div class="info-item"><label>Name</label><span>{{ exam.patient.name }}</span></div>
                                     <div class="info-item"><label>Age</label><span>{{ exam.patient.age }} years</span>
                                     </div>
-                                    <div class="info-item"><label>Gender</label><span>{{ exam.patient.gender|title
-                                            }}</span></div>
-                                    <div class="info-item"><label>Phone</label><span>{{
-                                            exam.patient.phone_number|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Gender</label><span>{{ exam.patient.gender|title }}</span></div>
+                                    <div class="info-item"><label>Phone</label><span>{{ exam.patient.phone_number|default:"N/A" }}</span></div>
                                 </div>
                             </div>
                             <!-- Chief Complaints -->
@@ -1424,16 +1519,11 @@
                                         <polyline points="14 2 14 8 20 8" />
                                     </svg> Chief Complaints &amp; History</div>
                                 <div class="info-grid">
-                                    <div class="info-item"><label>Chief Complaints</label><span>{{
-                                            exam.chief_complaints|default:"N/A" }}</span></div>
-                                    <div class="info-item"><label>Systemic History</label><span>{{
-                                            exam.systemic_history|default:"N/A" }}</span></div>
-                                    <div class="info-item"><label>Screen Time</label><span>{{
-                                            exam.screen_time|default:"N/A" }}</span></div>
-                                    <div class="info-item"><label>Eye Disease History</label><span>{{
-                                            exam.history_eye_disease|default:"N/A" }}</span></div>
-                                    <div class="info-item"><label>Eye Surgery History</label><span>{{
-                                            exam.history_eye_surgery|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Chief Complaints</label><span>{{ exam.chief_complaints|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Systemic History</label><span>{{ exam.systemic_history|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Screen Time</label><span>{{ exam.screen_time|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Eye Disease History</label><span>{{ exam.history_eye_disease|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Eye Surgery History</label><span>{{ exam.history_eye_surgery|default:"N/A" }}</span></div>
                                 </div>
                             </div>
                             <!-- Visual Acuity -->
@@ -1660,6 +1750,84 @@
                 {% endif %}
             </div>
 
+            <!-- ==================== TAB 5: REDEEM COINS ==================== -->
+            <div class="tab-content" id="tab-redeem">
+                <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <h1>Redeem & Earn Coins 🪙</h1>
+                        <p>Complete tasks to earn coins and redeem them for rewards!</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Ways to Earn</h2>
+                        <span>Complete these processes to gain more coins</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x:auto;">
+                            <table class="queue-table">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Reward</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:600">Daily Login</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+10 Coins 🪙</td>
+                                        <td><span class="badge badge-green">Received Today</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Take a Self-Screening Test</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+50 Coins 🪙</td>
+                                        <td><span class="badge badge-blue">Every 3 Days</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Book an Online Session</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+20 Coins 🪙</td>
+                                        <td><span class="badge badge-blue">Repeatable</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Complete Profile Data</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+100 Coins 🪙</td>
+                                        <td><span class="badge badge-amber">Pending</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>Rewards & Offers</h2>
+                        <span>Redeem your coins for exclusive perks</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            <div class="info-item" style="border: 2px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center; background: #fff;">
+                                <h3 style="margin-bottom: 0.5rem; font-size:1.1rem">Free Video Consultation</h3>
+                                <p style="color:var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">1x Free online session with an eye doctor.</p>
+                                <button class="btn" style="background:#f59e0b; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;" onclick="alert('Redeemed!')">Redeem 500 🪙</button>
+                            </div>
+                            <div class="info-item" style="border: 2px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center; background: #fff;">
+                                <h3 style="margin-bottom: 0.5rem; font-size:1.1rem">Priority Booking</h3>
+                                <p style="color:var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Skip the queue on your next clinic visit.</p>
+                                <button class="btn" style="background:#f59e0b; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;" onclick="alert('Redeemed!')">Redeem 300 🪙</button>
+                            </div>
+                            <div class="info-item" style="border: 2px solid var(--border); padding: 1.5rem; border-radius: 12px; text-align: center; background: #fff;">
+                                <h3 style="margin-bottom: 0.5rem; font-size:1.1rem">Eye Drop Voucher</h3>
+                                <p style="color:var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Get a free bottle of lubricating drops at any location.</p>
+                                <button class="btn" style="background:#f59e0b; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:600; cursor:pointer;" onclick="alert('Redeemed!')">Redeem 800 🪙</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div><!-- .page -->
     </div><!-- .main -->
 
@@ -1741,6 +1909,71 @@
             if (sel) sel.addEventListener('change', e => updateChart(e.target.value));
         }
 
+        // Screening Chart
+        const rawScreenings = [
+            {% for r in screening_results %}
+            { test_type: "{{ r.test_type }}", score: "{{ r.score }}", date: "{{ r.created_at|date:'d M Y' }}" },
+            {% endfor %}
+        ].reverse();
+
+        let screeningChart = null;
+        function updateScreeningChart(metric) {
+            const ctx = document.getElementById('screeningTrendsChart');
+            if (!ctx) return;
+            if (screeningChart) screeningChart.destroy();
+            
+            const filtered = rawScreenings.filter(s => s.test_type === metric);
+            const labels = filtered.map(s => s.date);
+            
+            let data = [];
+            let unit = '';
+            
+            filtered.forEach(s => {
+                let val = 0;
+                if (metric === 'vision') {
+                    // if formatted like "20/40", extract the denominator. If not, try raw float.
+                    if (s.score.includes('/')) {
+                        const parts = s.score.split('/');
+                        val = parseFloat(parts[1]) || 0;
+                    } else {
+                        val = parseFloat(s.score) || 0;
+                    }
+                    unit = '';
+                } else {
+                    val = parseFloat(s.score) || 0;
+                    if (metric === 'colorblind') unit = ' pts';
+                    if (metric === 'dryeye') unit = ' OSDI';
+                    if (metric === 'blink') unit = ' blinks/min';
+                }
+                data.push(val);
+            });
+
+            let labelTitle = 'Score';
+            if (metric === 'vision') labelTitle = 'Vision Denominator (e.g. 40 in 20/40)';
+
+            screeningChart = new Chart(ctx, {
+                type: 'line', data: {
+                    labels, datasets: [
+                        { label: labelTitle, data: data, borderColor: '#10b981', backgroundColor: '#10b98120', borderWidth: 3, tension: .3, pointRadius: 5, pointHoverRadius: 7, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Outfit', size: 12, weight: '600' } } },
+                        tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Outfit', size: 14 }, bodyFont: { family: 'Outfit', size: 13 }, padding: 12, cornerRadius: 10, callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + unit; } } }
+                    },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } }, x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } } }
+                }
+            });
+        }
+        
+        if (rawScreenings.length > 0) {
+            updateScreeningChart('vision');
+            const scrSel = document.getElementById('screeningMetricSelector');
+            if (scrSel) scrSel.addEventListener('change', e => updateScreeningChart(e.target.value));
+        }
+
         // ===== Screening Results: Filter + Show More =====
         let currentFilter = 'all';
         const RESULTS_PER_PAGE = 5;
@@ -1787,7 +2020,53 @@
         // Initialize screening results visibility on page load
         document.addEventListener('DOMContentLoaded', function () { applyVisibility(); });
 
+        async function requestOnlineSession() {
+            try {
+                const response = await fetch('/patient/api/request-session/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const el = document.getElementById('sessionResponse');
+                    el.style.display = 'block';
+                    el.innerText = 'Approval request sent';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred');
+            }
+        }
+
     </script>
+
+    {% if examinations %}
+        {% with latest_exam=examinations.first %}
+            {% if latest_exam.eye_health_rating and latest_exam.eye_health_rating < 2 %}
+            <div class="modal-overlay active" id="criticalHealthModal" style="display: flex;">
+                <div class="modal-content" style="max-width: 500px; text-align: center; border: 2px solid #ef4444; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                        <h2 style="color: white; font-size: 1.4rem;">Critical Health Alert</h2>
+                        <button class="close-modal" onclick="document.getElementById('criticalHealthModal').style.display='none'">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 2.5rem;">
+                        <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+                        <h3 style="color: #dc2626; margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem;">Urgent Attention Required</h3>
+                        <p style="color: var(--text-muted); line-height: 1.6; font-size: 1rem;">Your recent eye examination indicates that your eye health is in a critical condition (Rating: {{ latest_exam.eye_health_rating }}/5). Please consult your doctor immediately or follow the prescribed treatment plan carefully.</p>
+                        <button class="btn" style="margin-top: 1.5rem; background: #dc2626; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; transition: background 0.2s; font-size: 1rem;" onclick="document.getElementById('criticalHealthModal').style.display='none'" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">I Understand</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
 </body>
 
 </html>
