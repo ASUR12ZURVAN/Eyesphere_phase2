@@ -16,7 +16,7 @@ from datetime import timedelta
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.http import HttpResponse
-from .utils import render_to_pdf
+
 
 class RegisterPatient(APIView):
     permission_classes = [permissions.AllowAny]
@@ -248,12 +248,7 @@ class DownloadScreeningPDFView(LoginRequiredMixin, View):
         context = {
             'result': result,
         }
-        pdf = render_to_pdf('patients/pdf_screening.html', context)
-        if pdf:
-            response = pdf
-            response['Content-Disposition'] = f'attachment; filename="screening_report_{result.id}.pdf"'
-            return response
-        return HttpResponse("Failed to generate PDF.", status=500)
+        return render(request, 'patients/pdf_screening.html', context)
 
 
 class DownloadExamPDFView(LoginRequiredMixin, View):
@@ -269,12 +264,7 @@ class DownloadExamPDFView(LoginRequiredMixin, View):
         context = {
             'exam': exam,
         }
-        pdf = render_to_pdf('patients/pdf_exam.html', context)
-        if pdf:
-            response = pdf
-            response['Content-Disposition'] = f'attachment; filename="exam_prescription_{exam.id}.pdf"'
-            return response
-        return HttpResponse("Failed to generate PDF.", status=500)
+        return render(request, 'patients/pdf_exam.html', context)
 
 
 # ============ Retention Time Tracking ============

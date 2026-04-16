@@ -146,5 +146,21 @@
     <div class="footer">
         Generated on {% now "d F Y H:i" %} &bull; EyeSphere Digital Portal
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        window.onload = function() {
+            html2pdf().set({
+                margin: [10, 10, 10, 10],
+                filename: 'exam_prescription_{{ exam.id }}.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(document.body).save().then(function() {
+                setTimeout(() => {
+                    document.body.innerHTML = '<div style="text-align:center; margin-top: 50px; font-family: sans-serif; color: #059669;"><h2>Download Complete</h2><p>Your PDF has been saved. You can now safely close this tab.</p></div>';
+                }, 1000);
+            });
+        };
+    </script>
 </body>
 </html>
