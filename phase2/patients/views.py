@@ -29,21 +29,31 @@ class RegisterPatient(APIView):
         phone_number = request.data.get('phone_number')
         email = request.data.get('email')
         password = request.data.get('password')
+        age = request.data.get('age')
+        gender = request.data.get('gender')
 
-        if not name or not phone_number or not password:
-            return Response({'error': 'Name, phone number and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        if not name or not phone_number or not password or not age or not gender:
+            return Response({'error': 'Name, phone number, password, age, and gender are required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if phone number already registered
         if Optometrist.objects.filter(phone_number=phone_number).exists():
             return Response({'error': 'This phone number is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Create patient user
+        # Create patient user account for login
         user = Optometrist.objects.create_user(
             phone_number=phone_number,
             name=name,
             password=password,
             email=email if email else None,
             role='patient'
+        )
+        
+        # Create actual Patient record in the database
+        Patient.objects.create(
+            name=name,
+            phone_number=phone_number,
+            age=age,
+            gender=gender
         )
 
         return Response({
