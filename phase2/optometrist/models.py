@@ -47,6 +47,9 @@ class Optometrist(AbstractBaseUser, PermissionsMixin):
     last_coin_login_date = models.DateField(null=True, blank=True)
     last_coin_test_date = models.DateField(null=True, blank=True)
 
+    # Usage Monitoring
+    retention_time = models.PositiveIntegerField(default=0, help_text="Total usage time in seconds")
+
     objects = OptometristManager()
 
     USERNAME_FIELD = 'phone_number'

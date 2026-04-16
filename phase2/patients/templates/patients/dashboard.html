@@ -1236,11 +1236,11 @@
 
                         <div class="filter-tabs">
                             <button class="filter-tab active" onclick="filterResults('all',this)">All Tests</button>
-                            <button class="filter-tab" onclick="filterResults('vision',this)">👁️ Vision</button>
-                            <button class="filter-tab" onclick="filterResults('colorblind',this)">🎨 Color
+                            <button class="filter-tab" onclick="filterResults('vision',this)">Vision</button>
+                            <button class="filter-tab" onclick="filterResults('colorblind',this)">Color
                                 Blindness</button>
-                            <button class="filter-tab" onclick="filterResults('dryeye',this)">💧 OSDI</button>
-                            <button class="filter-tab" onclick="filterResults('blink',this)">😉 Blink Rate</button>
+                            <button class="filter-tab" onclick="filterResults('dryeye',this)">OSDI</button>
+                            <button class="filter-tab" onclick="filterResults('blink',this)">Blink Rate</button>
                         </div>
                         {% if screening_results %}
                         <div style="overflow-x:auto;">
@@ -1407,6 +1407,7 @@
                                     <th>Test</th>
                                     <th>Score</th>
                                     <th>Date</th>
+                                    <th>Download</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1420,6 +1421,11 @@
 </span></td>
                                     <td style="font-weight:600">{{ r.score|default:"-" }}</td>
                                     <td style="color:var(--text-muted)">{{ r.created_at|date:"d M Y, H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'download_screening_pdf' r.id %}" target="_blank" class="btn" style="padding:0.3rem 0.6rem; font-size:0.8rem; border:1px solid #ddd; text-decoration:none; color:var(--text-main); display:inline-flex; align-items:center; gap:0.3rem;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF
+                                        </a>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -1432,7 +1438,7 @@
             <!-- ==================== TAB 4: REPORTS ==================== -->
             <div class="tab-content" id="tab-reports">
                 <div class="page-header">
-                    <h1>Reports 📋</h1>
+                    <h1>Reports</h1>
                     <p>Your complete appointment and examination history</p>
                 </div>
 
@@ -1481,16 +1487,23 @@
                         <div class="modal-header">
                             <div>
                                 <h2>Eye Examination &mdash; {{ exam.patient.name }}</h2>
-                                <div class="modal-header-meta">&#128197; {{ exam.date_of_visit|date:"d M Y" }}</div>
+                                <div class="modal-header-meta">{{ exam.date_of_visit|date:"d M Y" }}</div>
                                 <div class="providers">
                                     {% if exam.optometrist %}<div class="provider-chip">
                                         <div class="provider-avatar opto">{{ exam.optometrist.name|first }}</div>
                                         Optometrist: {{ exam.optometrist.name }}
                                     </div>{% endif %}
                                     {% if exam.consultant %}<div class="provider-chip">
-                                        <div class="provider-avatar doc">{{ exam.consultant.name|first }}</div>Doctor:
+                                        Doctor:
                                         {{ exam.consultant.name }}
                                     </div>{% endif %}
+                                    {% if exam.is_completed %}
+                                    <div style="margin-top: 10px;">
+                                        <a href="{% url 'download_exam_pdf' exam.id %}" target="_blank" class="btn" style="background:#2563eb; color:white; border:none; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> View Report PDF
+                                        </a>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <button class="close-modal" onclick="closeModal('modal-{{ exam.id }}')">&times;</button>
@@ -1712,7 +1725,7 @@
                                 <div class="med-grid">
                                     {% for med in exam.medications.all %}
                                     <div class="med-card">
-                                        <div class="med-card-name">💊 {{ med.name }}</div>
+                                        <div class="med-card-name">{{ med.name }}</div>
                                         <div class="med-detail"><span class="med-detail-label">Quantity</span><span
                                                 class="med-detail-value">{{ med.quantity|default:"-" }}</span></div>
                                         <div class="med-detail"><span class="med-detail-label">Frequency</span><span
@@ -1721,7 +1734,7 @@
                                                 class="med-detail-value">{{ med.eye }}</span></div>
                                         <div class="med-detail"><span class="med-detail-label">Duration</span><span
                                                 class="med-detail-value">{{ med.duration|default:"-" }}</span></div>
-                                        {% if med.instructions %}<div class="med-instructions">📝 {{ med.instructions }}
+                                        {% if med.instructions %}<div class="med-instructions">{{ med.instructions }}
                                         </div>{% endif %}
                                     </div>
                                     {% endfor %}
@@ -2067,6 +2080,7 @@
             {% endif %}
         {% endwith %}
     {% endif %}
+    {% include 'patients/tracking_script.html' %}
 </body>
 
 </html>

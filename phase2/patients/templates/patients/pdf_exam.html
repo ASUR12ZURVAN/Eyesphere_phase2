@@ -1,0 +1,150 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Eye Examination Report</title>
+    <style>
+        body { font-family: Helvetica, sans-serif; font-size: 13px; color: #333; line-height: 1.4; }
+        .header { border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 20px; }
+        .header table { width: 100%; }
+        .header td { vertical-align: top; }
+        .logo { font-size: 24px; font-weight: bold; color: #059669; }
+        .subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+
+        .info-box { border: 1px solid #ccc; background: #f9f9f9; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+        .info-box table { width: 100%; font-size: 13px; }
+        .info-box td { padding: 4px; }
+
+        h3 { color: #059669; border-bottom: 1px solid #eee; padding-bottom: 3px; font-size: 15px; margin-top: 20px; margin-bottom: 10px; }
+        
+        .grid-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .grid-table th, .grid-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .grid-table th { background: #f0fdf4; color: #065f46; font-size: 12px; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+
+        .signature { margin-top: 40px; text-align: right; margin-right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table>
+            <tr>
+                <td style="width: 60%;">
+                    <div class="logo">EyeSphere Clinic</div>
+                    <div class="subtitle">Comprehensive Eye Examination Report</div>
+                </td>
+                <td style="width: 40%; text-align: right;">
+                    <strong>Date:</strong> {{ exam.date_of_visit|date:"d M Y" }}<br>
+                    <strong>Exam ID:</strong> EX-{{ exam.id }}<br>
+                    {% if exam.consultant %}
+                    <strong>Consultant:</strong> Dr. {{ exam.consultant.name }}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-box">
+        <table>
+            <tr>
+                <td style="width: 25%;"><strong>Patient Name:</strong></td><td style="width: 25%;">{{ exam.patient.name }}</td>
+                <td style="width: 25%;"><strong>Age/Gender:</strong></td><td style="width: 25%;">{{ exam.patient.age }} / {{ exam.patient.gender|title }}</td>
+            </tr>
+            <tr>
+                <td><strong>Phone:</strong></td><td>{{ exam.patient.phone_number }}</td>
+                <td><strong>Optometrist:</strong></td><td>{{ exam.optometrist.name }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3>1. Chief Complaints & History</h3>
+    <table style="width: 100%;">
+        <tr>
+            <td style="width: 50%;"><strong>Complaints:</strong> {{ exam.chief_complaints|default:"None" }}</td>
+            <td style="width: 50%;"><strong>Systemic History:</strong> {{ exam.systemic_history|default:"None" }}</td>
+        </tr>
+    </table>
+
+    <h3>2. Visual Acuity (Snellen)</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Eye</th>
+            <th>Uncorrected Vision</th>
+            <th>Pinhole Vision</th>
+            <th>Corrected Vision</th>
+        </tr>
+        <tr>
+            <td><strong>Right Eye (RE)</strong></td>
+            <td>{{ exam.uncorrected_vision_re|default:"-" }}</td>
+            <td>{{ exam.pinhole_vision_re|default:"-" }}</td>
+            <td>{{ exam.corrected_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Left Eye (LE)</strong></td>
+            <td>{{ exam.uncorrected_vision_le|default:"-" }}</td>
+            <td>{{ exam.pinhole_vision_le|default:"-" }}</td>
+            <td>{{ exam.corrected_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>3. Refraction prescribed</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.dv_sph_re|default:"-" }}</td><td>{{ exam.dv_cyl_re|default:"-" }}</td><td>{{ exam.dv_axis_re|default:"-" }}</td><td>{{ exam.dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.nv_sph_re|default:"-" }}</td><td>{{ exam.nv_cyl_re|default:"-" }}</td><td>{{ exam.nv_axis_re|default:"-" }}</td><td>{{ exam.nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.dv_sph_le|default:"-" }}</td><td>{{ exam.dv_cyl_le|default:"-" }}</td><td>{{ exam.dv_axis_le|default:"-" }}</td><td>{{ exam.dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.nv_sph_le|default:"-" }}</td><td>{{ exam.nv_cyl_le|default:"-" }}</td><td>{{ exam.nv_axis_le|default:"-" }}</td><td>{{ exam.nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>4. Diagnosis</h3>
+    <p><strong>Provisional:</strong> {{ exam.provisional_diagnosis|default:"No explicit diagnosis entered." }}</p>
+
+    <h3>5. Doctor's Advice</h3>
+    <p>{{ exam.advice|default:"No specific advice provided." }}</p>
+
+    {% if exam.medications.all %}
+    <h3>6. Prescribed Medications</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Medication</th>
+            <th>Frequency</th>
+            <th>Eye</th>
+            <th>Duration</th>
+        </tr>
+        {% for med in exam.medications.all %}
+        <tr>
+            <td>{{ med.name }} {{ med.quantity }}<br><small>{{ med.instructions }}</small></td>
+            <td>{{ med.frequency }}</td>
+            <td>{{ med.eye }}</td>
+            <td>{{ med.duration }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    <div class="signature">
+        <p>___________________________________</p>
+        <p><strong>{% if exam.consultant %}Dr. {{ exam.consultant.name }}{% else %}{{ exam.optometrist.name }}{% endif %}</strong></p>
+        <p>Authorized Signature</p>
+    </div>
+
+    <div class="footer">
+        Generated on {% now "d F Y H:i" %} &bull; EyeSphere Digital Portal
+    </div>
+</body>
+</html>

@@ -2,7 +2,8 @@ from django.urls import path
 from .views import (
     RegisterPatient, LoginPatient, PatientDashboardView,
     VisionTestView, ColorBlindTestView, OSDITestView, BlinkTestView,
-    SaveScreeningResultView, patient_logout, RequestOnlineSessionView
+    SaveScreeningResultView, patient_logout, RequestOnlineSessionView,
+    DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView
 )
 
 urlpatterns = [
@@ -21,5 +22,10 @@ urlpatterns = [
     # API endpoints
     path('api/save-screening-result/', SaveScreeningResultView.as_view(), name='save_screening_result'),
     path('api/request-session/', RequestOnlineSessionView.as_view(), name='request_online_session'),
+    path('api/update-retention/', UpdateRetentionTimeView.as_view(), name='update_retention_time'),
+    
+    # PDF downloads
+    path('pdf/screening/<int:pk>/', DownloadScreeningPDFView.as_view(), name='download_screening_pdf'),
+    path('pdf/exam/<int:pk>/', DownloadExamPDFView.as_view(), name='download_exam_pdf'),
 ]
 

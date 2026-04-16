@@ -13,7 +13,10 @@ import json
 from django.shortcuts import redirect
 from django.utils import timezone
 from datetime import timedelta
-
+from django.shortcuts import get_object_or_404
+from django.views import View
+from django.http import HttpResponse
+from .utils import render_to_pdf
 
 class RegisterPatient(APIView):
     permission_classes = [permissions.AllowAny]
@@ -219,3 +222,75 @@ class RequestOnlineSessionView(APIView):
             return Response({'status': 'success', 'message': 'approval request sent'})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# ============ PDF Download Views ============
+
+class DownloadScreeningPDFView(LoginRequiredMixin, View):
+    login_url = '/patient/api/login/'
+    
+    def get(self, request, pk):
+        result = get_object_or_404(ScreeningTestResult, pk=pk)
+        
+        # Verify permissions: Optometrist/Doctor or the matching patient
+        if request.user.role == 'patient' and result.user != request.user:
+            return HttpResponse("Unauthorized", status=403)
+            
+        context = {
+            'result': result,
+        }
+        pdf = render_to_pdf('patients/pdf_screening.html', context)
+        if pdf:
+            response = pdf
+            response['Content-Disposition'] = f'attachment; filename="screening_report_{result.id}.pdf"'
+            return response
+        return HttpResponse("Failed to generate PDF.", status=500)
+
+
+class DownloadExamPDFView(LoginRequiredMixin, View):
+    login_url = '/patient/api/login/'
+    
+    def get(self, request, pk):
+        exam = get_object_or_404(EyeExamination, pk=pk)
+        
+        # Verify permissions: Optometrist/Doctor or the matching patient
+        if request.user.role == 'patient' and exam.patient.phone_number != request.user.phone_number:
+            return HttpResponse("Unauthorized", status=403)
+            
+        context = {
+            'exam': exam,
+        }
+        pdf = render_to_pdf('patients/pdf_exam.html', context)
+        if pdf:
+            response = pdf
+            response['Content-Disposition'] = f'attachment; filename="exam_prescription_{exam.id}.pdf"'
+            return response
+        return HttpResponse("Failed to generate PDF.", status=500)
+
+
+# ============ Retention Time Tracking ============
+
+class UpdateRetentionTimeView(APIView):
+    """
+    Receives the number of seconds the user has been active and
+    adds it cumulatively to their retention_time field.
+    Called periodically (heartbeat) and on page unload via sendBeacon.
+    """
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            elapsed = int(data.get('elapsed_seconds', 0))
+            if elapsed > 0:
+                user = request.user
+                # Use F() expression for safe concurrent updates
+                from django.db.models import F
+                Optometrist.objects.filter(pk=user.pk).update(
+                    retention_time=F('retention_time') + elapsed
+                )
+            return Response({'status': 'ok'})
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+

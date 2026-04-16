@@ -157,5 +157,6 @@ function showResults(){
 }
 function restartTest(){currentQ=0;answers=new Array(12).fill(null);document.getElementById('resultsCard').style.display='none';document.getElementById('testSection').style.display='block';renderQuestions();updateUI();}
 </script>
+{% include 'patients/tracking_script.html' %}
 </body>
 </html>

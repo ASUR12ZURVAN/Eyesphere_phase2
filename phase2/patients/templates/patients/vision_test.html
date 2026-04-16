@@ -261,5 +261,6 @@ pdfBtn.addEventListener('click',async function(){
 
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(chartContainer.style.display!=='none'){document.querySelectorAll('.chart-line-container').forEach((c,i)=>{const lw=c.querySelector('.line-content-wrapper'),ld=c.querySelector('.line');if(lw&&ld)fitTextToContainer(ld,lw,pixelSizes[i]);});}},250);});
 </script>
+{% include 'patients/tracking_script.html' %}
 </body>
 </html>

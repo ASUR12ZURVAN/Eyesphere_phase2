@@ -146,6 +146,8 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
 
 from patients.views import CsrfExemptSessionAuth
 
+from phase2.google_calendar_utils import create_meet_event
+
 class ScheduleSessionView(APIView):
     authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
@@ -156,10 +158,17 @@ class ScheduleSessionView(APIView):
             
         session_request = get_object_or_404(OnlineSessionRequest, pk=pk)
         scheduled_time = request.data.get('scheduled_time')
-        meet_link = request.data.get('meet_link')
         
-        if not scheduled_time or not meet_link:
-            return Response({'error': 'Time and Meet link are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not scheduled_time:
+            return Response({'error': 'Time is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Automate Google Meet Link generation
+        meet_link, error = create_meet_event(scheduled_time, summary=f"Eye Consultation with {session_request.user.name}")
+        
+        if error:
+            # Fallback to manual link if provided, but the request says doctor just sends time/date
+            # So if error, we probably need to alert
+            return Response({'error': f'Failed to generate Google Meet link: {error}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
         session_request.doctor = request.user
         session_request.scheduled_time = scheduled_time
@@ -167,4 +176,4 @@ class ScheduleSessionView(APIView):
         session_request.status = 'approved'
         session_request.save()
         
-        return Response({'status': 'success', 'message': 'Session scheduled successfully'})
+        return Response({'status': 'success', 'message': 'Session scheduled successfully', 'meet_link': meet_link})

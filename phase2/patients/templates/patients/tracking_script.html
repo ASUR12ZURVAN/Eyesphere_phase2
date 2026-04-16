@@ -1,0 +1,98 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // ===== CSRF Token Helper =====
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ===== 20-20 Rule Timer =====
+        function init2020Timer() {
+            if (document.getElementById("twenty-twenty-timer")) return; // Prevent duplicate
+            
+            const timerDiv = document.createElement("div");
+            timerDiv.id = "twenty-twenty-timer";
+            Object.assign(timerDiv.style, {
+                position: "fixed", top: "0", left: "0", width: "100%",
+                backgroundColor: "rgba(37, 99, 235, 0.95)", color: "white",
+                textAlign: "center", padding: "8px", zIndex: "10000",
+                fontWeight: "600", fontSize: "14px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                backdropFilter: "blur(4px)"
+            });
+            document.body.appendChild(timerDiv);
+
+            let endTime = sessionStorage.getItem('twentyTwentyTimer');
+            if (!endTime || Date.now() > parseInt(endTime)) {
+                endTime = Date.now() + 20 * 60 * 1000;
+                sessionStorage.setItem('twentyTwentyTimer', endTime);
+            }
+
+            function updateTimer() {
+                let timeLeft = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+                if (timeLeft > 0) {
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDiv.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
+                } else {
+                    alert("20-20-20 Rule! Please look 20 feet away for 20 seconds to protect your eyes.");
+                    endTime = Date.now() + 20 * 60 * 1000;
+                    sessionStorage.setItem('twentyTwentyTimer', endTime);
+                }
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        }
+        init2020Timer();
+
+        // ===== Retention Time Tracking =====
+        const RETENTION_URL = '/patient/api/update-retention/';
+        const HEARTBEAT_INTERVAL = 60; // seconds
+        let lastSentAt = Date.now();
+
+        function getElapsedSeconds() {
+            const now = Date.now();
+            const elapsed = Math.floor((now - lastSentAt) / 1000);
+            lastSentAt = now;
+            return elapsed;
+        }
+
+        function sendRetention(seconds) {
+            if (seconds <= 0) return;
+            const payload = JSON.stringify({ elapsed_seconds: seconds });
+            
+            if (navigator.sendBeacon) {
+                const blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon(RETENTION_URL, blob);
+            } else {
+                fetch(RETENTION_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: payload,
+                    keepalive: true
+                }).catch(() => {});
+            }
+        }
+
+        setInterval(function () {
+            sendRetention(getElapsedSeconds());
+        }, HEARTBEAT_INTERVAL * 1000);
+
+        window.addEventListener('beforeunload', function () {
+            sendRetention(getElapsedSeconds());
+        });
+    });
+</script>

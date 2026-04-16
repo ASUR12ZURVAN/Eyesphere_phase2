@@ -313,6 +313,11 @@
                                     onclick="event.stopPropagation(); this.closest('tr').click();">
                                     View
                                 </button>
+                                {% if exam.is_completed %}
+                                <a href="{% url 'download_exam_pdf' exam.id %}" target="_blank" class="btn"
+                                    style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: #059669; color: white; text-decoration: none;"
+                                    onclick="event.stopPropagation();">⬇ PDF</a>
+                                {% endif %}
                                 <a href="/doctor/consult/{{ exam.id }}/" class="btn"
                                     style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--primary); color: white; text-decoration: none;"
                                     onclick="event.stopPropagation();">
@@ -398,10 +403,10 @@
             <div>
                 <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Scheduled Time</label>
                 <input type="datetime-local" id="schedTime" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Google Meet link will be generated automatically.</p>
             </div>
-            <div>
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Google Meet Link</label>
-                <input type="url" id="schedMeet" placeholder="https://meet.google.com/..." style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid var(--border); outline: none;">
+            <div id="scheduleLoading" style="display: none; padding: 0.5rem; color: var(--primary); font-weight: 600; font-size: 0.9rem;">
+                <span class="animate-pulse">⏳ Generating link... Please wait...</span>
             </div>
         </div>
         
@@ -619,22 +624,27 @@
         if (!currentScheduleId) return;
         
         const time = document.getElementById('schedTime').value;
-        const meet = document.getElementById('schedMeet').value;
+        const loader = document.getElementById('scheduleLoading');
+        const submitBtn = document.querySelector('#scheduleModal button');
         
-        if (!time || !meet) {
-            alert('Please provide both time and Google Meet link');
+        if (!time) {
+            alert('Please provide a time for the session');
             return;
         }
 
         try {
+            loader.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+
             const resp = await fetch(`/doctor/api/schedule-session/${currentScheduleId}/`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // Ensure CSRF is passed
                 },
                 body: JSON.stringify({
-                    scheduled_time: time,
-                    meet_link: meet
+                    scheduled_time: time
                 })
             });
             const data = await resp.json();
@@ -646,7 +656,11 @@
             }
         } catch(err) {
             console.error(err);
-            alert('An error occurred');
+            alert('An error occurred while connecting to Google Calendar');
+        } finally {
+            loader.style.display = 'none';
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
         }
     }
 

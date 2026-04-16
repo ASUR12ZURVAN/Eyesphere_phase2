@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-"""
+
 DATABASES = {
     'default': dj_database_url.config(
         default=config('NEON_DB_URL'),
@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+"""
 
 
 # Password validation
