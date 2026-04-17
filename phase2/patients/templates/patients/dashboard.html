@@ -2210,7 +2210,7 @@
 
             let endTime = sessionStorage.getItem('twentyTwentyTimer');
             if (!endTime || Date.now() > parseInt(endTime)) {
-                endTime = Date.now() + 20 * 60 * 1000;
+                endTime = Date.now() + 20 * 60 * 1000; 
                 sessionStorage.setItem('twentyTwentyTimer', endTime);
                 console.log('Timer started:', endTime);
             }
@@ -2226,10 +2226,36 @@
                     const audio = new Audio("{% static 'audio/timer_alert.mp3' %}");
                     audio.play().catch(e => console.log('Audio play failed:', e));
                     
-                    alert("20-20-20 Rule! Please look 20 feet away for 20 seconds to protect your eyes.");
-                    endTime = Date.now() + 20 * 60 * 1000;
+                    // Show custom non-blocking modal with countdown
+                    openModal('twentyTwentyModal');
+                    startRestCountdown();
+
+                    // Reset for next cycle (20 minutes)
+                    endTime = Date.now() + 20 * 60 * 1000; 
                     sessionStorage.setItem('twentyTwentyTimer', endTime);
                 }
+            }
+
+            function startRestCountdown() {
+                let restLeft = 20;
+                const restDisplay = document.getElementById('restCountdown');
+                const restBtn = document.getElementById('restDoneBtn');
+                restBtn.disabled = true;
+                restBtn.innerText = `Resting... (${restLeft}s)`;
+                
+                const restInterval = setInterval(() => {
+                    restLeft--;
+                    if (restLeft > 0) {
+                        restBtn.innerText = `Resting... (${restLeft}s)`;
+                        if (restDisplay) restDisplay.innerText = restLeft;
+                    } else {
+                        clearInterval(restInterval);
+                        restBtn.disabled = false;
+                        restBtn.innerText = "I'm Done! (Rest Complete)";
+                        restBtn.style.background = "var(--primary)";
+                        if (restDisplay) restDisplay.innerText = "0";
+                    }
+                }, 1000);
             }
             updateTimer();
             setInterval(updateTimer, 1000);
@@ -2280,17 +2306,19 @@
                         body: JSON.stringify({ age, gender, email, address })
                     });
                     const data = await response.json();
-                    if (data.status === 'success' || data.message) {
+                    if (response.ok && (data.status === 'success' || data.message)) {
                         alert('Profile updated successfully!');
                         window.location.reload();
                     } else {
-                        alert('Error: ' + (data.error || 'Failed to update profile'));
+                        // Display the specific error message from the server if available
+                        const errMsg = data.error || data.message || 'Failed to update profile';
+                        alert('Error: ' + errMsg);
                         btn.innerText = oldText;
                         btn.disabled = false;
                     }
                 } catch (err) {
-                    console.error(err);
-                    alert('An error occurred while updating the profile');
+                    console.error('Profile update error:', err);
+                    alert('An error occurred while updating the profile. Please check your internet connection and try again.');
                     btn.innerText = oldText;
                     btn.disabled = false;
                 }
@@ -2298,6 +2326,25 @@
         }
 
     </script>
+
+    <div class="modal-overlay" id="twentyTwentyModal">
+        <div class="modal-content" style="max-width: 500px; text-align: center; border: 2px solid var(--primary); box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);">
+            <div class="modal-header">
+                <h2 style="color: white; font-size: 1.4rem;">Time to Rest! 👁️</h2>
+                <button class="close-modal" onclick="closeModal('twentyTwentyModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 2.5rem;">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌳</div>
+                <h3 style="color: var(--primary); margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem;">20-20-20 Rule Alert</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; font-size: 1.1rem;">
+                    Please look at something <strong>20 feet away</strong> for <strong><span id="restCountdown">20</span> seconds</strong> to relax your eye muscles.
+                </p>
+                <button id="restDoneBtn" class="btn" style="margin-top: 1.5rem; background: #94a3b8; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-size: 1rem;" onclick="closeModal('twentyTwentyModal')">
+                    Resting... (20s)
+                </button>
+            </div>
+        </div>
+    </div>
 
     {% if examinations %}
         {% with latest_exam=examinations.first %}

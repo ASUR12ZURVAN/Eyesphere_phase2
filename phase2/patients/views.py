@@ -314,53 +314,65 @@ class UpdatePatientProfileView(APIView):
         if request.user.role != 'patient':
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
-        data = request.data if isinstance(request.data, dict) else json.loads(request.body)
-        email = data.get('email')
-        age = data.get('age')
-        gender = data.get('gender')
-        address = data.get('address')
-        
-        # Update user auth table (email only)
-        user = request.user
-        if email is not None:
-            user.email = email
-            user.save(update_fields=['email'])
+        try:
+            # Handle both JSON and Form data
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            email = data.get('email')
+            age = data.get('age')
+            gender = data.get('gender')
+            address = data.get('address')
             
-        # Update patient demographic table
-        patient_record = Patient.objects.filter(phone_number=user.phone_number).order_by('-created_at').first()
-        
-        if not patient_record:
-            # Create a brand new record if none exists for this user
-            patient_record = Patient.objects.create(
-                name=user.name,
-                phone_number=user.phone_number,
-                age=int(age) if age and age != '' else 0,
-                gender=gender if gender and gender != '' else 'other',
-                address=address if address else ''
-            )
-        else:
-            # Update existing record
-            update_fields = []
-            if age is not None and age != '':
-                patient_record.age = int(age)
-                update_fields.append('age')
-            if gender is not None and gender != '':
-                patient_record.gender = gender
-                update_fields.append('gender')
-            if address is not None:
-                patient_record.address = address
-                update_fields.append('address')
+            user = request.user
             
-            if update_fields:
-                patient_record.save(update_fields=update_fields)
+            # 1. Update user auth table (email only)
+            if email is not None:
+                # Check if email is already taken by another user
+                from django.db.models import Q
+                if Optometrist.objects.filter(email=email).exclude(pk=user.pk).exists():
+                    return Response({'error': 'This email address is already in use by another account.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                user.email = email
+                user.save(update_fields=['email'])
+                
+            # 2. Update/Create patient demographic table
+            patient_record = Patient.objects.filter(phone_number=user.phone_number).order_by('-created_at').first()
+            
+            if not patient_record:
+                patient_record = Patient.objects.create(
+                    name=user.name,
+                    phone_number=user.phone_number,
+                    age=int(age) if age and age != '' else 0,
+                    gender=gender if gender and gender != '' else 'other',
+                    address=address if address else ''
+                )
+            else:
+                update_fields = []
+                if age is not None and age != '':
+                    try:
+                        patient_record.age = int(age)
+                        update_fields.append('age')
+                    except ValueError:
+                        return Response({'error': 'Invalid age format.'}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                if gender is not None and gender != '':
+                    patient_record.gender = gender
+                    update_fields.append('gender')
+                if address is not None:
+                    patient_record.address = address
+                    update_fields.append('address')
+                
+                if update_fields:
+                    patient_record.save(update_fields=update_fields)
 
-        # Reward 100 coins if profile is completed for the first time
-        # "Completed" means having email, age, gender, and address
-        if patient_record and not patient_record.has_received_reward:
-            if user.email and patient_record.age > 0 and patient_record.gender and patient_record.address:
-                user.coins += 100
-                user.save(update_fields=['coins'])
-                patient_record.has_received_reward = True
-                patient_record.save(update_fields=['has_received_reward'])
-            
-        return Response({'status': 'success', 'message': 'Profile updated successfully'})
+            # 3. Reward logic
+            if patient_record and not patient_record.has_received_reward:
+                if user.email and patient_record.age > 0 and patient_record.gender and patient_record.address:
+                    user.coins += 100
+                    user.save(update_fields=['coins'])
+                    patient_record.has_received_reward = True
+                    patient_record.save(update_fields=['has_received_reward'])
+                
+            return Response({'status': 'success', 'message': 'Profile updated successfully'})
+
+        except Exception as e:
+            return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
