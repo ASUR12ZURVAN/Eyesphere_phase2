@@ -17,6 +17,11 @@ from django.shortcuts import get_object_or_404
 from django.views import View
 from django.http import HttpResponse
 
+class CsrfExemptSessionAuth(SessionAuthentication):
+    """Skip CSRF check for session auth — our templates already send X-CSRFToken header."""
+    def enforce_csrf(self, request):
+        return  # Skip CSRF enforcement since we handle it via JS headers
+
 
 class RegisterPatient(APIView):
     permission_classes = [permissions.AllowAny]
@@ -31,6 +36,7 @@ class RegisterPatient(APIView):
         password = request.data.get('password')
         age = request.data.get('age')
         gender = request.data.get('gender')
+        address = request.data.get('address')
 
         if not name or not phone_number or not password or not age or not gender:
             return Response({'error': 'Name, phone number, password, age, and gender are required.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -53,7 +59,8 @@ class RegisterPatient(APIView):
             name=name,
             phone_number=phone_number,
             age=age,
-            gender=gender
+            gender=gender,
+            address=address
         )
 
         return Response({
@@ -175,10 +182,7 @@ class BlinkTestView(PatientTestMixin, TemplateView):
 
 # ============ API to Save Screening Results ============
 
-class CsrfExemptSessionAuth(SessionAuthentication):
-    """Skip CSRF check for session auth — our templates already send X-CSRFToken header."""
-    def enforce_csrf(self, request):
-        return  # Skip CSRF enforcement since we handle it via JS headers
+
 
 
 class SaveScreeningResultView(APIView):
@@ -215,9 +219,17 @@ class SaveScreeningResultView(APIView):
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def patient_logout(request):
-    logout(request)
-    return redirect('patient_login_page')
+class PatientLogoutView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def post(self, request):
+        logout(request)
+        return Response({'status': 'success', 'message': 'Logged out successfully'})
+    
+    def get(self, request):
+        logout(request)
+        return redirect('patient_login_page')
 
 class RequestOnlineSessionView(APIView):
     authentication_classes = [CsrfExemptSessionAuth]
@@ -294,3 +306,46 @@ class UpdateRetentionTimeView(APIView):
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class UpdatePatientProfileView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        if request.user.role != 'patient':
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+        email = data.get('email')
+        age = data.get('age')
+        gender = data.get('gender')
+        address = data.get('address')
+        
+        # Update user auth table (email only)
+        user = request.user
+        if email is not None:
+            user.email = email
+            user.save(update_fields=['email'])
+            
+        # Update patient demographic table
+        try:
+            patient_record = Patient.objects.get(phone_number=user.phone_number)
+            if age is not None and age != '':
+                patient_record.age = int(age)
+            if gender is not None and gender != '':
+                patient_record.gender = gender
+            if address is not None:
+                patient_record.address = address
+            patient_record.save(update_fields=['age', 'gender', 'address'])
+
+            # Reward 100 coins if profile is completed for the first time
+            if not patient_record.has_received_reward:
+                # Check if all key fields are present
+                if user.email and patient_record.age and patient_record.gender and patient_record.address:
+                    user.coins += 100
+                    user.save(update_fields=['coins'])
+                    patient_record.has_received_reward = True
+                    patient_record.save(update_fields=['has_received_reward'])
+        except Patient.DoesNotExist:
+            pass
+            
+        return Response({'status': 'success', 'message': 'Profile updated successfully'})

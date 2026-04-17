@@ -78,6 +78,7 @@ class Patient(models.Model):
         default='low',
         help_text="Categorize patients based on risk for future segregation"
     )
+    has_received_reward = models.BooleanField(default=False, help_text="Track if patient received coins for completing profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

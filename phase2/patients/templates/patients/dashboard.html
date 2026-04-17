@@ -1060,14 +1060,14 @@
                 </svg>
                 Redeem Coins
             </a>
-            <a href="{% url 'patient_logout' %}" style="margin-top:auto;color:rgba(255,255,255,.6);">
+            <button onclick="performPatientLogout()" style="margin-top:auto;color:rgba(255,255,255,.6);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.8rem;padding:.85rem 1.5rem;font-weight:500;font-size:.95rem;transition:all .2s;width:100%;text-align:left;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
                 Logout
-            </a>
+            </button>
         </nav>
         <div class="sidebar-user">
             <div class="sidebar-user-avatar">{{ user.name|first }}</div>
@@ -1280,9 +1280,16 @@
 
             <!-- ==================== TAB 2: PATIENT INFO ==================== -->
             <div class="tab-content" id="tab-patient">
-                <div class="page-header">
-                    <h1>My Profile</h1>
-                    <p>Your personal and medical information</p>
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h1>My Profile</h1>
+                        <p>Your personal and medical information</p>
+                    </div>
+                    <div>
+                        <button onclick="openModal('edit-profile-modal')" class="btn" style="background:var(--primary);color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;">
+                            Edit Profile
+                        </button>
+                    </div>
                 </div>
                 <div class="profile-card">
                     <div class="profile-header">
@@ -1357,6 +1364,67 @@
                         {% else %}
                         <p style="color:var(--text-muted);">No online sessions requested yet.</p>
                         {% endif %}
+                    </div>
+                </div>
+
+
+                <!-- Edit Profile Modal -->
+                <div class="modal-overlay" id="edit-profile-modal">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <div>
+                                <h2>Update Profile</h2>
+                                <div class="modal-header-meta">Change your personal details</div>
+                            </div>
+                            <button class="close-modal" onclick="closeModal('edit-profile-modal')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editProfileForm">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Full Name (Immutable)</label>
+                                        <input type="text" value="{{ user.name }}" disabled style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: var(--text-muted);">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Phone Number (Immutable)</label>
+                                        <input type="text" value="{{ user.phone_number }}" disabled style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: var(--text-muted);">
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Age</label>
+                                        <input type="number" id="profileAge" min="1" max="150" value="{% if patient_records %}{{ patient_records.first.age }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Gender</label>
+                                        <select id="profileGender" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; background: var(--bg-card);">
+                                            {% if patient_records %}
+                                                <option value="male" {% if patient_records.first.gender == 'male' %}selected{% endif %}>Male</option>
+                                                <option value="female" {% if patient_records.first.gender == 'female' %}selected{% endif %}>Female</option>
+                                                <option value="other" {% if patient_records.first.gender == 'other' %}selected{% endif %}>Other</option>
+                                            {% else %}
+                                                <option value="male">Male</option>
+                                                <option value="female">Female</option>
+                                                <option value="other">Other</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Email Address</label>
+                                    <input type="email" id="profileEmail" value="{{ user.email|default:'' }}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Residential Address</label>
+                                    <textarea id="profileAddress" rows="3" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical;">{% if patient_records %}{{ patient_records.first.address|default:'' }}{% endif %}</textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn" style="width: 100%; background:var(--primary);color:#fff;border:none;padding:0.8rem;border-radius:10px;font-weight:600;cursor:pointer;">Save Changes</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -1806,7 +1874,13 @@
                                     <tr>
                                         <td style="font-weight:600">Complete Profile Data</td>
                                         <td style="color:#f59e0b;font-weight:700;">+100 Coins 🪙</td>
-                                        <td><span class="badge badge-amber">Pending</span></td>
+                                        <td>
+                                            {% if patient_records.first.has_received_reward %}
+                                            <span class="badge badge-green">Claimed</span>
+                                            {% else %}
+                                            <span class="badge badge-amber">Pending</span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -2031,7 +2105,9 @@
         }
 
         // Initialize screening results visibility on page load
-        document.addEventListener('DOMContentLoaded', function () { applyVisibility(); });
+        document.addEventListener('DOMContentLoaded', function () { 
+            applyVisibility();
+        });
 
         async function requestOnlineSession() {
             try {
@@ -2056,6 +2132,165 @@
                 console.error(err);
                 alert('An error occurred');
             }
+        }
+
+        // CSRF Token Helper - DUPLICATE (removed, using one inside DOMContentLoaded instead)
+
+        // ===== CSRF Token Helper for Patient =====
+        function getCookiePatient(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ===== Patient Logout Handler =====
+        window.performPatientLogout = async function() {
+            const confirmed = confirm('Are you sure you want to log out?');
+            if (confirmed) {
+                try {
+                    const csrfToken = getCookiePatient('csrftoken');
+                    const response = await fetch('{% url "patient_logout" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+                    window.location.href = '{% url "patient_login_page" %}';
+                } catch (err) {
+                    console.error('Logout error:', err);
+                    window.location.href = '{% url "patient_login_page" %}';
+                }
+            }
+        };
+
+        // ===== Back Button Detection for Patient =====
+        console.log('Setting up back button detection for patient');
+        history.pushState({page: 'dashboard'}, null, window.location.href);
+
+        window.addEventListener('popstate', function(event) {
+            console.log('Patient popstate fired, event:', event);
+            const confirmed = confirm('Are you sure you want to log out? Pressing back will end your session.');
+            if (confirmed) {
+                window.performPatientLogout();
+            } else {
+                history.pushState({page: 'dashboard'}, null, window.location.href);
+            }
+        });
+
+        // ===== 20-20 Rule Timer (Patient Dashboard Only) =====
+        function init2020Timer() {
+            console.log('Initializing 20-20 timer');
+            if (document.getElementById("twenty-twenty-timer")) {
+                console.log('Timer already exists');
+                return;
+            }
+            
+            const timerDiv = document.createElement("div");
+            timerDiv.id = "twenty-twenty-timer";
+            Object.assign(timerDiv.style, {
+                position: "fixed", top: "0", left: "0", width: "100%",
+                backgroundColor: "rgba(37, 99, 235, 0.95)", color: "white",
+                textAlign: "center", padding: "8px", zIndex: "10000",
+                fontWeight: "600", fontSize: "14px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                backdropFilter: "blur(4px)"
+            });
+            document.body.appendChild(timerDiv);
+            console.log('Timer div appended to body');
+
+            let endTime = sessionStorage.getItem('twentyTwentyTimer');
+            if (!endTime || Date.now() > parseInt(endTime)) {
+                endTime = Date.now() + 20 * 60 * 1000;
+                sessionStorage.setItem('twentyTwentyTimer', endTime);
+                console.log('Timer started:', endTime);
+            }
+
+            function updateTimer() {
+                let timeLeft = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+                if (timeLeft > 0) {
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerDiv.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
+                } else {
+                    alert("20-20-20 Rule! Please look 20 feet away for 20 seconds to protect your eyes.");
+                    endTime = Date.now() + 20 * 60 * 1000;
+                    sessionStorage.setItem('twentyTwentyTimer', endTime);
+                }
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+            console.log('Timer update interval started');
+        }
+        
+        // Start timer immediately on patient dashboard load
+        init2020Timer();
+
+        // Edit Profile Submission Handler
+        const editProfileForm = document.getElementById('editProfileForm');
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const age = document.getElementById('profileAge').value;
+                const gender = document.getElementById('profileGender').value;
+                const email = document.getElementById('profileEmail').value;
+                const address = document.getElementById('profileAddress').value;
+                
+                const btn = this.querySelector('button[type="submit"]');
+                const oldText = btn.innerText;
+                btn.innerText = 'Saving...';
+                btn.disabled = true;
+
+                try {
+                    // Need to get CSRF token - define it here
+                    function getCookieForProfile(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    const response = await fetch('/patient/api/update-profile/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookieForProfile('csrftoken')
+                        },
+                        body: JSON.stringify({ age, gender, email, address })
+                    });
+                    const data = await response.json();
+                    if (data.status === 'success' || data.message) {
+                        alert('Profile updated successfully!');
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to update profile'));
+                        btn.innerText = oldText;
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('An error occurred while updating the profile');
+                    btn.innerText = oldText;
+                    btn.disabled = false;
+                }
+            });
         }
 
     </script>

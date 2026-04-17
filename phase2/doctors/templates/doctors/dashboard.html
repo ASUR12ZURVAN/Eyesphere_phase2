@@ -786,9 +786,33 @@
         if (event.target == document.getElementById('patientDetailModal')) closeModal();
     }
 
-    function logout() {
+    // ===== Logout Handler Function =====
+    function performLogout() {
         localStorage.clear();
+        sessionStorage.removeItem('dashboardEntryPoint');
         window.location.href = '{% url "landing_page" %}';
     }
+
+    // Logout button click
+    function logout() {
+        const confirmed = confirm('Are you sure you want to log out?');
+        if (confirmed) {
+            performLogout();
+        }
+    }
+
+    // ===== Back Button Detection =====
+    console.log('Setting up back button detection for doctor');
+    history.pushState({page: 'dashboard'}, null, window.location.href);
+
+    window.addEventListener('popstate', function(event) {
+        console.log('Doctor popstate fired, event:', event);
+        const confirmed = confirm('Are you sure you want to log out? Pressing back will end your session.');
+        if (confirmed) {
+            performLogout();
+        } else {
+            history.pushState({page: 'dashboard'}, null, window.location.href);
+        }
+    });
 </script>
 {% endblock content %}

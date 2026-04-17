@@ -2,8 +2,9 @@ from django.urls import path
 from .views import (
     RegisterPatient, LoginPatient, PatientDashboardView,
     VisionTestView, ColorBlindTestView, OSDITestView, BlinkTestView,
-    SaveScreeningResultView, patient_logout, RequestOnlineSessionView,
-    DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView
+    SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
+    DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
+    UpdatePatientProfileView
 )
 
 urlpatterns = [
@@ -11,7 +12,7 @@ urlpatterns = [
     path('', PatientDashboardView.as_view(), name='patient_dashboard'),
     path('api/login/', LoginPatient.as_view(), name='patient_login_page'),
     path('api/register/', RegisterPatient.as_view(), name='patient_register_page'),
-    path('logout/', patient_logout, name='patient_logout'),
+    path('logout/', PatientLogoutView.as_view(), name='patient_logout'),
 
     # Screening test pages
     path('screening/vision/', VisionTestView.as_view(), name='patient_vision_test'),
@@ -27,5 +28,5 @@ urlpatterns = [
     # PDF downloads
     path('pdf/screening/<int:pk>/', DownloadScreeningPDFView.as_view(), name='download_screening_pdf'),
     path('pdf/exam/<int:pk>/', DownloadExamPDFView.as_view(), name='download_exam_pdf'),
+    path('api/update-profile/', UpdatePatientProfileView.as_view(), name='update_patient_profile'),
 ]
-
