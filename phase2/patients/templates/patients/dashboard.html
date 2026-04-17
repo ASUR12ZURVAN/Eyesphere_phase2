@@ -2222,6 +2222,10 @@
                     let s = timeLeft % 60;
                     timerDiv.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
                 } else {
+                    // Play notification sound
+                    const audio = new Audio("{% static 'audio/timer_alert.mp3' %}");
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                    
                     alert("20-20-20 Rule! Please look 20 feet away for 20 seconds to protect your eyes.");
                     endTime = Date.now() + 20 * 60 * 1000;
                     sessionStorage.setItem('twentyTwentyTimer', endTime);

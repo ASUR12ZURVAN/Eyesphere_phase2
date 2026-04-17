@@ -90,6 +90,8 @@ DATABASES = {
         ssl_require=True
     )
 }
+
+
 """
 DATABASES = {
     'default': {
@@ -97,8 +99,8 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 """
+
 
 
 

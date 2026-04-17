@@ -327,25 +327,40 @@ class UpdatePatientProfileView(APIView):
             user.save(update_fields=['email'])
             
         # Update patient demographic table
-        try:
-            patient_record = Patient.objects.get(phone_number=user.phone_number)
+        patient_record = Patient.objects.filter(phone_number=user.phone_number).order_by('-created_at').first()
+        
+        if not patient_record:
+            # Create a brand new record if none exists for this user
+            patient_record = Patient.objects.create(
+                name=user.name,
+                phone_number=user.phone_number,
+                age=int(age) if age and age != '' else 0,
+                gender=gender if gender and gender != '' else 'other',
+                address=address if address else ''
+            )
+        else:
+            # Update existing record
+            update_fields = []
             if age is not None and age != '':
                 patient_record.age = int(age)
+                update_fields.append('age')
             if gender is not None and gender != '':
                 patient_record.gender = gender
+                update_fields.append('gender')
             if address is not None:
                 patient_record.address = address
-            patient_record.save(update_fields=['age', 'gender', 'address'])
+                update_fields.append('address')
+            
+            if update_fields:
+                patient_record.save(update_fields=update_fields)
 
-            # Reward 100 coins if profile is completed for the first time
-            if not patient_record.has_received_reward:
-                # Check if all key fields are present
-                if user.email and patient_record.age and patient_record.gender and patient_record.address:
-                    user.coins += 100
-                    user.save(update_fields=['coins'])
-                    patient_record.has_received_reward = True
-                    patient_record.save(update_fields=['has_received_reward'])
-        except Patient.DoesNotExist:
-            pass
+        # Reward 100 coins if profile is completed for the first time
+        # "Completed" means having email, age, gender, and address
+        if patient_record and not patient_record.has_received_reward:
+            if user.email and patient_record.age > 0 and patient_record.gender and patient_record.address:
+                user.coins += 100
+                user.save(update_fields=['coins'])
+                patient_record.has_received_reward = True
+                patient_record.save(update_fields=['has_received_reward'])
             
         return Response({'status': 'success', 'message': 'Profile updated successfully'})
