@@ -106,3 +106,36 @@ class RedemptionTicket(models.Model):
 
     def __str__(self):
         return f"Ticket {self.ticket_code} - {self.service.name} by {self.user.name}"
+
+
+class HomeTestRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='home_test_requests'
+    )
+    optometrist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='assigned_home_tests',
+        limit_choices_to={'role': 'optometrist'}
+    )
+    phone_number = models.CharField(max_length=15)
+    email = models.EmailField()
+    company_name = models.CharField(max_length=200, blank=True, null=True)
+    address = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Home test for {self.user.name} - {self.status}"

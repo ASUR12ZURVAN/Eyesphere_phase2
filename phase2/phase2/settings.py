@@ -83,6 +83,7 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
+
 DATABASES = {
     'default': dj_database_url.config(
         default=config('NEON_DB_URL'),
@@ -90,9 +91,9 @@ DATABASES = {
         ssl_require=True
     )
 }
-
-
 """
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -101,6 +102,8 @@ DATABASES = {
 }
 
 """
+
+
 
 
 

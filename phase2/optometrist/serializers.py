@@ -54,6 +54,7 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
     consultant_id = serializers.PrimaryKeyRelatedField(
         queryset=Optometrist.objects.filter(role='doctor'), source='consultant', write_only=True, required=False
     )
+    bypass_approval = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = EyeExamination
@@ -104,9 +105,16 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
             
         validated_data['patient'] = patient
         
-        # Consultant Handling
         consultant = validated_data.get('consultant')
-        if not consultant:
+        bypass = validated_data.pop('bypass_approval', False)
+
+        if bypass:
+            if patient.login_type == 'corporate':
+                validated_data['is_completed'] = True
+            else:
+                raise serializers.ValidationError({"error": "Direct transmission is only allowed for corporate patients. Standard patients require doctor approval."})
+
+        if not consultant and not bypass:
             # Fallback: Auto-assign a doctor (Consultant)
             doctor = Optometrist.objects.filter(role='doctor', is_active=True).first()
             if doctor:
@@ -114,6 +122,13 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
                 consultant = doctor
             else:
                  raise serializers.ValidationError({"error": "No available doctor to assign."})
+        elif not consultant and bypass:
+            # For bypass, we can still assign a doctor as their "assigned" doctor for record, 
+            # but we don't strictly need them for approval. 
+            # Assigning first active doctor for records.
+            doctor = Optometrist.objects.filter(role='doctor', is_active=True).first()
+            if doctor:
+                validated_data['consultant'] = doctor
         
         # Check if an examination for this patient already exists for this doctor and is not completed
         # The prompt says "if it had previously been sent to doctor then replace it with updated one"

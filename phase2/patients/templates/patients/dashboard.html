@@ -1154,10 +1154,9 @@
             </a>
             <a href="#" data-tab="screening" onclick="switchTab('screening',this)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                 </svg>
-                Screening Camps
+                Online Test
             </a>
             <a href="#" data-tab="reports" onclick="switchTab('reports',this)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1389,7 +1388,7 @@
                         <button class="show-more-btn" id="showMoreBtn" onclick="showMoreResults()">Show More ↓</button>
                         {% else %}
                         <div style="text-align:center;padding:2rem;color:var(--text-muted);">
-                            <p>No screening results yet. Take a test from the <strong>Screening Camps</strong> tab!</p>
+                            <p>No screening results yet. Take a test from the <strong>Online Test</strong> tab!</p>
                         </div>
                         {% endif %}
                     </div>
@@ -1427,6 +1426,11 @@
                         <div class="profile-item"><label>Age</label><span>{{ pr.age }} years</span></div>
                         <div class="profile-item"><label>Gender</label><span>{{ pr.gender|title }}</span></div>
                         <div class="profile-item"><label>Address</label><span>{{ pr.address|default:"Not provided" }}</span></div>
+                        <div class="profile-item"><label>Registration Type</label><span>{{ pr.get_login_type_display }}</span></div>
+                        {% if pr.login_type == 'corporate' %}
+                        <div class="profile-item"><label>Company Name</label><span>{{ pr.company_name }}</span></div>
+                        <div class="profile-item"><label>Designation</label><span>{{ pr.designation|default:"Not provided" }}</span></div>
+                        {% endif %}
                         {% endwith %}
                         {% endif %}
                     </div>
@@ -1535,6 +1539,33 @@
                                     <input type="email" id="profileEmail" value="{{ user.email|default:'' }}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
                                 </div>
                                 
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Registration Type</label>
+                                    <div style="display: flex; gap: 1rem; margin-top: 0.4rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; flex: 1; font-size: 0.9rem;">
+                                            <input type="radio" name="profileLoginType" value="at_home" {% if not patient_records.first or patient_records.first.login_type == 'at_home' %}checked{% endif %} onchange="toggleProfileCorporateFields(false)">
+                                            <span>At Home</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; flex: 1; font-size: 0.9rem;">
+                                            <input type="radio" name="profileLoginType" value="corporate" {% if patient_records.first and patient_records.first.login_type == 'corporate' %}checked{% endif %} onchange="toggleProfileCorporateFields(true)">
+                                            <span>Corporate</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="profileCorporateFields" style="{% if not patient_records.first or patient_records.first.login_type == 'at_home' %}display: none;{% endif %} border: 1px dashed var(--primary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div>
+                                            <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Company Name</label>
+                                            <input type="text" id="profileCompany" value="{% if patient_records %}{{ patient_records.first.company_name|default:'' }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                        </div>
+                                        <div>
+                                            <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Designation</label>
+                                            <input type="text" id="profileDesignation" value="{% if patient_records %}{{ patient_records.first.designation|default:'' }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div style="margin-bottom: 1.5rem;">
                                     <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Residential Address</label>
                                     <textarea id="profileAddress" rows="3" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical;">{% if patient_records %}{{ patient_records.first.address|default:'' }}{% endif %}</textarea>
@@ -1548,33 +1579,33 @@
 
             </div>
 
-            <!-- ==================== TAB 3: SCREENING CAMPS ==================== -->
+            <!-- ==================== TAB 3: ONLINE TEST ==================== -->
             <div class="tab-content" id="tab-screening">
                 <div class="page-header">
-                    <h1>Screening Camps </h1>
+                    <h1>Online Test</h1>
                     <p>Take self-service eye screening tests from the comfort of your home</p>
                 </div>
                 <div class="test-grid">
                     <div class="test-card">
-                        <div class="test-card-icon" style="background:#dbeafe;color:#2563eb;"></div>
+                        <div class="test-card-icon" style="background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👁️</div>
                         <h3>Vision Test</h3>
                         <p>Dynamic Snellen Chart to measure your visual acuity for both eyes</p>
                         <a href="{% url 'patient_vision_test' %}" class="test-btn">Start Test →</a>
                     </div>
                     <div class="test-card">
-                        <div class="test-card-icon" style="background:#fce7f3;color:#db2777;"></div>
+                        <div class="test-card-icon" style="background:#fce7f3;color:#db2777;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎨</div>
                         <h3>Color Blindness Test</h3>
                         <p>Ishihara-style 15-plate color vision assessment</p>
                         <a href="{% url 'patient_colorblind_test' %}" class="test-btn">Start Test →</a>
                     </div>
                     <div class="test-card">
-                        <div class="test-card-icon" style="background:#fef3c7;color:#d97706;"></div>
+                        <div class="test-card-icon" style="background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💧</div>
                         <h3>Dry Eye (OSDI) Test</h3>
                         <p>Ocular Surface Disease Index to assess dry eye symptoms</p>
                         <a href="{% url 'patient_osdi_test' %}" class="test-btn">Start Test →</a>
                     </div>
                     <div class="test-card">
-                        <div class="test-card-icon" style="background:#ede9fe;color:#7c3aed;"></div>
+                        <div class="test-card-icon" style="background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">⏲️</div>
                         <h3>Blink Rate Test</h3>
                         <p>AI-powered 30-second blink rate detection using your camera</p>
                         <a href="{% url 'patient_blink_test' %}" class="test-btn">Start Test →</a>
@@ -2425,6 +2456,16 @@
 
         // Edit Profile Submission Handler
         const editProfileForm = document.getElementById('editProfileForm');
+
+        function toggleProfileCorporateFields(show) {
+            const fields = document.getElementById('profileCorporateFields');
+            if (show) {
+                fields.style.display = 'block';
+            } else {
+                fields.style.display = 'none';
+            }
+        }
+
         if (editProfileForm) {
             editProfileForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -2432,6 +2473,10 @@
                 const gender = document.getElementById('profileGender').value;
                 const email = document.getElementById('profileEmail').value;
                 const address = document.getElementById('profileAddress').value;
+                
+                const login_type = document.querySelector('input[name="profileLoginType"]:checked').value;
+                const company_name = document.getElementById('profileCompany').value;
+                const designation = document.getElementById('profileDesignation').value;
                 
                 const btn = this.querySelector('button[type="submit"]');
                 const oldText = btn.innerText;
@@ -2461,7 +2506,7 @@
                             'Content-Type': 'application/json',
                             'X-CSRFToken': getCookieForProfile('csrftoken')
                         },
-                        body: JSON.stringify({ age, gender, email, address })
+                        body: JSON.stringify({ age, gender, email, address, login_type, company_name, designation })
                     });
                     const data = await response.json();
                     if (response.ok && (data.status === 'success' || data.message)) {

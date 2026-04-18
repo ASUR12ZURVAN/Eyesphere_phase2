@@ -9,6 +9,33 @@
 
     <form id="registerForm">
         {% csrf_token %}
+        <div class="form-group">
+            <label>Registration Type</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; flex: 1;">
+                    <input type="radio" name="login_type" value="at_home" checked onchange="toggleCorporateFields(false)">
+                    <span>At Home Login</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; flex: 1;">
+                    <input type="radio" name="login_type" value="corporate" onchange="toggleCorporateFields(true)">
+                    <span>Corporate Login</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="corporateFields" style="display: none; border: 1px dashed #059669; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(5, 150, 105, 0.05);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="company_name">Company Name <span style="color: #ed4337;">*</span></label>
+                    <input type="text" id="company_name" name="company_name" placeholder="Acme Corp">
+                </div>
+                <div class="form-group">
+                    <label for="designation">Designation (Optional)</label>
+                    <input type="text" id="designation" name="designation" placeholder="Manager">
+                </div>
+            </div>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
                 <label for="name">Full Name</label>
@@ -73,6 +100,18 @@
 <script>
     const registerForm = document.getElementById('registerForm');
     const registerBtn = document.getElementById('registerBtn');
+    const corporateFields = document.getElementById('corporateFields');
+    const companyNameInput = document.getElementById('company_name');
+
+    function toggleCorporateFields(show) {
+        if (show) {
+            corporateFields.style.display = 'block';
+            companyNameInput.required = true;
+        } else {
+            corporateFields.style.display = 'none';
+            companyNameInput.required = false;
+        }
+    }
 
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -102,7 +141,10 @@
                     password: data.password,
                     age: parseInt(data.age),
                     gender: data.gender,
-                    address: data.address || null
+                    address: data.address || null,
+                    login_type: data.login_type,
+                    company_name: data.login_type === 'corporate' ? data.company_name : null,
+                    designation: data.login_type === 'corporate' ? data.designation : null
                 })
             });
 

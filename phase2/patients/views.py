@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
-from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket
+from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest
 import json
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -37,9 +37,15 @@ class RegisterPatient(APIView):
         age = request.data.get('age')
         gender = request.data.get('gender')
         address = request.data.get('address')
+        login_type = request.data.get('login_type', 'at_home')
+        company_name = request.data.get('company_name')
+        designation = request.data.get('designation')
 
         if not name or not phone_number or not password or not age or not gender:
             return Response({'error': 'Name, phone number, password, age, and gender are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if login_type == 'corporate' and not company_name:
+             return Response({'error': 'Company name is required for corporate login.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if phone number already registered
         if Optometrist.objects.filter(phone_number=phone_number).exists():
@@ -60,7 +66,10 @@ class RegisterPatient(APIView):
             phone_number=phone_number,
             age=age,
             gender=gender,
-            address=address
+            address=address,
+            login_type=login_type,
+            company_name=company_name if login_type == 'corporate' else None,
+            designation=designation if login_type == 'corporate' else None
         )
 
         return Response({
@@ -326,6 +335,9 @@ class UpdatePatientProfileView(APIView):
             age = data.get('age')
             gender = data.get('gender')
             address = data.get('address')
+            login_type = data.get('login_type')
+            company_name = data.get('company_name')
+            designation = data.get('designation')
             
             user = request.user
             
@@ -348,7 +360,10 @@ class UpdatePatientProfileView(APIView):
                     phone_number=user.phone_number,
                     age=int(age) if age and age != '' else 0,
                     gender=gender if gender and gender != '' else 'other',
-                    address=address if address else ''
+                    address=address if address else '',
+                    login_type=login_type if login_type else 'at_home',
+                    company_name=company_name if login_type == 'corporate' else None,
+                    designation=designation if login_type == 'corporate' else None
                 )
             else:
                 update_fields = []
@@ -365,6 +380,21 @@ class UpdatePatientProfileView(APIView):
                 if address is not None:
                     patient_record.address = address
                     update_fields.append('address')
+                
+                if login_type:
+                    patient_record.login_type = login_type
+                    update_fields.append('login_type')
+                    if login_type == 'corporate':
+                        if company_name:
+                            patient_record.company_name = company_name
+                            update_fields.append('company_name')
+                        if designation is not None:
+                            patient_record.designation = designation
+                            update_fields.append('designation')
+                    else:
+                        patient_record.company_name = None
+                        patient_record.designation = None
+                        update_fields.extend(['company_name', 'designation'])
                 
                 if update_fields:
                     patient_record.save(update_fields=update_fields)
@@ -423,5 +453,67 @@ class RedeemServiceView(APIView):
                 'remaining_coins': user.coins
             })
             
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetOptometristsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        optometrists = Optometrist.objects.filter(role='optometrist', is_active=True)
+        data = [{'id': o.id, 'name': o.name} for o in optometrists]
+        return Response(data)
+
+class GetPatientProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        patient_record = Patient.objects.filter(phone_number=user.phone_number).first()
+        return Response({
+            'phone_number': user.phone_number,
+            'email': user.email,
+            'company_name': patient_record.company_name if patient_record else None,
+            'address': patient_record.address if patient_record else ""
+        })
+
+class BookHomeTestView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            optometrist_id = data.get('optometrist_id')
+            address = data.get('address')
+            
+            if not optometrist_id or not address:
+                return Response({'error': 'Optometrist and address are required.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if optometrist_id == 'auto':
+                # Pick a random active optometrist
+                import random
+                optometrists = Optometrist.objects.filter(role='optometrist', is_active=True)
+                if not optometrists.exists():
+                    return Response({'error': 'No available optometrists at the moment.'}, status=status.HTTP_400_BAD_REQUEST)
+                optometrist = random.choice(optometrists)
+            else:
+                optometrist = get_object_or_404(Optometrist, id=optometrist_id, role='optometrist')
+            
+            # Fetch patient record for company name
+            patient_record = Patient.objects.filter(phone_number=request.user.phone_number).first()
+            company_name = patient_record.company_name if patient_record else None
+
+            HomeTestRequest.objects.create(
+                user=request.user,
+                optometrist=optometrist,
+                phone_number=request.user.phone_number,
+                email=request.user.email,
+                company_name=company_name,
+                address=address
+            )
+            
+            return Response({'status': 'success', 'message': 'Home test booked successfully!'})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

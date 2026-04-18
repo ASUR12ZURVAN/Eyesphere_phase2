@@ -72,6 +72,16 @@ class Patient(models.Model):
     )
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
+    
+    # New Registration Details
+    login_type = models.CharField(
+        max_length=20,
+        choices=[('at_home', 'At Home Login'), ('corporate', 'Corporate Login')],
+        default='at_home'
+    )
+    company_name = models.CharField(max_length=200, blank=True, null=True)
+    designation = models.CharField(max_length=200, blank=True, null=True)
+
     risk_factor = models.CharField(
         max_length=20, 
         choices=[

@@ -4,7 +4,7 @@ from .views import (
     VisionTestView, ColorBlindTestView, OSDITestView, BlinkTestView,
     SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
     DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
-    UpdatePatientProfileView, RedeemServiceView
+    UpdatePatientProfileView, RedeemServiceView, GetOptometristsView, BookHomeTestView, GetPatientProfileView
 )
 
 urlpatterns = [
@@ -30,4 +30,7 @@ urlpatterns = [
     path('pdf/exam/<int:pk>/', DownloadExamPDFView.as_view(), name='download_exam_pdf'),
     path('api/update-profile/', UpdatePatientProfileView.as_view(), name='update_patient_profile'),
     path('api/redeem-service/', RedeemServiceView.as_view(), name='redeem_service'),
+    path('api/get-optometrists/', GetOptometristsView.as_view(), name='get_optometrists'),
+    path('api/book-home-test/', BookHomeTestView.as_view(), name='book_home_test'),
+    path('api/get-profile/', GetPatientProfileView.as_view(), name='get_patient_profile_api'),
 ]

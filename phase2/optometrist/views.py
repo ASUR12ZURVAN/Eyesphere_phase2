@@ -120,6 +120,17 @@ class PatientHistoryAPIView(APIView):
         return Response(data)
         return Response({'message': 'No pending examination found'}, status=404)
 
+class PatientInfoByPhoneView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, phone_number):
+        patient = Patient.objects.filter(phone_number=phone_number).first()
+        if not patient:
+            return Response({"detail": "Patient not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PatientSerializer(patient)
+        return Response(serializer.data)
+
 class NewExaminationPageView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'optometrist/new_examination.html'
     login_url = '/api/login/'

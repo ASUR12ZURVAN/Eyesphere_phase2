@@ -244,8 +244,9 @@
             </div>
         </div>
 
-        <div class="btn-group" style="margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary">Save Consultation Report</button>
+        <div class="btn-group" style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save & Send to Doctor</button>
+            <button type="button" id="directSendBtn" class="btn" style="flex: 1; background: #059669; color: white;">Directly Send to Patient (Corporate)</button>
         </div>
     </form>
 </div>
@@ -450,31 +451,86 @@
         }
     }
 
-    // Add event listener for real-time history check
+    // Add event listener for real-time history & type check
+    let currentPatientType = null;
+
     document.querySelector('input[name="phone_number"]').addEventListener('blur', (e) => {
-        fetchPatientHistory(e.target.value);
+        const phone = e.target.value;
+        fetchPatientHistory(phone);
+        checkPatientType(phone);
     });
 
-    async function viewPastExam(examId) {
-        // This could open a modal or just log for now to show functionality.
-        // We can reuse the viewExam logic from dashboard.
-        alert('Viewing details for examination #' + examId + ' - Implementation pending dashboard modal reuse');
+    async function checkPatientType(phone) {
+        if (!phone) {
+            currentPatientType = null;
+            return;
+        }
+        const accessToken = localStorage.getItem('access_token');
+        const consultantSelect = document.querySelector('select[name="consultant_id"]');
+        
+        try {
+            const response = await fetch(`/api/patient-info/${phone}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                currentPatientType = data.login_type;
+                if (currentPatientType === 'corporate') {
+                    consultantSelect.required = false; 
+                } else {
+                    consultantSelect.required = true;
+                }
+            } else {
+                currentPatientType = null;
+                consultantSelect.required = true;
+            }
+        } catch (err) {
+            console.error('Type check failed', err);
+            currentPatientType = null;
+        }
     }
+
+    document.getElementById('directSendBtn').addEventListener('click', async function() {
+        if (!currentPatientType) {
+            const phone = document.querySelector('input[name="phone_number"]').value;
+            if (phone) {
+                // Try to fetch if not already done
+                await checkPatientType(phone);
+            }
+        }
+
+        if (currentPatientType !== 'corporate') {
+            alert('Access Denied: Direct report transmission is a premium feature available only for Corporate patients. For standard patients, please use the "Save & Send to Doctor" option.');
+            return;
+        }
+
+        const form = document.getElementById('examForm');
+        if (!form.reportValidity()) return;
+        
+        if (confirm('Are you sure you want to send this report directly to the patient? This bypasses doctor approval.')) {
+            submitExamination(true);
+        }
+    });
 
     document.getElementById('examForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
+        submitExamination(false);
+    });
+
+    async function submitExamination(bypass = false) {
+        const form = document.getElementById('examForm');
+        const btn = form.querySelector('button[type="submit"]');
+        const directBtn = document.getElementById('directSendBtn');
         const originalText = btn.innerText;
-        btn.innerText = 'Saving...';
+        
         btn.disabled = true;
+        directBtn.disabled = true;
+        btn.innerText = 'Processing...';
 
-        const formData = new FormData(e.target);
-
-        // Convert to JSON
+        const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => {
-            // Checkbox handling
-            if (e.target.elements[key].type === 'checkbox') {
+            if (form.elements[key].type === 'checkbox') {
                 data[key] = true;
             } else {
                 data[key] = value;
@@ -482,15 +538,11 @@
         });
 
         // Handle unchecked checkboxes
-        const checkboxes = e.target.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(cb => {
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             if (!cb.checked) data[cb.name] = false;
         });
 
-        // Add user token auth if needed, but we rely on session/cookie usually?
-        // Wait, the views use APIView which might require Bearer token if not session authenticated.
-        // The existing login implementation stores 'access_token' in localStorage.
-
+        data['bypass_approval'] = bypass;
         const accessToken = localStorage.getItem('access_token');
 
         try {
@@ -505,19 +557,20 @@
             });
 
             if (response.ok) {
-                alert('Examination Report Saved Successfully!');
+                alert('Success! Examination Report ' + (bypass ? 'Sent Directly to Patient.' : 'Saved and Sent to Doctor.'));
                 window.location.href = '{% url "optometrist_dashboard" %}';
             } else {
                 const err = await response.json();
-                alert('Error: ' + JSON.stringify(err));
+                alert('Error: ' + (err.error || JSON.stringify(err)));
             }
         } catch (error) {
             console.error(error);
-            alert('Failed to save report.');
+            alert('Failed to process report.');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
+            directBtn.disabled = false;
         }
-    });
+    }
 </script>
 {% endblock content %}
