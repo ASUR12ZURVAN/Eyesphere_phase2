@@ -74,8 +74,13 @@ class Patient(models.Model):
     address = models.TextField(blank=True, null=True)
     risk_factor = models.CharField(
         max_length=20, 
-        choices=[('low', 'Low Risk'), ('moderate', 'Moderate Risk'), ('high', 'High Risk')], 
-        default='low',
+        choices=[
+            ('not_classified', 'Not Classified'),
+            ('low', 'Low Risk'), 
+            ('moderate', 'Moderate Risk'), 
+            ('high', 'High Risk')
+        ], 
+        default='not_classified',
         help_text="Categorize patients based on risk for future segregation"
     )
     has_received_reward = models.BooleanField(default=False, help_text="Track if patient received coins for completing profile")

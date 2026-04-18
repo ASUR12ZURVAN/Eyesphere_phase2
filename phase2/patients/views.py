@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
-from .models import ScreeningTestResult, OnlineSessionRequest
+from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket
 import json
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -152,6 +152,11 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context['examinations'] = examinations
         context['screening_results'] = screening_results
         context['session_requests'] = OnlineSessionRequest.objects.filter(user=user).order_by('-created_at')
+        
+        # Redemption data
+        context['redeemable_services'] = RedeemableService.objects.all()
+        context['my_tickets'] = RedemptionTicket.objects.filter(user=user).select_related('service').order_by('-redeemed_at')
+        
         return context
 
 
@@ -376,3 +381,47 @@ class UpdatePatientProfileView(APIView):
 
         except Exception as e:
             return Response({'error': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class RedeemServiceView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            service_id = data.get('service_id')
+            
+            if not service_id:
+                return Response({'error': 'Service ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            service = get_object_or_404(RedeemableService, id=service_id)
+            user = request.user
+            
+            if user.coins < service.coins_required:
+                return Response({
+                    'error': f'Insufficient coins. You need {service.coins_required} coins, but you only have {user.coins}.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Atomic transaction to ensure coin deduction and ticket creation
+            from django.db import transaction
+            with transaction.atomic():
+                # Deduct coins
+                user.coins -= service.coins_required
+                user.save(update_fields=['coins'])
+                
+                # Create ticket
+                ticket = RedemptionTicket.objects.create(
+                    user=user,
+                    service=service
+                )
+                
+            return Response({
+                'status': 'success',
+                'message': f'Successfully redeemed {service.name}!',
+                'ticket_code': ticket.ticket_code,
+                'remaining_coins': user.coins
+            })
+            
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
