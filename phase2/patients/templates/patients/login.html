@@ -66,6 +66,7 @@
                 localStorage.setItem('access_token', result.access);
                 localStorage.setItem('refresh_token', result.refresh);
                 localStorage.setItem('user', JSON.stringify(result.user));
+                sessionStorage.removeItem('twentyTwentyTimer');
 
                 window.location.href = '{% url "patient_dashboard" %}';
             } else {

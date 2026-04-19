@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
-from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest
+from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest, PatientQuery
 import json
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -100,6 +100,14 @@ class LoginPatient(APIView):
 
             # Log user into session
             login(request, user)
+            
+            # Record monthly login
+            from optometrist.models import UserLoginStat
+            now = timezone.now()
+            year_month = now.strftime('%Y-%m')
+            stat, _ = UserLoginStat.objects.get_or_create(user=user, year_month=year_month)
+            stat.login_count += 1
+            stat.save(update_fields=['login_count'])
             
             # Reward daily login coins
             today = timezone.now().date()
@@ -308,6 +316,7 @@ class UpdateRetentionTimeView(APIView):
         try:
             data = request.data if isinstance(request.data, dict) else json.loads(request.body)
             elapsed = int(data.get('elapsed_seconds', 0))
+            formatted_time = "0h 0m 0s"
             if elapsed > 0:
                 user = request.user
                 # Use F() expression for safe concurrent updates
@@ -315,7 +324,13 @@ class UpdateRetentionTimeView(APIView):
                 Optometrist.objects.filter(pk=user.pk).update(
                     retention_time=F('retention_time') + elapsed
                 )
-            return Response({'status': 'ok'})
+                user.refresh_from_db()
+                total_seconds = user.retention_time
+                hours = total_seconds // 3600
+                minutes = (total_seconds % 3600) // 60
+                seconds = total_seconds % 60
+                formatted_time = f"{hours}h {minutes}m {seconds}s"
+            return Response({'status': 'ok', 'formatted_time': formatted_time})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -458,6 +473,7 @@ class RedeemServiceView(APIView):
 
 
 class GetOptometristsView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -466,6 +482,7 @@ class GetOptometristsView(APIView):
         return Response(data)
 
 class GetPatientProfileView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -515,5 +532,35 @@ class BookHomeTestView(APIView):
             )
             
             return Response({'status': 'success', 'message': 'Home test booked successfully!'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SubmitPatientQueryView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            query_text = data.get('query_text', '').strip()
+
+            if not query_text:
+                return Response({'error': 'Query text is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Enforce 500-word limit
+            word_count = len(query_text.split())
+            if word_count > 500:
+                return Response({'error': f'Query exceeds 500 words (currently {word_count} words).'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = request.user
+            PatientQuery.objects.create(
+                user=user,
+                name=user.name,
+                phone_number=user.phone_number,
+                email=user.email,
+                query_text=query_text
+            )
+            return Response({'status': 'success', 'message': 'Your query has been submitted successfully!'})
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -139,3 +139,24 @@ class HomeTestRequest(models.Model):
 
     def __str__(self):
         return f"Home test for {self.user.name} - {self.status}"
+
+
+class PatientQuery(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='queries'
+    )
+    name = models.CharField(max_length=200)
+    phone_number = models.CharField(max_length=15, blank=True)
+    email = models.EmailField(blank=True, null=True)
+    query_text = models.TextField(help_text="Patient's query (max 500 words)")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Patient Query"
+        verbose_name_plural = "Patient Queries"
+
+    def __str__(self):
+        return f"Query from {self.name} on {self.created_at.strftime('%d %b %Y')}"

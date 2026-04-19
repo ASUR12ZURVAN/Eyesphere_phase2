@@ -61,17 +61,15 @@
 <!-- Floating "Book Now" Button & Modal -->
 <style>
     .floating-book-btn {
-        position: fixed;
-        top: 25px;
-        right: 25px;
-        z-index: 1000;
+        /* position: static or relative managed by parent flex */
+        z-index: 10;
         background: linear-gradient(135deg, #059669 0%, #047857 100%);
         color: white;
         border: none;
         border-radius: 50px;
-        padding: 14px 28px;
+        padding: 12px 26px;
         font-weight: 700;
-        box-shadow: 0 4px 20px rgba(5, 150, 105, 0.5);
+        box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -170,15 +168,7 @@
     }
 </style>
 
-<button class="floating-book-btn" onclick="openBookModal()">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="8.5" cy="7" r="4"></circle>
-        <line x1="20" y1="8" x2="20" y2="14"></line>
-        <line x1="17" y1="11" x2="23" y2="11"></line>
-    </svg>
-    <span class="btn-text">Book AT home test</span>
-</button>
+<!-- Button is now placed manually in template headers -->
 
 <div class="book-modal-overlay" id="bookModal">
     <div class="book-modal-content">

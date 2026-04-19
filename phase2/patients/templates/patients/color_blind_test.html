@@ -84,7 +84,10 @@
 <body>
 <div class="top-bar">
     <a href="{% url 'patient_dashboard' %}" class="back-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
-    <h1>Color Vision Test</h1><span></span>
+    <h1>Color Vision Test</h1>
+    <button class="floating-book-btn" onclick="openBookModal()" style="font-size: 0.85rem; padding: 8px 16px; animation: pulseButton 2s infinite ease-in-out;">
+        <span class="btn-text">Book At-Home Test</span>
+    </button>
 </div>
 
 <main>

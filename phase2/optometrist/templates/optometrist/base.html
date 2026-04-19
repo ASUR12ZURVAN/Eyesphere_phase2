@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -307,14 +308,7 @@
 <body>
     <header class="site-header animate-fade-in">
         <a href="{% url 'landing_page' %}" class="logo-link">
-            <div class="logo-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </div>
-            <span>EyeSphere</span>
+            <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 52px; border-radius: 10px; object-fit: contain;">
         </a>
         <nav class="header-nav">
             <a href="#" class="nav-link">About Us</a>
@@ -331,14 +325,7 @@
         <div class="footer-grid">
             <div class="footer-col">
                 <div class="footer-brand" style="margin-bottom: 1rem;">
-                    <div class="logo-icon" style="width: 28px; height: 28px; border-radius: 6px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </div>
-                    <span>EyeSphere</span>
+                    <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 40px; border-radius: 6px; object-fit: contain;">
                 </div>
                 <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
                     Empowering vision care professionals with modern tools to deliver the best patient experience.
@@ -353,11 +340,11 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Legal</h4>
+                <h4>Terms & Conditions</h4>
                 <ul>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
-                    <li><a href="#">Cookie Policy</a></li>
+                    <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'corporate_terms' %}">Corporate Terms</a></li>
+                    <li><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
                 </ul>
             </div>
         </div>

@@ -37,6 +37,10 @@ class Optometrist(AbstractBaseUser, PermissionsMixin):
     office_hours = models.CharField(max_length=200, blank=True, null=True, help_text="e.g., Mon-Fri: 9am-5pm")
     languages = models.CharField(max_length=200, blank=True, null=True, help_text="e.g., English, Spanish")
     
+    # Corporate related fields
+    working_hospital = models.CharField(max_length=200, blank=True, null=True)
+    assigned_companies = models.TextField(blank=True, null=True, help_text="Comma-separated list of company names they work with")
+    
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -196,5 +200,16 @@ class Medication(models.Model):
     
     def __str__(self):
         return self.name
-    
 
+class UserLoginStat(models.Model):
+    user = models.ForeignKey(Optometrist, on_delete=models.CASCADE, related_name='login_stats')
+    year_month = models.CharField(max_length=7, help_text="Format: YYYY-MM")
+    login_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'year_month')
+        verbose_name = "User Login Stat"
+        verbose_name_plural = "User Login Stats"
+
+    def __str__(self):
+        return f"{self.user.name} - {self.year_month}: {self.login_count}"

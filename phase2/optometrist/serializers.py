@@ -8,7 +8,8 @@ class OptometristSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'phone_number', 'password', 'email',
             'license_number', 'qualification', 'specialization', 'experience_years',
-            'bio', 'clinic_address', 'profile_picture', 'website', 'office_hours', 'languages'
+            'bio', 'clinic_address', 'profile_picture', 'website', 'office_hours', 'languages',
+            'working_hospital', 'assigned_companies'
         ]
         extra_kwargs = {
             'password': {'write_only': True},

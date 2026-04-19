@@ -1,0 +1,11 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}Terms of Service | EyeSphere{% endblock title %}
+
+{% block content %}
+<div class="glass-card animate-fade-in" style="max-width: 800px; padding: 3rem;">
+    <div style="font-size: 0.95rem; line-height: 1.6; color: var(--text-main);">
+        {% include "optometrist/_terms_content.html" %}
+    </div>
+</div>
+{% endblock content %}

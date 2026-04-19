@@ -21,8 +21,9 @@
     </style>
 </head>
 <body>
+    {% load static %}
     <div class="header">
-        <div class="logo">EyeSphere Portal</div>
+        <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 80px; border-radius: 12px;">
         <div class="subtitle">Screening Test Report</div>
     </div>
 

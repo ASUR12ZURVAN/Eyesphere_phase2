@@ -352,19 +352,46 @@
         if (prefillPhone) {
             const accessToken = localStorage.getItem('access_token');
             try {
-                const response = await fetch(`/api/exams/by-phone/${prefillPhone}/`, {
+                // 1. Try to fetch pending examination first
+                const examResponse = await fetch(`/api/exams/by-phone/${prefillPhone}/`, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    populateForm(data);
-                    fetchPatientHistory(prefillPhone);
+                
+                if (examResponse.ok) {
+                    const examData = await examResponse.json();
+                    populateForm(examData);
+                } else {
+                    // 2. Fallback: Fetch basic patient info if no pending exam
+                    const patientResponse = await fetch(`/api/patient-info/${prefillPhone}/`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    if (patientResponse.ok) {
+                        const patientData = await patientResponse.json();
+                        populatePatientFields(patientData);
+                    }
+                }
+                
+                fetchPatientHistory(prefillPhone);
+                checkPatientType(prefillPhone);
+                
+                if (prefillConsultant) {
+                    const form = document.getElementById('examForm');
+                    form.elements['consultant_id'].value = prefillConsultant;
                 }
             } catch (err) {
                 console.error('Prefill failed', err);
             }
         }
     });
+
+    function populatePatientFields(patient) {
+        const form = document.getElementById('examForm');
+        form.elements['name'].value = patient.name || '';
+        form.elements['age'].value = patient.age || '';
+        form.elements['gender'].value = patient.gender || 'male';
+        form.elements['phone_number'].value = patient.phone_number || '';
+        form.elements['address'].value = patient.address || '';
+    }
 
     function populateForm(data) {
         const form = document.getElementById('examForm');
@@ -454,10 +481,31 @@
     // Add event listener for real-time history & type check
     let currentPatientType = null;
 
-    document.querySelector('input[name="phone_number"]').addEventListener('blur', (e) => {
+    document.querySelector('input[name="phone_number"]').addEventListener('blur', async (e) => {
         const phone = e.target.value;
+        if (!phone) return;
+        
+        const accessToken = localStorage.getItem('access_token');
+        
+        // Fetch patient history and type (for UI/Logic)
         fetchPatientHistory(phone);
         checkPatientType(phone);
+        
+        // Auto-fill basic details if form name is empty (to avoid overwriting user typing but help if blank)
+        const nameField = document.querySelector('input[name="name"]');
+        if (!nameField.value) {
+            try {
+                const response = await fetch(`/api/patient-info/${phone}/`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (response.ok) {
+                    const patient = await response.json();
+                    populatePatientFields(patient);
+                }
+            } catch (err) {
+                console.error('Auto-fill on blur failed', err);
+            }
+        }
     });
 
     async function checkPatientType(phone) {

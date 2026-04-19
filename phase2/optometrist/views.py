@@ -20,6 +20,9 @@ class OptometristDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, Temp
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['examinations'] = EyeExamination.objects.filter(optometrist=self.request.user).select_related('patient', 'consultant').order_by('-created_at')
+        context['corporate_patients'] = Patient.objects.filter(login_type='corporate').order_by('-created_at')
+        # Get unique company names for filtering
+        context['company_names'] = Patient.objects.filter(login_type='corporate').values_list('company_name', flat=True).distinct()
         return context
 
 class LandingPageView(TemplateView):
@@ -75,6 +78,30 @@ class OptometristDetailView(generics.RetrieveAPIView):
     queryset = Optometrist.objects.filter(is_active=True)
     serializer_class = OptometristProfileSerializer
     permission_classes = [permissions.AllowAny]
+
+class OptometristProfileUpdateAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        serializer = OptometristSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CorporatePatientsAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        company_name = request.query_params.get('company_name')
+        patients = Patient.objects.filter(login_type='corporate')
+        
+        if company_name:
+            patients = patients.filter(company_name=company_name)
+            
+        serializer = PatientSerializer(patients, many=True)
+        return Response(serializer.data)
 
 from .models import Patient, EyeExamination
 from .serializers import PatientSerializer, EyeExaminationSerializer
