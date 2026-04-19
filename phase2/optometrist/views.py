@@ -19,10 +19,16 @@ class OptometristDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['examinations'] = EyeExamination.objects.filter(optometrist=self.request.user).select_related('patient', 'consultant').order_by('-created_at')
-        context['corporate_patients'] = Patient.objects.filter(login_type='corporate').order_by('-created_at')
-        # Get unique company names for filtering
-        context['company_names'] = Patient.objects.filter(login_type='corporate').values_list('company_name', flat=True).distinct()
+        user = self.request.user
+        context['examinations'] = EyeExamination.objects.filter(optometrist=user).select_related('patient', 'consultant').order_by('-created_at')
+        
+        # Only corporate optometrists can see corporate data
+        if user.designation == 'corporate':
+            context['corporate_patients'] = Patient.objects.filter(login_type='corporate').order_by('-created_at')
+            context['company_names'] = Patient.objects.filter(login_type='corporate').values_list('company_name', flat=True).distinct()
+        else:
+            context['corporate_patients'] = []
+            context['company_names'] = []
         return context
 
 class LandingPageView(TemplateView):
@@ -63,7 +69,8 @@ class LoginOptometrist(APIView):
                     'name': user.name,
                     'phone_number': user.phone_number,
                     'email': user.email,
-                    'role': user.role
+                    'role': user.role,
+                    'designation': user.designation
                 }
             })
         
@@ -84,6 +91,9 @@ class OptometristProfileUpdateAPIView(APIView):
 
     def post(self, request):
         user = request.user
+        if user.designation == 'corporate':
+            return Response({'error': 'Unauthorized. Corporate profiles can only be updated by administrators.'}, status=status.HTTP_403_FORBIDDEN)
+            
         serializer = OptometristSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -94,6 +104,9 @@ class CorporatePatientsAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        if request.user.designation != 'corporate':
+            return Response({'error': 'Unauthorized. Only corporate optometrists can access this data.'}, status=status.HTTP_403_FORBIDDEN)
+            
         company_name = request.query_params.get('company_name')
         patients = Patient.objects.filter(login_type='corporate')
         

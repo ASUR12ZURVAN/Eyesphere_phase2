@@ -253,7 +253,9 @@
             <p>Here's what's happening with your practice today.</p>
         </div>
         <div style="display: flex; gap: 1rem;">
+            {% if request.user.designation == 'regular' %}
             <button class="btn" style="background: var(--glass-bg); color: var(--text-main); border: 1px solid var(--glass-border);" onclick="openProfileModal()">Update Profile</button>
+            {% endif %}
             <button class="btn-logout" id="logoutBtn">Log Out</button>
         </div>
     </div>
@@ -308,7 +310,8 @@
         </div>
     </div>
 
-    <div class="action-grid">
+    <div class="action-grid" {% if request.user.designation != 'corporate' %}style="grid-template-columns: 1fr;"{% endif %}>
+        {% if request.user.designation == 'corporate' %}
         <div class="main-panel">
             <details class="patient-dropdown" open>
                 <summary style="display: flex; justify-content: space-between; align-items: center;">
@@ -381,6 +384,7 @@
                 </div>
             </details>
         </div>
+        {% endif %}
 
         <div class="side-panel">
             <h3 class="panel-title">Quick Actions</h3>
@@ -436,10 +440,12 @@
                     <label>Working Hospital</label>
                     <input type="text" name="working_hospital" id="profHospital" placeholder="Enter hospital name" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
                 </div>
+                {% if request.user.designation == 'corporate' %}
                 <div class="form-group" style="margin-top: 1rem;">
                     <label>Assigned Companies (Comma separated)</label>
                     <textarea name="assigned_companies" id="profCompanies" placeholder="e.g. Google, Apple, Microsoft" rows="3" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-family: inherit;"></textarea>
                 </div>
+                {% endif %}
                 <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
                     <button type="button" class="btn" style="flex: 1; background: var(--glass-border); color: var(--text-main);" onclick="closeProfileModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary" style="flex: 2;">Save Changes</button>
@@ -501,7 +507,8 @@
     function openProfileModal() {
         const user = JSON.parse(localStorage.getItem('user'));
         document.getElementById('profHospital').value = user.working_hospital || '';
-        document.getElementById('profCompanies').value = user.assigned_companies || '';
+        const companiesInput = document.getElementById('profCompanies');
+        if (companiesInput) companiesInput.value = user.assigned_companies || '';
         document.getElementById('profileModal').style.display = 'flex';
     }
 
@@ -512,7 +519,13 @@
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const hospital = document.getElementById('profHospital').value;
-        const companies = document.getElementById('profCompanies').value;
+        const companiesInput = document.getElementById('profCompanies');
+        const payload = {
+            working_hospital: hospital
+        };
+        if (companiesInput) {
+            payload.assigned_companies = companiesInput.value;
+        }
 
         const accessToken = localStorage.getItem('access_token');
         try {
@@ -522,10 +535,7 @@
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`
                 },
-                body: JSON.stringify({
-                    working_hospital: hospital,
-                    assigned_companies: companies
-                })
+                body: JSON.stringify(payload)
             });
 
             if (response.ok) {

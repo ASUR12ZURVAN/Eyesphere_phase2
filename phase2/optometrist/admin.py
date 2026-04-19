@@ -25,15 +25,16 @@ class OptometristAdmin(BaseUserAdmin):
     form = OptometristChangeForm
     add_form = OptometristCreationForm
     
-    list_display = ('name', 'phone_number', 'role', 'email', 'license_number', 'is_active', 'is_staff', 'created_at')
-    list_filter = ('role', 'is_active', 'is_staff', 'specialization', 'created_at')
+    list_display = ('name', 'phone_number', 'role', 'designation', 'email', 'license_number', 'is_active', 'is_staff', 'created_at')
+    list_filter = ('role', 'designation', 'is_active', 'is_staff', 'specialization', 'created_at')
     search_fields = ('name', 'phone_number', 'email', 'license_number', 'qualification')
     ordering = ('-created_at',)
     
     # UserAdmin specific fields
     fieldsets = (
         (None, {'fields': ('phone_number', 'password')}),
-        ('Role & Access', {'fields': ('role',)}),
+        ('Role & Access', {'fields': ('role', 'designation')}),
+        ('Corporate Information', {'fields': ('working_hospital', 'assigned_companies')}),
         ('Personal Information', {'fields': ('name', 'email', 'profile_picture', 'languages', 'bio')}),
         ('Professional Details', {'fields': ('license_number', 'qualification', 'specialization', 'experience_years', 'clinic_address', 'website', 'office_hours')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
@@ -44,7 +45,7 @@ class OptometristAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'name', 'password1', 'password2', 'role', 'is_staff', 'is_active'),
+            'fields': ('phone_number', 'name', 'password1', 'password2', 'role', 'designation', 'is_staff', 'is_active'),
         }),
         ('Personal Information', {
             'fields': ('email', 'profile_picture', 'languages', 'bio'),

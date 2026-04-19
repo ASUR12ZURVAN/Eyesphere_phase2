@@ -38,6 +38,11 @@ class Optometrist(AbstractBaseUser, PermissionsMixin):
     languages = models.CharField(max_length=200, blank=True, null=True, help_text="e.g., English, Spanish")
     
     # Corporate related fields
+    designation = models.CharField(
+        max_length=20,
+        choices=[('regular', 'Regular Optometrist'), ('corporate', 'Corporate Optometrist')],
+        default='regular'
+    )
     working_hospital = models.CharField(max_length=200, blank=True, null=True)
     assigned_companies = models.TextField(blank=True, null=True, help_text="Comma-separated list of company names they work with")
     
