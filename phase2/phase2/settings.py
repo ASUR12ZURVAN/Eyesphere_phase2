@@ -26,16 +26,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-53(3dg4towtgp1$-sv8)0^^9rmrm2gvvj_65v7zs6nc7@2$i@#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ["https://eyesphere-phase2-mpko.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://eyesphere-phase2-mpko.onrender.com","https://netrascreen.in"]
 
-
+                                                        
 # Application definition
 
 INSTALLED_APPS = [
+    'whitenoise.runserver_nostatic',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
