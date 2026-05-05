@@ -2554,12 +2554,11 @@
             const timerH = timerDiv.offsetHeight || 40;
             document.documentElement.style.setProperty('--timer-bar-h', timerH + 'px');
 
-            let endTime = sessionStorage.getItem('twentyTwentyTimer');
-            // Force reset to 1 min if it's currently set too far in the future for testing
-            if (!endTime || Date.now() > parseInt(endTime) || (parseInt(endTime) - Date.now() > 61000)) {
-                endTime = Date.now() + 1 * 60 * 1000; 
+            // Reset timer to 20 minutes for production
+            if (!endTime || Date.now() > parseInt(endTime) || (parseInt(endTime) - Date.now() > 21 * 60 * 1000)) {
+                endTime = Date.now() + 20 * 60 * 1000; 
                 sessionStorage.setItem('twentyTwentyTimer', endTime);
-                console.log('Timer reset to 1 min for testing:', endTime);
+                console.log('Timer reset to 20 min:', endTime);
             }
 
             function updateTimer() {
@@ -2609,8 +2608,8 @@
                     openModal('twentyTwentyModal');
                     startRestCountdown();
 
-                    // Reset for next cycle (1 minute for testing)
-                    endTime = Date.now() + 1 * 60 * 1000; 
+                    // Reset for next cycle (20 minutes)
+                    endTime = Date.now() + 20 * 60 * 1000; 
                     sessionStorage.setItem('twentyTwentyTimer', endTime);
                 }
             }
