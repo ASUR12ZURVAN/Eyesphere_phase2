@@ -15,8 +15,11 @@
         </div>
 
         <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="password" style="margin-bottom: 0;">Password</label>
+                <!-- <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 0.8rem; color: #059669; text-decoration: none;">Forgot Password?</a> -->
+            </div>
+            <input type="password" id="password" name="password" placeholder="••••••••" required style="margin-top: 0.4rem;">
         </div>
 
         <button type="submit" class="btn" style="background: #059669; color: white;" id="loginBtn">
@@ -31,6 +34,33 @@
 
     <div class="footer-link">
         Don't have an account? <a href="{% url 'patient_register_page' %}" style="color: #059669;">Sign up here</a>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="glass-card" style="max-width: 400px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: #059669;">Reset Password</h3>
+            <button onclick="closeForgotModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div id="forgotStep1">
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Click below to receive a reset token via email for your registered account.</p>
+            <div class="form-group" style="display: none;">
+                <input type="tel" id="forgotPhone">
+            </div>
+            <button onclick="requestOTP()" class="btn" style="background: #059669; color: white; width: 100%;" id="btnRequestOtp">Send Token via Email</button>
+        </div>
+        
+        <div id="forgotStep2" style="display: none;">
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Enter the reset token sent to your email and your new password.</p>
+            <div class="form-group">
+                <input type="text" id="forgotOtp" placeholder="Enter Reset Token" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 1rem;">
+                <input type="password" id="forgotNewPass" placeholder="Enter New Password" style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <button onclick="resetPassword()" class="btn" style="background: #059669; color: white; width: 100%;" id="btnResetPass">Reset Password</button>
+        </div>
     </div>
 </div>
 
@@ -80,5 +110,79 @@
             loginBtn.querySelector('span').innerText = 'Sign In';
         }
     });
+
+    // Forgot Password Logic
+    function openForgotModal() {
+        document.getElementById('forgotModal').style.display = 'flex';
+        document.getElementById('forgotStep1').style.display = 'block';
+        document.getElementById('forgotStep2').style.display = 'none';
+        document.getElementById('forgotPhone').value = document.getElementById('phone_number').value;
+    }
+    
+    function closeForgotModal() {
+        document.getElementById('forgotModal').style.display = 'none';
+    }
+    
+    async function requestOTP() {
+        const phone = document.getElementById('forgotPhone').value;
+        if(!phone) { alert("Please enter phone number"); return; }
+        
+        const btn = document.getElementById('btnRequestOtp');
+        btn.innerText = 'Sending...';
+        btn.disabled = true;
+        
+        try {
+            const res = await fetch('/patient/api/request-otp/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone })
+            });
+            const data = await res.json();
+            if(res.ok) {
+                alert("Email Sent! Check your registered email for the reset token.");
+                document.getElementById('forgotStep1').style.display = 'none';
+                document.getElementById('forgotStep2').style.display = 'block';
+            } else {
+                alert(data.error || "Failed to send OTP");
+            }
+        } catch(e) {
+            alert("Error sending OTP");
+        } finally {
+            btn.innerText = 'Send OTP';
+            btn.disabled = false;
+        }
+    }
+    
+    async function resetPassword() {
+        const phone = document.getElementById('forgotPhone').value;
+        const otp = document.getElementById('forgotOtp').value;
+        const newPass = document.getElementById('forgotNewPass').value;
+        
+        if(!otp || !newPass) { alert("Please enter OTP and new password"); return; }
+        
+        const btn = document.getElementById('btnResetPass');
+        btn.innerText = 'Resetting...';
+        btn.disabled = true;
+        
+        try {
+            const res = await fetch('/patient/api/reset-password/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone, otp: otp, new_password: newPass })
+            });
+            const data = await res.json();
+            if(res.ok) {
+                alert("Password reset successfully. You can now login.");
+                closeForgotModal();
+            } else {
+                alert(data.error || "Failed to reset password");
+            }
+        } catch(e) {
+            alert("Error resetting password");
+        } finally {
+            btn.innerText = 'Reset Password';
+            btn.disabled = false;
+        }
+    }
 </script>
 {% endblock content %}

@@ -24,7 +24,11 @@ urlpatterns = [
     path('', include('optometrist.urls')),
     path('doctor/', include('doctors.urls')),
     path('patient/', include('patients.urls')),
+    path('sw.js', (lambda r: django.views.static.serve(r, 'sw.js', document_root=os.path.join(settings.BASE_DIR, 'patients', 'static'))), name='sw_js'),
 ]
+
+import django.views.static
+import os
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

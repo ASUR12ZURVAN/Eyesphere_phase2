@@ -1420,7 +1420,10 @@
                         <h1>My Profile</h1>
                         <p>Your personal and medical information</p>
                     </div>
-                    <div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="openModal('change-password-modal')" class="btn" style="background:#f1f5f9;color:var(--text-main);border:1px solid var(--border);padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;">
+                            Change Password
+                        </button>
                         <button onclick="openModal('edit-profile-modal')" class="btn" style="background:var(--primary);color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;">
                             Edit Profile
                         </button>
@@ -1496,6 +1499,32 @@
                     </div>
                 </div>
 
+
+                <!-- Change Password Modal -->
+                <div class="modal-overlay" id="change-password-modal">
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <div>
+                                <h2>Change Password</h2>
+                                <div class="modal-header-meta">Update your account security</div>
+                            </div>
+                            <button class="close-modal" onclick="closeModal('change-password-modal')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="changePasswordForm">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">New Password</label>
+                                    <input type="password" id="cpNewPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Confirm New Password</label>
+                                    <input type="password" id="cpConfirmPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                <button type="submit" class="btn" style="width: 100%; background:var(--primary);color:#fff;border:none;padding:0.8rem;border-radius:10px;font-weight:600;cursor:pointer;" id="btnChangePass">Update Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Edit Profile Modal -->
                 <div class="modal-overlay" id="edit-profile-modal">
@@ -2461,6 +2490,14 @@
         // ===== 20-20 Rule Timer (Patient Dashboard Only) =====
         function init2020Timer() {
             console.log('Initializing 20-20 timer');
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('SW Registered', reg);
+                }).catch(err => console.log('SW Fail', err));
+            }
             if (document.getElementById("twenty-twenty-timer")) {
                 console.log('Timer already exists');
                 return;
@@ -2471,22 +2508,58 @@
             Object.assign(timerDiv.style, {
                 position: "fixed", top: "0", left: "0", width: "100%",
                 backgroundColor: "rgba(37, 99, 235, 0.95)", color: "white",
-                textAlign: "center", padding: "8px", zIndex: "10000",
+                display: "flex", justifyContent: "center", alignItems: "center", gap: "15px",
+                padding: "8px", zIndex: "10000",
                 fontWeight: "600", fontSize: "14px",
                 boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
                 backdropFilter: "blur(4px)"
             });
+            
+            const timerText = document.createElement("span");
+            timerText.id = "timer-text-content";
+            timerDiv.appendChild(timerText);
+
+            const notifyBtn = document.createElement("button");
+            notifyBtn.id = "enable-notify-btn";
+            notifyBtn.innerText = "🔔 Enable Alerts";
+            Object.assign(notifyBtn.style, {
+                padding: "2px 10px", borderRadius: "5px", border: "1px solid white",
+                backgroundColor: "transparent", color: "white", fontSize: "12px",
+                cursor: "pointer", display: Notification.permission === "granted" ? "none" : "inline-block"
+            });
+            notifyBtn.onclick = () => {
+                Notification.requestPermission().then(perm => {
+                    if (perm === "granted") {
+                        notifyBtn.style.display = "none";
+                        const options = { 
+                            body: "You will now receive eye-rest alerts.",
+                            tag: "test-notify",
+                            requireInteraction: true
+                        };
+                        if ('serviceWorker' in navigator) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification("Notifications Enabled!", options);
+                            });
+                        } else {
+                            new Notification("Notifications Enabled!", options);
+                        }
+                    }
+                });
+            };
+            timerDiv.appendChild(notifyBtn);
+
             document.body.appendChild(timerDiv);
-            console.log('Timer div appended to body');
+            console.log('Timer div appended with notification button');
             // Push main content below the timer bar
             const timerH = timerDiv.offsetHeight || 40;
             document.documentElement.style.setProperty('--timer-bar-h', timerH + 'px');
 
             let endTime = sessionStorage.getItem('twentyTwentyTimer');
-            if (!endTime || Date.now() > parseInt(endTime)) {
-                endTime = Date.now() + 20 * 60 * 1000; 
+            // Force reset to 1 min if it's currently set too far in the future for testing
+            if (!endTime || Date.now() > parseInt(endTime) || (parseInt(endTime) - Date.now() > 61000)) {
+                endTime = Date.now() + 1 * 60 * 1000; 
                 sessionStorage.setItem('twentyTwentyTimer', endTime);
-                console.log('Timer started:', endTime);
+                console.log('Timer reset to 1 min for testing:', endTime);
             }
 
             function updateTimer() {
@@ -2494,18 +2567,50 @@
                 if (timeLeft > 0) {
                     let m = Math.floor(timeLeft / 60);
                     let s = timeLeft % 60;
-                    timerDiv.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
+                    timerText.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
                 } else {
                     // Play notification sound
                     const audio = new Audio("{% static 'audio/timer_alert.mp3' %}");
                     audio.play().catch(e => console.log('Audio play failed:', e));
                     
+                    if ("Notification" in window) {
+                        const options = {
+                            body: "Please look at something 20 feet away for 20 seconds to relax your eye muscles.",
+                            icon: "/static/images/logo.png",
+                            tag: "eye-rest",
+                            renotify: true,
+                            requireInteraction: true
+                        };
+
+                        if (Notification.permission === "granted") {
+                            if ('serviceWorker' in navigator) {
+                                navigator.serviceWorker.ready.then(reg => {
+                                    reg.showNotification("Time to Rest! 👁️", options);
+                                });
+                            } else {
+                                new Notification("Time to Rest! 👁️", options);
+                            }
+                        } else if (Notification.permission !== "denied") {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === "granted") {
+                                    if ('serviceWorker' in navigator) {
+                                        navigator.serviceWorker.ready.then(reg => {
+                                            reg.showNotification("Time to Rest! 👁️", options);
+                                        });
+                                    } else {
+                                        new Notification("Time to Rest! 👁️", options);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    
                     // Show custom non-blocking modal with countdown
                     openModal('twentyTwentyModal');
                     startRestCountdown();
 
-                    // Reset for next cycle (20 minutes)
-                    endTime = Date.now() + 20 * 60 * 1000; 
+                    // Reset for next cycle (1 minute for testing)
+                    endTime = Date.now() + 1 * 60 * 1000; 
                     sessionStorage.setItem('twentyTwentyTimer', endTime);
                 }
             }
@@ -2679,6 +2784,46 @@
                 btn.disabled = false;
             }
         }
+
+        // Handle Change Password Form
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const newPass = document.getElementById('cpNewPass').value;
+            const confirmPass = document.getElementById('cpConfirmPass').value;
+            const btn = document.getElementById('btnChangePass');
+            
+            if (newPass !== confirmPass) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            btn.innerText = 'Updating...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/patient/api/change-password/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_password: newPass, confirm_password: confirmPass })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    closeModal('change-password-modal');
+                    this.reset();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch(err) {
+                console.error(err);
+                alert('An error occurred while changing password');
+            } finally {
+                btn.innerText = 'Update Password';
+                btn.disabled = false;
+            }
+        });
 
     </script>
 

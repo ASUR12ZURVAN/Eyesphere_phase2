@@ -471,96 +471,156 @@ class RedeemServiceView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+
+class RequestOTPView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        if not phone_number:
+            return Response({'error': 'Phone number is required'}, status=400)
+        user = Optometrist.objects.filter(phone_number=phone_number).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+            
+        if not user.email:
+            return Response({'error': 'No email address registered for this account. Please contact support.'}, status=400)
+        
+        token = default_token_generator.make_token(user)
+        
+        try:
+            send_mail(
+                'Password Reset Token - EyeSphere',
+                f'Hello {user.name},\n\nYour password reset token is: {token}\n\nPlease copy and paste this token into the portal to securely reset your password.',
+                'noreply@eyesphere.com',
+                [user.email],
+                fail_silently=False,
+            )
+            # Print token to console for testing locally
+            print(f"\n========== Sent Email to {user.email} with token: {token} ==========\n")
+            
+            # Mask the email for privacy in the response
+            email_parts = user.email.split('@')
+            masked_email = f"{email_parts[0][:2]}***@{email_parts[1]}"
+            return Response({'message': f'Reset token sent to {masked_email}.'})
+        except Exception as e:
+            print(f"Email failed: {e}")
+            # Fallback for development if email server isn't configured
+            print(f"\n========== Email Failed. Token for {phone_number} is {token} ==========\n")
+            return Response({'message': 'Reset token generated (Check console since email failed).'})
+
+class ResetPasswordView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def post(self, request):
+        phone_number = request.data.get('phone_number')
+        token = request.data.get('otp')
+        new_password = request.data.get('new_password')
+        
+        if not all([phone_number, token, new_password]):
+            return Response({'error': 'All fields are required'}, status=400)
+            
+        user = Optometrist.objects.filter(phone_number=phone_number).first()
+        if not user:
+            return Response({'error': 'User not found'}, status=404)
+            
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired reset token'}, status=400)
+            
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'message': 'Password reset successfully. You can now login.'})
+
+class ChangePasswordView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+        
+        if not all([new_password, confirm_password]):
+            return Response({'error': 'New password and confirm password are required'}, status=400)
+            
+        if new_password != confirm_password:
+            return Response({'error': 'Passwords do not match'}, status=400)
+            
+        user = request.user
+            
+        user.set_password(new_password)
+        user.save()
+        
+        # Keep user logged in after password change
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        
+        return Response({'message': 'Password changed successfully.'})
 
 class GetOptometristsView(APIView):
-    authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request):
-        optometrists = Optometrist.objects.filter(role='optometrist', is_active=True)
-        data = [{'id': o.id, 'name': o.name} for o in optometrists]
-        return Response(data)
+        optometrists = Optometrist.objects.filter(role='optometrist').values('id', 'name', 'phone_number')
+        return Response({'status': 'success', 'optometrists': list(optometrists)})
+
+class BookHomeTestView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    def post(self, request):
+        try:
+            data = request.data
+            optometrist_id = data.get('optometrist_id')
+            phone_number = data.get('phone_number')
+            email = data.get('email')
+            company_name = data.get('company_name')
+            address = data.get('address')
+            
+            optometrist = get_object_or_404(Optometrist, id=optometrist_id, role='optometrist')
+            
+            HomeTestRequest.objects.create(
+                user=request.user,
+                optometrist=optometrist,
+                phone_number=phone_number,
+                email=email,
+                company_name=company_name,
+                address=address
+            )
+            return Response({'status': 'success', 'message': 'Home test booked successfully'})
+        except Exception as e:
+            return Response({'error': str(e)}, status=400)
 
 class GetPatientProfileView(APIView):
-    authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
-
     def get(self, request):
         user = request.user
         patient_record = Patient.objects.filter(phone_number=user.phone_number).first()
         return Response({
+            'name': user.name,
             'phone_number': user.phone_number,
             'email': user.email,
+            'coins': user.coins,
+            'age': patient_record.age if patient_record else None,
+            'gender': patient_record.gender if patient_record else None,
+            'address': patient_record.address if patient_record else None,
+            'login_type': patient_record.login_type if patient_record else 'at_home',
             'company_name': patient_record.company_name if patient_record else None,
-            'address': patient_record.address if patient_record else ""
+            'designation': patient_record.designation if patient_record else None,
         })
 
-class BookHomeTestView(APIView):
-    authentication_classes = [CsrfExemptSessionAuth]
+class SubmitPatientQueryView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-
     def post(self, request):
         try:
-            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
-            optometrist_id = data.get('optometrist_id')
-            address = data.get('address')
+            data = request.data
+            query_text = data.get('query_text')
+            if not query_text:
+                return Response({'error': 'Query text is required'}, status=400)
             
-            if not optometrist_id or not address:
-                return Response({'error': 'Optometrist and address are required.'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            if optometrist_id == 'auto':
-                # Pick a random active optometrist
-                import random
-                optometrists = Optometrist.objects.filter(role='optometrist', is_active=True)
-                if not optometrists.exists():
-                    return Response({'error': 'No available optometrists at the moment.'}, status=status.HTTP_400_BAD_REQUEST)
-                optometrist = random.choice(optometrists)
-            else:
-                optometrist = get_object_or_404(Optometrist, id=optometrist_id, role='optometrist')
-            
-            # Fetch patient record for company name
-            patient_record = Patient.objects.filter(phone_number=request.user.phone_number).first()
-            company_name = patient_record.company_name if patient_record else None
-
-            HomeTestRequest.objects.create(
+            PatientQuery.objects.create(
                 user=request.user,
-                optometrist=optometrist,
+                name=request.user.name,
                 phone_number=request.user.phone_number,
                 email=request.user.email,
-                company_name=company_name,
-                address=address
-            )
-            
-            return Response({'status': 'success', 'message': 'Home test booked successfully!'})
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class SubmitPatientQueryView(APIView):
-    authentication_classes = [CsrfExemptSessionAuth]
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request):
-        try:
-            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
-            query_text = data.get('query_text', '').strip()
-
-            if not query_text:
-                return Response({'error': 'Query text is required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Enforce 500-word limit
-            word_count = len(query_text.split())
-            if word_count > 500:
-                return Response({'error': f'Query exceeds 500 words (currently {word_count} words).'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user = request.user
-            PatientQuery.objects.create(
-                user=user,
-                name=user.name,
-                phone_number=user.phone_number,
-                email=user.email,
                 query_text=query_text
             )
-            return Response({'status': 'success', 'message': 'Your query has been submitted successfully!'})
+            return Response({'status': 'success', 'message': 'Query submitted successfully'})
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': str(e)}, status=400)

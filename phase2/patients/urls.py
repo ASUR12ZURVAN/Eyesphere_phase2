@@ -5,7 +5,7 @@ from .views import (
     SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
     DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
     UpdatePatientProfileView, RedeemServiceView, GetOptometristsView, BookHomeTestView, GetPatientProfileView,
-    SubmitPatientQueryView
+    SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView
 )
 
 urlpatterns = [
@@ -35,4 +35,7 @@ urlpatterns = [
     path('api/book-home-test/', BookHomeTestView.as_view(), name='book_home_test'),
     path('api/get-profile/', GetPatientProfileView.as_view(), name='get_patient_profile_api'),
     path('api/submit-query/', SubmitPatientQueryView.as_view(), name='submit_patient_query'),
+    path('api/request-otp/', RequestOTPView.as_view(), name='request_otp'),
+    path('api/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change_password'),
 ]
