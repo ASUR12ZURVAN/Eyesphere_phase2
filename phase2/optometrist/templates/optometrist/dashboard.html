@@ -668,6 +668,7 @@
         const timerH = timerDiv.offsetHeight || 40;
         document.documentElement.style.setProperty('--timer-bar-h', timerH + 'px');
 
+        let endTime = sessionStorage.getItem('twentyTwentyTimer');
         // Reset timer to 20 minutes for production
         if (!endTime || Date.now() > parseInt(endTime) || (parseInt(endTime) - Date.now() > 21 * 60 * 1000)) {
             endTime = Date.now() + 20 * 60 * 1000; 
