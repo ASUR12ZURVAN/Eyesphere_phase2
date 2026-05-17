@@ -5,7 +5,8 @@ from .views import (
     SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
     DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
     UpdatePatientProfileView, RedeemServiceView, GetOptometristsView, BookHomeTestView, GetPatientProfileView,
-    SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView
+    SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView,
+    PlatformTimeMetricsView
 )
 
 urlpatterns = [
@@ -38,4 +39,5 @@ urlpatterns = [
     path('api/request-otp/', RequestOTPView.as_view(), name='request_otp'),
     path('api/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     path('api/change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('api/metrics/usage/', PlatformTimeMetricsView.as_view(), name='platform_time_metrics'),
 ]

@@ -324,6 +324,37 @@ class UpdateRetentionTimeView(APIView):
                 Optometrist.objects.filter(pk=user.pk).update(
                     retention_time=F('retention_time') + elapsed
                 )
+                
+                # Update DailyUserUsage
+                from optometrist.models import DailyUserUsage, DailyTopTen
+                from django.utils import timezone
+                today = timezone.localdate()
+                usage, created = DailyUserUsage.objects.get_or_create(user=user, date=today)
+                usage.total_seconds = F('total_seconds') + elapsed
+                usage.save(update_fields=['total_seconds'])
+                
+                # Update DailyTopTen
+                top_users = DailyUserUsage.objects.filter(date=today).order_by('-total_seconds')[:10]
+                top_users_data = []
+                for tu in top_users:
+                    # tu.total_seconds might be an F expression if not refreshed, so let's get the actual value.
+                    # It's better to fetch fresh from DB since we are building top 10.
+                    pass
+                
+                # We need fresh values, so let's evaluate the queryset
+                top_users_list = list(top_users.select_related('user'))
+                for tu in top_users_list:
+                    top_users_data.append({
+                        'user_id': tu.user.id,
+                        'name': tu.user.name,
+                        'phone_number': tu.user.phone_number,
+                        'total_seconds': tu.total_seconds
+                    })
+                
+                daily_top, _ = DailyTopTen.objects.get_or_create(date=today)
+                daily_top.top_users_data = top_users_data
+                daily_top.save(update_fields=['top_users_data'])
+
                 user.refresh_from_db()
                 total_seconds = user.retention_time
                 hours = total_seconds // 3600
@@ -624,3 +655,61 @@ class SubmitPatientQueryView(APIView):
             return Response({'status': 'success', 'message': 'Query submitted successfully'})
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+
+from django.db.models import Avg
+
+class PlatformTimeMetricsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        from optometrist.models import DailyUserUsage, DailyTopTen
+        from django.utils import timezone
+        import datetime
+        
+        date_str = request.query_params.get('date')
+        month_str = request.query_params.get('month')
+        
+        today = timezone.localdate()
+        
+        target_date = today
+        if date_str:
+            try:
+                target_date = datetime.datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+                
+        target_month_year = today.strftime('%Y-%m')
+        if month_str:
+            target_month_year = month_str
+        
+        # Calculate daily average
+        daily_usages = DailyUserUsage.objects.filter(date=target_date)
+        daily_avg_dict = daily_usages.aggregate(average_time=Avg('total_seconds'))
+        daily_average = daily_avg_dict['average_time'] or 0.0
+        
+        # Calculate monthly average
+        # Format for year-month filter: year and month
+        try:
+            year, month = map(int, target_month_year.split('-'))
+            monthly_usages = DailyUserUsage.objects.filter(date__year=year, date__month=month)
+            monthly_avg_dict = monthly_usages.aggregate(average_time=Avg('total_seconds'))
+            monthly_average = monthly_avg_dict['average_time'] or 0.0
+        except ValueError:
+            monthly_average = 0.0
+            
+        # Get daily top 10
+        daily_top_10 = []
+        try:
+            top_ten_record = DailyTopTen.objects.get(date=target_date)
+            daily_top_10 = top_ten_record.top_users_data
+        except DailyTopTen.DoesNotExist:
+            pass
+            
+        return Response({
+            'status': 'success',
+            'date': target_date.strftime('%Y-%m-%d'),
+            'month': target_month_year,
+            'daily_average_seconds': round(daily_average, 2),
+            'monthly_average_seconds': round(monthly_average, 2),
+            'daily_top_10': daily_top_10
+        })

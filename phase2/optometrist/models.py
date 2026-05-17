@@ -218,3 +218,29 @@ class UserLoginStat(models.Model):
 
     def __str__(self):
         return f"{self.user.name} - {self.year_month}: {self.login_count}"
+
+class DailyUserUsage(models.Model):
+    user = models.ForeignKey(Optometrist, on_delete=models.CASCADE, related_name='daily_usages')
+    date = models.DateField()
+    total_seconds = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'date')
+        verbose_name = "Daily User Usage"
+        verbose_name_plural = "Daily User Usages"
+        ordering = ['-date', '-total_seconds']
+
+    def __str__(self):
+        return f"{self.user.name} - {self.date}: {self.total_seconds}s"
+
+class DailyTopTen(models.Model):
+    date = models.DateField(unique=True)
+    top_users_data = models.JSONField(default=list, help_text="Stores a snapshot of the top 10 users for this day")
+
+    class Meta:
+        verbose_name = "Daily Top Ten"
+        verbose_name_plural = "Daily Top Tens"
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"Top 10 for {self.date}"

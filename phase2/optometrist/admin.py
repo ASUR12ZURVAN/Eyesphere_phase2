@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Optometrist, Patient, EyeExamination, Medication
+from .models import Optometrist, Patient, EyeExamination, Medication, DailyUserUsage, DailyTopTen
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import OptometristCreationForm, OptometristChangeForm
 
@@ -57,3 +57,14 @@ class OptometristAdmin(BaseUserAdmin):
             'fields': ('is_superuser', 'groups', 'user_permissions'),
         }),
     )
+
+@admin.register(DailyUserUsage)
+class DailyUserUsageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'total_seconds')
+    list_filter = ('date',)
+    search_fields = ('user__name', 'user__phone_number')
+
+@admin.register(DailyTopTen)
+class DailyTopTenAdmin(admin.ModelAdmin):
+    list_display = ('date',)
+    list_filter = ('date',)
