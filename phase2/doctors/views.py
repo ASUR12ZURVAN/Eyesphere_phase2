@@ -91,6 +91,23 @@ class AcceptAndConsultView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context['past_exams'] = EyeExamination.objects.filter(
             patient__phone_number=exam.patient.phone_number
         ).exclude(id=exam.id).order_by('-created_at')
+
+        # CMP (Chronic Management Program) clinical data for this patient, so the
+        # doctor sees the full picture when the optometrist sends a CMP patient.
+        from optometrist.models import CMPRecord
+        patient = exam.patient
+        if patient.phone_number:
+            patient_records = Patient.objects.filter(phone_number=patient.phone_number)
+        else:
+            patient_records = Patient.objects.filter(pk=patient.pk)
+        cmp_records = CMPRecord.objects.filter(
+            patient__in=patient_records
+        ).select_related('optometrist').order_by('-recorded_at')
+        cmp_patient = patient_records.filter(is_cmp_patient=True).order_by('-created_at').first()
+        context['cmp_patient'] = cmp_patient
+        context['is_cmp_patient'] = cmp_patient is not None
+        context['cmp_records'] = cmp_records
+        context['cmp_latest'] = cmp_records.first()
         return context
 
     def dispatch(self, request, *args, **kwargs):

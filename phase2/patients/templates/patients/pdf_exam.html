@@ -60,10 +60,42 @@
     </div>
 
     <h3>1. Chief Complaints & History</h3>
-    <table style="width: 100%;">
+    <table class="grid-table">
         <tr>
-            <td style="width: 50%;"><strong>Complaints:</strong> {{ exam.chief_complaints|default:"None" }}</td>
-            <td style="width: 50%;"><strong>Systemic History:</strong> {{ exam.systemic_history|default:"None" }}</td>
+            <td style="width: 25%;"><strong>Chief Complaints</strong></td>
+            <td style="width: 25%;">{{ exam.chief_complaints|default:"None" }}</td>
+            <td style="width: 25%;"><strong>Systemic History</strong></td>
+            <td style="width: 25%;">{{ exam.systemic_history|default:"None" }}</td>
+        </tr>
+        <tr>
+            <td><strong>H/o Eye Disease</strong></td>
+            <td>{{ exam.history_eye_disease|default:"NA" }}</td>
+            <td><strong>H/o Eye Surgery</strong></td>
+            <td>{{ exam.history_eye_surgery|default:"NA" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Family H/o Eye Disease</strong></td>
+            <td>{{ exam.family_history_eye_disease|default:"NA" }}</td>
+            <td><strong>Screen Time</strong></td>
+            <td>{{ exam.screen_time|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Outdoor Activities (Children)</strong></td>
+            <td>{{ exam.outdoor_activity_hours|default:"-" }}</td>
+            <td><strong>Glasses Made When &amp; Where</strong></td>
+            <td>{{ exam.glasses_made_when_where|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Medication Used for Eye</strong></td>
+            <td>{{ exam.eye_medication_used|default:"-" }}</td>
+            <td><strong>Systemic Medication</strong></td>
+            <td>{{ exam.systemic_medication|default:"NA" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Allergies with Medicine</strong></td>
+            <td>{{ exam.allergies_with_medicine|default:"NA" }}</td>
+            <td></td>
+            <td></td>
         </tr>
     </table>
 
@@ -89,7 +121,53 @@
         </tr>
     </table>
 
-    <h3>3. Refraction prescribed</h3>
+    <h3>3. AR Reading</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.ar_dv_sph_re|default:"-" }}</td><td>{{ exam.ar_dv_cyl_re|default:"-" }}</td><td>{{ exam.ar_dv_axis_re|default:"-" }}</td><td>{{ exam.ar_dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.ar_nv_sph_re|default:"-" }}</td><td>{{ exam.ar_nv_cyl_re|default:"-" }}</td><td>{{ exam.ar_nv_axis_re|default:"-" }}</td><td>{{ exam.ar_nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.ar_dv_sph_le|default:"-" }}</td><td>{{ exam.ar_dv_cyl_le|default:"-" }}</td><td>{{ exam.ar_dv_axis_le|default:"-" }}</td><td>{{ exam.ar_dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.ar_nv_sph_le|default:"-" }}</td><td>{{ exam.ar_nv_cyl_le|default:"-" }}</td><td>{{ exam.ar_nv_axis_le|default:"-" }}</td><td>{{ exam.ar_nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>4. POG (Power of Glasses)</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.pog_dv_sph_re|default:"-" }}</td><td>{{ exam.pog_dv_cyl_re|default:"-" }}</td><td>{{ exam.pog_dv_axis_re|default:"-" }}</td><td>{{ exam.pog_dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.pog_nv_sph_re|default:"-" }}</td><td>{{ exam.pog_nv_cyl_re|default:"-" }}</td><td>{{ exam.pog_nv_axis_re|default:"-" }}</td><td>{{ exam.pog_nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.pog_dv_sph_le|default:"-" }}</td><td>{{ exam.pog_dv_cyl_le|default:"-" }}</td><td>{{ exam.pog_dv_axis_le|default:"-" }}</td><td>{{ exam.pog_dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.pog_nv_sph_le|default:"-" }}</td><td>{{ exam.pog_nv_cyl_le|default:"-" }}</td><td>{{ exam.pog_nv_axis_le|default:"-" }}</td><td>{{ exam.pog_nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>5. Refraction Acceptance</h3>
     <table class="grid-table">
         <tr>
             <th rowspan="2" style="vertical-align: middle;">Eye</th>
@@ -112,14 +190,32 @@
         </tr>
     </table>
 
-    <h3>4. Diagnosis</h3>
+    <h3>6. Investigations &amp; Findings</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Test</th>
+            <th>Right Eye (RE)</th>
+            <th>Left Eye (LE)</th>
+        </tr>
+        <tr><td><strong>Schirmer</strong></td><td>{{ exam.schirmer_re|default:"-" }}</td><td>{{ exam.schirmer_le|default:"-" }}</td></tr>
+        <tr><td><strong>TBUT</strong></td><td>{{ exam.tbut_re|default:"-" }}</td><td>{{ exam.tbut_le|default:"-" }}</td></tr>
+        <tr><td><strong>Slit Lamp</strong></td><td>{{ exam.slit_lamp_re|default:"-" }}</td><td>{{ exam.slit_lamp_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Lens</td><td>{{ exam.lens_re|default:"-" }}</td><td>{{ exam.lens_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Cornea</td><td>{{ exam.cornea_re|default:"-" }}</td><td>{{ exam.cornea_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Conjunctiva</td><td>{{ exam.conjunctiva_re|default:"-" }}</td><td>{{ exam.conjunctiva_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Iris</td><td>{{ exam.iris_re|default:"-" }}</td><td>{{ exam.iris_le|default:"-" }}</td></tr>
+        <tr><td><strong>Fundus</strong></td><td>{{ exam.fundus_re|default:"-" }}</td><td>{{ exam.fundus_le|default:"-" }}</td></tr>
+        <tr><td><strong>IOP</strong></td><td>{{ exam.iop_re|default:"-" }}</td><td>{{ exam.iop_le|default:"-" }}</td></tr>
+    </table>
+
+    <h3>7. Diagnosis</h3>
     <p><strong>Provisional:</strong> {{ exam.provisional_diagnosis|default:"No explicit diagnosis entered." }}</p>
 
-    <h3>5. Doctor's Advice</h3>
+    <h3>8. Doctor's Advice</h3>
     <p>{{ exam.advice|default:"No specific advice provided." }}</p>
 
     {% if exam.medications.all %}
-    <h3>6. Prescribed Medications</h3>
+    <h3>9. Prescribed Medications</h3>
     <table class="grid-table">
         <tr>
             <th>Medication</th>
@@ -136,6 +232,46 @@
         </tr>
         {% endfor %}
     </table>
+    {% endif %}
+
+    {% if is_cmp_patient %}
+    <h3>10. CMP Details &mdash; {{ cmp_patient.get_cmp_type_display }}</h3>
+    {% if cmp_latest %}
+    <p style="font-size: 11px; color: #777; margin: 0 0 6px 0;">
+        Latest record: {{ cmp_latest.recorded_at|date:"d M Y, H:i" }}{% if cmp_latest.optometrist %} &bull; by {{ cmp_latest.optometrist.name }}{% endif %}
+    </p>
+    {% if cmp_patient.is_diabetic_cmp %}
+    <table class="grid-table">
+        <tr>
+            <th>HbA1c</th><th>Diabetes Type</th><th>Kidney Disease</th><th>Exercise</th><th>Current Medications</th>
+        </tr>
+        <tr>
+            <td>{{ cmp_latest.hba1c_value|default:"-" }}{% if cmp_latest.hba1c_value %} %{% endif %}</td>
+            <td>{{ cmp_latest.get_diabetes_type_display|default:"-" }}</td>
+            <td>{% if cmp_latest.has_kidney_disease == True %}Yes{% elif cmp_latest.has_kidney_disease == False %}No{% else %}-{% endif %}</td>
+            <td>{{ cmp_latest.exercise_frequency|default:"-" }}</td>
+            <td>{{ cmp_latest.current_diabetes_medications|default:"-" }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <table class="grid-table">
+        <tr>
+            <th>School Grade</th><th>Axial Length</th><th>Dilated Refraction</th><th>Screen Time</th><th>Outdoor Time</th><th>Eye Muscle Status</th>
+        </tr>
+        <tr>
+            <td>{{ cmp_latest.school_grade|default:"-" }}</td>
+            <td>{{ cmp_latest.axial_length|default:"-" }}{% if cmp_latest.axial_length %} mm{% endif %}</td>
+            <td>{{ cmp_latest.dilated_refraction|default:"-" }}{% if cmp_latest.dilated_refraction %} D{% endif %}</td>
+            <td>{{ cmp_latest.avg_daily_screen_time|default:"-" }}{% if cmp_latest.avg_daily_screen_time %} hrs{% endif %}</td>
+            <td>{{ cmp_latest.avg_daily_outdoor_time|default:"-" }}{% if cmp_latest.avg_daily_outdoor_time %} hrs{% endif %}</td>
+            <td>{{ cmp_latest.eye_muscle_status|default:"-" }}</td>
+        </tr>
+    </table>
+    {% endif %}
+    {% if cmp_latest.notes %}<p><strong>CMP Notes:</strong> {{ cmp_latest.notes }}</p>{% endif %}
+    {% else %}
+    <p>No CMP clinical records recorded yet.</p>
+    {% endif %}
     {% endif %}
 
     <div class="signature">

@@ -44,7 +44,7 @@
             background: linear-gradient(180deg, #065f46 0%, #059669 100%);
             color: #fff;
             position: fixed;
-            top: 0;
+            top: var(--timer-bar-h, 0px);
             left: 0;
             bottom: 0;
             z-index: 200;
@@ -147,7 +147,7 @@
         .mobile-header {
             display: none;
             position: fixed;
-            top: 0;
+            top: var(--timer-bar-h, 0px);
             left: 0;
             right: 0;
             z-index: 150;
@@ -1161,6 +1161,15 @@
                 </svg>
                 Patient
             </a>
+            {% if is_cmp_patient %}
+            <a href="#" data-tab="cmp" onclick="switchTab('cmp',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <path d="M3.5 12h3l1.5-3 2 6 1.5-3h2" opacity="0" />
+                </svg>
+                CMP Health
+            </a>
+            {% endif %}
             <a href="#" data-tab="screening" onclick="switchTab('screening',this)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
@@ -1790,6 +1799,12 @@
                                     <div class="info-item"><label>Screen Time</label><span>{{ exam.screen_time|default:"N/A" }}</span></div>
                                     <div class="info-item"><label>Eye Disease History</label><span>{{ exam.history_eye_disease|default:"N/A" }}</span></div>
                                     <div class="info-item"><label>Eye Surgery History</label><span>{{ exam.history_eye_surgery|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Family History of Eye Disease</label><span>{{ exam.family_history_eye_disease|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Outdoor Activities (Children)</label><span>{{ exam.outdoor_activity_hours|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Glasses Made When &amp; Where</label><span>{{ exam.glasses_made_when_where|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Medication Used for Eye</label><span>{{ exam.eye_medication_used|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Systemic Medication</label><span>{{ exam.systemic_medication|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Allergies with Medicine</label><span>{{ exam.allergies_with_medicine|default:"N/A" }}</span></div>
                                 </div>
                             </div>
                             <!-- Visual Acuity -->
@@ -1824,14 +1839,124 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <!-- Refraction -->
+                            <!-- AR Reading -->
                             <div class="section">
                                 <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
                                         stroke="currentColor" stroke-width="2">
                                         <circle cx="12" cy="12" r="10" />
                                         <line x1="12" y1="8" x2="12" y2="16" />
                                         <line x1="8" y1="12" x2="16" y2="12" />
-                                    </svg> Refraction</div>
+                                    </svg> AR Reading</div>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Distance Vision (DV)</p>
+                                <table class="data-table" style="margin-bottom:1rem">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.ar_dv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.ar_dv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Near Vision (NV)</p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.ar_nv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.ar_nv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- POG (Power of Glasses) -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> POG (Power of Glasses)</div>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Distance Vision (DV)</p>
+                                <table class="data-table" style="margin-bottom:1rem">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.pog_dv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.pog_dv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Near Vision (NV)</p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.pog_nv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.pog_nv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Refraction Acceptance -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> Refraction Acceptance</div>
                                 <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
                                     Distance Vision (DV)</p>
                                 <table class="data-table" style="margin-bottom:1rem">
@@ -1929,6 +2054,26 @@
                                             <td>Slit Lamp</td>
                                             <td>{{ exam.slit_lamp_re|default:"-" }}</td>
                                             <td>{{ exam.slit_lamp_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Lens</td>
+                                            <td>{{ exam.lens_re|default:"-" }}</td>
+                                            <td>{{ exam.lens_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Cornea</td>
+                                            <td>{{ exam.cornea_re|default:"-" }}</td>
+                                            <td>{{ exam.cornea_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Conjunctiva</td>
+                                            <td>{{ exam.conjunctiva_re|default:"-" }}</td>
+                                            <td>{{ exam.conjunctiva_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Iris</td>
+                                            <td>{{ exam.iris_re|default:"-" }}</td>
+                                            <td>{{ exam.iris_le|default:"-" }}</td>
                                         </tr>
                                         <tr>
                                             <td>Fundus</td>
@@ -2143,8 +2288,142 @@
                 </div>
             </div>
 
+            {% if is_cmp_patient %}
+            <!-- ==================== TAB: CMP HEALTH ==================== -->
+            <div class="tab-content" id="tab-cmp">
+                <div class="page-header" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;">
+                    <div>
+                        <h1>CMP Health</h1>
+                        <p>Chronic Management Program &mdash; {{ cmp_type_display }}</p>
+                    </div>
+                    <span style="background:#059669;color:#fff;padding:.4rem 1rem;border-radius:999px;font-weight:700;">{{ cmp_patient.cmp_tag }}</span>
+                </div>
+
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:.75rem 1rem;border-radius:10px;margin-bottom:1.5rem;font-size:.9rem;">
+                    🔒 This clinical data is recorded and updated by your optometrist. It is shown here for your reference (view only).
+                </div>
+
+                {% if cmp_latest %}
+                <!-- Latest snapshot -->
+                <div class="cmp-card">
+                    <div class="cmp-card-head">
+                        <h3>Latest Reading</h3>
+                        <span style="color:var(--muted,#64748b);font-size:.85rem;">Recorded {{ cmp_latest.recorded_at|date:'d M Y, H:i' }}</span>
+                    </div>
+                    <div class="cmp-metric-grid">
+                        {% if cmp_is_diabetic %}
+                            <div class="cmp-metric"><span class="cmp-metric-label">HbA1c</span><span class="cmp-metric-val">{{ cmp_latest.hba1c_value|default:"—" }}{% if cmp_latest.hba1c_value %} %{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Diabetes Type</span><span class="cmp-metric-val">{{ cmp_latest.get_diabetes_type_display|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Kidney Disease</span><span class="cmp-metric-val">{% if cmp_latest.has_kidney_disease == True %}Yes{% elif cmp_latest.has_kidney_disease == False %}No{% else %}—{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Exercise</span><span class="cmp-metric-val">{{ cmp_latest.exercise_frequency|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Medications</span><span class="cmp-metric-val">{{ cmp_latest.current_diabetes_medications|default:"—" }}</span></div>
+                            <div class="cmp-metric">
+                                <span class="cmp-metric-label">Reports</span>
+                                <span class="cmp-metric-val" style="font-size:.95rem;">
+                                    {% if cmp_latest.hba1c_report %}<a href="{{ cmp_latest.hba1c_report.url }}" target="_blank">HbA1c</a>{% endif %}
+                                    {% if cmp_latest.kft_report %} &nbsp;<a href="{{ cmp_latest.kft_report.url }}" target="_blank">KFT</a>{% endif %}
+                                    {% if not cmp_latest.hba1c_report and not cmp_latest.kft_report %}—{% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                        {% if cmp_is_pediatric %}
+                            <div class="cmp-metric"><span class="cmp-metric-label">School Grade</span><span class="cmp-metric-val">{{ cmp_latest.school_grade|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Axial Length</span><span class="cmp-metric-val">{{ cmp_latest.axial_length|default:"—" }}{% if cmp_latest.axial_length %} mm{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Dilated Refraction</span><span class="cmp-metric-val">{{ cmp_latest.dilated_refraction|default:"—" }}{% if cmp_latest.dilated_refraction %} D{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Screen Time</span><span class="cmp-metric-val">{{ cmp_latest.avg_daily_screen_time|default:"—" }}{% if cmp_latest.avg_daily_screen_time %} hrs{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Outdoor Time</span><span class="cmp-metric-val">{{ cmp_latest.avg_daily_outdoor_time|default:"—" }}{% if cmp_latest.avg_daily_outdoor_time %} hrs{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Eye Muscle Status</span><span class="cmp-metric-val">{{ cmp_latest.eye_muscle_status|default:"—" }}</span></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Trend charts -->
+                {% if cmp_is_diabetic %}
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>HbA1c Trend</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpHba1cChart"></canvas></div>
+                </div>
+                {% endif %}
+                {% if cmp_is_pediatric %}
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Axial Length Progression</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpAxialChart"></canvas></div>
+                </div>
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Refraction Progression</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpRefractionChart"></canvas></div>
+                </div>
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Screen Time vs Outdoor Activity</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpActivityChart"></canvas></div>
+                </div>
+                {% endif %}
+
+                <!-- Full history -->
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>History</h3></div>
+                    <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                {% if cmp_is_diabetic %}
+                                <th>HbA1c (%)</th><th>Diab. Type</th><th>Kidney</th><th>Exercise</th><th>Reports</th>
+                                {% endif %}
+                                {% if cmp_is_pediatric %}
+                                <th>Grade</th><th>Axial (mm)</th><th>Refraction (D)</th><th>Screen (h)</th><th>Outdoor (h)</th><th>Eye Muscle</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in cmp_records %}
+                            <tr>
+                                <td>{{ r.recorded_at|date:'d M Y' }}</td>
+                                {% if cmp_is_diabetic %}
+                                <td>{{ r.hba1c_value|default:"—" }}</td>
+                                <td>{{ r.get_diabetes_type_display|default:"—" }}</td>
+                                <td>{% if r.has_kidney_disease == True %}Yes{% elif r.has_kidney_disease == False %}No{% else %}—{% endif %}</td>
+                                <td>{{ r.exercise_frequency|default:"—" }}</td>
+                                <td>
+                                    {% if r.hba1c_report %}<a href="{{ r.hba1c_report.url }}" target="_blank">HbA1c</a>{% endif %}
+                                    {% if r.kft_report %} <a href="{{ r.kft_report.url }}" target="_blank">KFT</a>{% endif %}
+                                    {% if not r.hba1c_report and not r.kft_report %}—{% endif %}
+                                </td>
+                                {% endif %}
+                                {% if cmp_is_pediatric %}
+                                <td>{{ r.school_grade|default:"—" }}</td>
+                                <td>{{ r.axial_length|default:"—" }}</td>
+                                <td>{{ r.dilated_refraction|default:"—" }}</td>
+                                <td>{{ r.avg_daily_screen_time|default:"—" }}</td>
+                                <td>{{ r.avg_daily_outdoor_time|default:"—" }}</td>
+                                <td>{{ r.eye_muscle_status|default:"—" }}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="cmp-card">
+                    <p style="color:#64748b;text-align:center;padding:2rem 0;">No CMP clinical data has been recorded by your optometrist yet.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
         </div><!-- .page -->
     </div><!-- .main -->
+
+    <style>
+        .cmp-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,.05); }
+        .cmp-card-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; }
+        .cmp-card-head h3 { margin:0; font-size:1.1rem; color:#0f172a; }
+        .cmp-metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; }
+        .cmp-metric { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:.85rem 1rem; }
+        .cmp-metric-label { display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.03em; color:#64748b; margin-bottom:.25rem; }
+        .cmp-metric-val { display:block; font-size:1.15rem; font-weight:700; color:#0f172a; word-break:break-word; }
+    </style>
 
     <script>
         // Tab switching
@@ -2173,6 +2452,56 @@
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.active').forEach(m => { m.classList.remove('active'); }); document.body.style.overflow = ''; }
         });
+
+        {% if is_cmp_patient %}
+        // ===== CMP Health charts =====
+        const cmpRecords = [
+            {% for r in cmp_records %}
+            {
+                date: "{{ r.recorded_at|date:'d M Y' }}",
+                hba1c: {{ r.hba1c_value|default_if_none:'null' }},
+                axial: {{ r.axial_length|default_if_none:'null' }},
+                refraction: {{ r.dilated_refraction|default_if_none:'null' }},
+                screen: {{ r.avg_daily_screen_time|default_if_none:'null' }},
+                outdoor: {{ r.avg_daily_outdoor_time|default_if_none:'null' }}
+            },
+            {% endfor %}
+        ].reverse();  // chronological order for progression charts
+
+        function makeCmpLine(canvasId, datasets, unit) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            const labels = cmpRecords.map(r => r.date);
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: datasets.map(ds => ({
+                    label: ds.label, data: ds.data, borderColor: ds.color,
+                    backgroundColor: ds.color + '20', borderWidth: 3, tension: .3,
+                    pointRadius: 5, pointHoverRadius: 7, fill: ds.fill !== false, spanGaps: true
+                })) },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 18, font: { family: 'Outfit', size: 12, weight: '600' } } },
+                        tooltip: { backgroundColor: '#0f172a', padding: 12, cornerRadius: 10,
+                            callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y + (unit || '') } }
+                    },
+                    scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } },
+                              x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } } }
+                }
+            });
+        }
+
+        if (cmpRecords.length > 0) {
+            makeCmpLine('cmpHba1cChart', [{ label: 'HbA1c (%)', data: cmpRecords.map(r => r.hba1c), color: '#059669' }], ' %');
+            makeCmpLine('cmpAxialChart', [{ label: 'Axial Length (mm)', data: cmpRecords.map(r => r.axial), color: '#2563eb' }], ' mm');
+            makeCmpLine('cmpRefractionChart', [{ label: 'Dilated Refraction (D)', data: cmpRecords.map(r => r.refraction), color: '#db2777' }], ' D');
+            makeCmpLine('cmpActivityChart', [
+                { label: 'Screen Time (hrs)', data: cmpRecords.map(r => r.screen), color: '#f59e0b', fill: false },
+                { label: 'Outdoor Time (hrs)', data: cmpRecords.map(r => r.outdoor), color: '#10b981', fill: false }
+            ], ' hrs');
+        }
+        {% endif %}
 
         // Chart
         const rawExams = [

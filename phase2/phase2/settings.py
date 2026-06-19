@@ -86,6 +86,9 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 
 
 
+# NOTE: Neon (Postgres) config temporarily commented for local development.
+# Re-enable this block (and comment the sqlite block below) before deploying.
+
 DATABASES = {
     'default': dj_database_url.config(
         default=config('NEON_DB_URL'),
@@ -93,8 +96,6 @@ DATABASES = {
         ssl_require=True
     )
 }
-
-
 """
 
 
@@ -106,8 +107,6 @@ DATABASES = {
 }
 
 """
-
-
 
 
 

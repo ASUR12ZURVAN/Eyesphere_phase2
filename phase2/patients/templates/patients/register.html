@@ -65,6 +65,31 @@
             <input type="email" id="email" name="email" placeholder="john.doe@example.com">
         </div>
 
+        <!-- CMP (Chronic Management Program) Identification -->
+        <div class="form-group">
+            <label>Are you a CMP Patient?</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; flex: 1;">
+                    <input type="radio" name="is_cmp_patient" value="yes" onchange="toggleCmpFields(true)">
+                    <span>Yes</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; flex: 1;">
+                    <input type="radio" name="is_cmp_patient" value="no" checked onchange="toggleCmpFields(false)">
+                    <span>No</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="cmpFields" class="form-group" style="display: none; border: 1px dashed #059669; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; background: rgba(5, 150, 105, 0.05);">
+            <label for="cmp_type">Select CMP Type <span style="color: #ed4337;">*</span></label>
+            <select id="cmp_type" name="cmp_type" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; background: var(--card-bg); color: var(--text-color);">
+                <option value="" disabled selected>Select CMP Type</option>
+                <option value="cmp1">Standard Diabetic CMP</option>
+                <option value="cmp2">Advanced Diabetic CMP</option>
+                <option value="cmp3">Pediatric Myopia CMP</option>
+            </select>
+        </div>
+
         <div class="form-group">
             <label for="address">Residential Address (Optional)</label>
             <textarea id="address" name="address" placeholder="123 Main St, City, Country" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; resize: vertical; background: var(--card-bg); color: var(--text-color);"></textarea>
@@ -113,6 +138,20 @@
         }
     }
 
+    const cmpFields = document.getElementById('cmpFields');
+    const cmpTypeInput = document.getElementById('cmp_type');
+
+    function toggleCmpFields(show) {
+        if (show) {
+            cmpFields.style.display = 'block';
+            cmpTypeInput.required = true;
+        } else {
+            cmpFields.style.display = 'none';
+            cmpTypeInput.required = false;
+            cmpTypeInput.value = '';
+        }
+    }
+
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -144,7 +183,9 @@
                     address: data.address || null,
                     login_type: data.login_type,
                     company_name: data.login_type === 'corporate' ? data.company_name : null,
-                    designation: data.login_type === 'corporate' ? data.designation : null
+                    designation: data.login_type === 'corporate' ? data.designation : null,
+                    is_cmp_patient: data.is_cmp_patient === 'yes',
+                    cmp_type: data.is_cmp_patient === 'yes' ? data.cmp_type : null
                 })
             });
 

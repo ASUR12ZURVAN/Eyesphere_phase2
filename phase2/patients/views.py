@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from optometrist.models import Optometrist, Patient, EyeExamination
+from optometrist.models import Optometrist, Patient, EyeExamination, CMPRecord
 from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest, PatientQuery
 import json
 from django.shortcuts import redirect
@@ -41,11 +41,19 @@ class RegisterPatient(APIView):
         company_name = request.data.get('company_name')
         designation = request.data.get('designation')
 
+        # CMP onboarding identification (patient self-declared)
+        is_cmp_patient = request.data.get('is_cmp_patient') in (True, 'true', 'yes', 'on', '1', 1)
+        cmp_type = request.data.get('cmp_type') if is_cmp_patient else None
+
         if not name or not phone_number or not password or not age or not gender:
             return Response({'error': 'Name, phone number, password, age, and gender are required.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         if login_type == 'corporate' and not company_name:
              return Response({'error': 'Company name is required for corporate login.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        valid_cmp_types = {choice[0] for choice in Patient.CMP_TYPE_CHOICES}
+        if is_cmp_patient and cmp_type not in valid_cmp_types:
+            return Response({'error': 'Please select a valid CMP type.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if phone number already registered
         if Optometrist.objects.filter(phone_number=phone_number).exists():
@@ -69,7 +77,9 @@ class RegisterPatient(APIView):
             address=address,
             login_type=login_type,
             company_name=company_name if login_type == 'corporate' else None,
-            designation=designation if login_type == 'corporate' else None
+            designation=designation if login_type == 'corporate' else None,
+            is_cmp_patient=is_cmp_patient,
+            cmp_type=cmp_type
         )
 
         return Response({
@@ -169,11 +179,25 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context['examinations'] = examinations
         context['screening_results'] = screening_results
         context['session_requests'] = OnlineSessionRequest.objects.filter(user=user).order_by('-created_at')
-        
+
+        # ===== CMP (Chronic Management Program) data — view only =====
+        cmp_patient = patient_records.filter(is_cmp_patient=True).order_by('-created_at').first()
+        cmp_records = CMPRecord.objects.filter(
+            patient__in=patient_records
+        ).select_related('optometrist').order_by('-recorded_at')
+        context['cmp_patient'] = cmp_patient
+        context['is_cmp_patient'] = cmp_patient is not None
+        context['cmp_type'] = cmp_patient.cmp_type if cmp_patient else None
+        context['cmp_type_display'] = cmp_patient.get_cmp_type_display() if cmp_patient and cmp_patient.cmp_type else None
+        context['cmp_is_diabetic'] = cmp_patient.is_diabetic_cmp if cmp_patient else False
+        context['cmp_is_pediatric'] = cmp_patient.is_pediatric_myopia_cmp if cmp_patient else False
+        context['cmp_records'] = cmp_records
+        context['cmp_latest'] = cmp_records.first()
+
         # Redemption data
         context['redeemable_services'] = RedeemableService.objects.all()
         context['my_tickets'] = RedemptionTicket.objects.filter(user=user).select_related('service').order_by('-redeemed_at')
-        
+
         return context
 
 
@@ -294,9 +318,24 @@ class DownloadExamPDFView(LoginRequiredMixin, View):
         # Verify permissions: Optometrist/Doctor or the matching patient
         if request.user.role == 'patient' and exam.patient.phone_number != request.user.phone_number:
             return HttpResponse("Unauthorized", status=403)
-            
+
+        # Include CMP clinical data so the report carries the full picture for CMP patients
+        patient = exam.patient
+        if patient.phone_number:
+            patient_records = Patient.objects.filter(phone_number=patient.phone_number)
+        else:
+            patient_records = Patient.objects.filter(pk=patient.pk)
+        cmp_records = CMPRecord.objects.filter(
+            patient__in=patient_records
+        ).select_related('optometrist').order_by('-recorded_at')
+        cmp_patient = patient_records.filter(is_cmp_patient=True).order_by('-created_at').first()
+
         context = {
             'exam': exam,
+            'cmp_patient': cmp_patient,
+            'is_cmp_patient': cmp_patient is not None,
+            'cmp_records': cmp_records,
+            'cmp_latest': cmp_records.first(),
         }
         return render(request, 'patients/pdf_exam.html', context)
 
