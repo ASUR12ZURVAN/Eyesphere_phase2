@@ -500,6 +500,123 @@
             font-weight: 500;
         }
 
+        .onboarding-summary .card-header {
+            background: #f8fafc;
+        }
+
+        .onboarding-summary .card-header h2 {
+            color: var(--primary-dark);
+        }
+
+        .onboarding-summary .profile-grid {
+            padding: 0;
+            gap: 1rem;
+        }
+
+        .onboarding-summary .profile-item {
+            min-width: 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+        }
+
+        .onboarding-summary .profile-item span {
+            display: block;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .onboarding-section-title {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin: 1.8rem 0 1rem;
+            color: var(--text-main);
+            font-size: 1.05rem;
+        }
+
+        .onboarding-section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.2rem;
+            border-radius: 4px;
+            background: var(--primary);
+        }
+
+        .summary-value-pill {
+            display: inline-block !important;
+            width: fit-content;
+            max-width: 100%;
+            padding: .3rem .65rem;
+            border-radius: 999px;
+            background: #d1fae5;
+            color: #047857;
+            font-size: .85rem !important;
+            font-weight: 700 !important;
+        }
+
+        .summary-value-pill.warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .summary-value-pill.alert {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .disease-list,
+        .test-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .disease-chip,
+        .test-chip {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: .45rem .7rem;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .disease-chip {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .test-chip {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+        }
+
+        .empty-value {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .onboarding-summary .card-header {
+                display: block;
+            }
+
+            .onboarding-summary .card-header span {
+                display: block;
+                margin-top: .35rem;
+            }
+
+            .onboarding-summary .card-body {
+                padding: 1rem;
+            }
+        }
+
         /* ===== SCREENING GRID ===== */
         .test-grid {
             display: grid;
@@ -1456,6 +1573,57 @@
                         {% endif %}
                     </div>
                 </div>
+
+                {% if patient_records %}
+                {% with onboarding=patient_records.first %}
+                <div class="card onboarding-summary" data-testid="bd-onboarding-summary" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>BD onboarding record</h2>
+                        <span>Assessment and booking details saved by EyeSphere</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-grid">
+                            <div class="profile-item"><label>Patient ID</label><span data-testid="patient-account-id">{{ onboarding.patient_account_id }}</span></div>
+                            <div class="profile-item"><label>Location</label><span data-testid="patient-location">{{ onboarding.location|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Age Group</label><span data-testid="patient-age-group">{{ onboarding.age_group|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Risk Score</label><span data-testid="risk-score">{{ onboarding.risk_score_raw }} / {{ onboarding.risk_score_pct }}%</span></div>
+                            <div class="profile-item"><label>Risk Band</label><span class="summary-value-pill {% if onboarding.risk_factor == 'high' %}alert{% elif onboarding.risk_factor == 'moderate' %}warning{% endif %}" data-testid="risk-band">{{ onboarding.risk_band }}</span></div>
+                            <div class="profile-item"><label>Urgency</label><span class="summary-value-pill {% if onboarding.risk_factor == 'high' %}alert{% elif onboarding.risk_factor == 'moderate' %}warning{% endif %}" data-testid="risk-urgency">{{ onboarding.urgency|default:"Routine" }}</span></div>
+                            <div class="profile-item"><label>Conversion Likelihood</label><span data-testid="conversion-likelihood">{{ onboarding.conversion_likelihood|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Diseases Screenable</label><span class="disease-list" data-testid="disease-top3">{% for disease in onboarding.disease_top3 %}<span class="disease-chip">{{ disease }}</span>{% empty %}<span class="empty-value">No diseases listed</span>{% endfor %}</span></div>
+                            <div class="profile-item"><label>Selected Tests</label><span class="test-list" data-testid="selected-tests">{% if onboarding.selected_tests %}<span class="test-chip">{{ onboarding.selected_tests }}</span>{% else %}<span class="empty-value">No tests listed</span>{% endif %}</span></div>
+                            <div class="profile-item"><label>Primary Package</label><span data-testid="primary-package">{{ onboarding.primary_package|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Payable</label><span class="summary-value-pill" data-testid="payable-amount">&#8377;{{ onboarding.payable_amount|floatformat:2 }}</span></div>
+                            <div class="profile-item"><label>MRP / Savings</label><span data-testid="pricing-summary">&#8377;{{ onboarding.mrp_amount|floatformat:2 }} <small style="color:#047857;">(&#8377;{{ onboarding.savings_amount|floatformat:2 }} saved)</small></span></div>
+                            <div class="profile-item"><label>Booking Code</label><span class="summary-value-pill" data-testid="booking-code">{{ onboarding.booking_code|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Booking Date / Time</label><span data-testid="booking-slot">{% if onboarding.booking_date %}{{ onboarding.booking_date }}{% else %}<span class="empty-value">Date not set</span>{% endif %}{% if onboarding.booking_time %} <small>at {{ onboarding.booking_time }}</small>{% endif %}</span></div>
+                            <div class="profile-item"><label>Assigned Optometrist</label><span data-testid="assigned-optometrist">{{ onboarding.optometrist_assigned|default:"Not provided" }}</span></div>
+                        </div>
+                        <div>
+                            <h3 class="onboarding-section-title">Risk factors and history</h3>
+                            <div class="profile-grid">
+                                <div class="profile-item"><label>Diabetes</label><span data-testid="factor-diabetes">{{ onboarding.diabetes|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Diabetes over 5 years</label><span data-testid="factor-diabetes-over-5">{{ onboarding.diabetes_over_5yrs|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>HbA1c</label><span data-testid="factor-hba1c">{{ onboarding.hba1c_level|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Hypertension</label><span data-testid="factor-hypertension">{{ onboarding.hypertension|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Thyroid</label><span data-testid="factor-thyroid">{{ onboarding.thyroid|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Family history</label><span data-testid="factor-family-history">{{ onboarding.family_history|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Steroid use</label><span data-testid="factor-steroid">{{ onboarding.steroid_use|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Wears spectacles</label><span data-testid="factor-spectacles">{{ onboarding.spectacles_use|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>High spectacle power</label><span data-testid="factor-spectacle-power">{{ onboarding.spectacles_power_high|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Last check-up</label><span data-testid="factor-last-checkup">{{ onboarding.last_checkup|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Blurred vision</label><span data-testid="factor-blurred-vision">{{ onboarding.blurred_vision|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Symptoms</label><span data-testid="factor-symptoms">{{ onboarding.symptoms|default:"None" }}</span></div>
+                                <div class="profile-item"><label>Smoking</label><span data-testid="factor-smoking">{{ onboarding.smoking|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Alcohol</label><span data-testid="factor-alcohol">{{ onboarding.alcohol|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Screen time</label><span data-testid="factor-screen-time">{{ onboarding.screen_time|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Physical activity</label><span data-testid="factor-activity">{{ onboarding.physical_activity|default:"Not provided" }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endif %}
 
                 <div class="card" style="margin-top:2rem;">
                     <div class="card-header">

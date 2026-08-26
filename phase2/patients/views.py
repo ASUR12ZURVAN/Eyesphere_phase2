@@ -10,6 +10,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
 from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest, PatientQuery
 import json
+import random
+import secrets
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 from django.shortcuts import redirect
 from django.utils import timezone
 from datetime import timedelta
@@ -51,6 +55,12 @@ class RegisterPatient(APIView):
         if Optometrist.objects.filter(phone_number=phone_number).exists():
             return Response({'error': 'This phone number is already registered.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Check if email is already registered to another account
+        if email and Optometrist.objects.filter(email=email).exists():
+            return Response({'error': 'This email address is already registered to another account.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        patient_account_id = f"ES-{random.randint(100000, 999999)}"
+
         # Create patient user account for login
         user = Optometrist.objects.create_user(
             phone_number=phone_number,
@@ -61,7 +71,7 @@ class RegisterPatient(APIView):
         )
         
         # Create actual Patient record in the database
-        Patient.objects.create(
+        patient = Patient.objects.create(
             name=name,
             phone_number=phone_number,
             age=age,
@@ -69,16 +79,36 @@ class RegisterPatient(APIView):
             address=address,
             login_type=login_type,
             company_name=company_name if login_type == 'corporate' else None,
-            designation=designation if login_type == 'corporate' else None
+            designation=designation if login_type == 'corporate' else None,
+            email=email if email else None,
+            patient_account_id=patient_account_id
         )
+
+        email_sent, email_status_msg = False, ""
+        if email:
+            email_sent, email_status_msg = send_patient_credentials_email(
+                name=name,
+                patient_account_id=patient_account_id,
+                mobile=phone_number,
+                password=password,
+                email=email
+            )
+        else:
+            email_status_msg = "No email address provided; account created with phone number login."
 
         return Response({
             'message': 'Account created successfully!',
+            'status': 'success',
+            'patient_id': patient_account_id,
             'user': {
                 'id': user.id,
                 'name': user.name,
                 'phone_number': user.phone_number,
-            }
+                'email': user.email,
+                'patient_account_id': patient_account_id,
+            },
+            'email_sent': email_sent,
+            'email_status': email_status_msg
         }, status=status.HTTP_201_CREATED)
 
 
@@ -90,7 +120,15 @@ class LoginPatient(APIView):
 
     def post(self, request):
         phone_number = request.data.get('phone_number')
+        patient_id = request.data.get('patient_id') or request.data.get('username')
         password = request.data.get('password')
+
+        # Patient IDs are printed on the onboarding confirmation and are also
+        # accepted as usernames; phone-number login remains backwards compatible.
+        supplied_username = patient_id or phone_number
+        if supplied_username and str(supplied_username).upper().startswith('ES-'):
+            patient = Patient.objects.filter(patient_account_id=supplied_username).first()
+            phone_number = patient.phone_number if patient else None
 
         user = authenticate(phone_number=phone_number, password=password)
 
@@ -624,3 +662,353 @@ class SubmitPatientQueryView(APIView):
             return Response({'status': 'success', 'message': 'Query submitted successfully'})
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+
+
+def send_patient_credentials_email(
+    name,
+    patient_account_id,
+    mobile,
+    password,
+    email,
+    risk_score_pct=None,
+    risk_band=None,
+    urgency=None,
+    primary_package=None,
+    payable_amount=None,
+    booking_code=None,
+    booking_date=None,
+    booking_time=None
+):
+    """
+    Sends automated patient credentials (Account Number/Patient ID & Password) via Django mail (EmailMultiAlternatives).
+    Returns (email_sent: bool, email_status_msg: str)
+    """
+    if not email:
+        return False, "No email address provided; account created with phone number login."
+
+    subject = f"Welcome to EyeSphere - Your Patient Credentials & Vision Report [{patient_account_id}]"
+
+    summary_text = ""
+    summary_html = ""
+
+    if risk_score_pct is not None:
+        summary_text = f"""
+--- YOUR VISION ASSESSMENT SUMMARY ---
+Risk Assessment Score: {risk_score_pct}% ({risk_band or 'N/A'})
+Follow-up / Urgency: {urgency if urgency else 'Routine screening'}
+Primary Package / Screenings: {primary_package if primary_package else 'Custom Selection'}
+Total Payable: INR {payable_amount if payable_amount is not None else 0.00}
+{'Booking Reference: ' + str(booking_code) if booking_code else ''}
+{'Scheduled Visit Date: ' + str(booking_date) + ' (' + str(booking_time) + ')' if booking_date else ''}
+"""
+        risk_color = '#d9534f' if risk_score_pct >= 60 else '#f0ad4e' if risk_score_pct >= 35 else '#5cb85c'
+        payable_str = f"{payable_amount:.2f}" if isinstance(payable_amount, (int, float)) else str(payable_amount or '0.00')
+        booking_ref_html = f'<p style="margin: 6px 0; font-size: 14px;"><strong>Booking Ref:</strong> {booking_code} ({booking_date} {booking_time})</p>' if booking_code else ''
+
+        summary_html = f"""
+        <div style="background-color: #fafbfc; border: 1px solid #eee; padding: 15px 20px; margin: 20px 0; border-radius: 6px;">
+            <h3 style="margin-top: 0; color: #0a2b3b; font-size: 16px;">📊 Vision Assessment Summary</h3>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Risk Index Score:</strong> <span style="color: {risk_color}; font-weight: bold;">{risk_score_pct}% ({risk_band or 'N/A'})</span></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Follow-up Recommendation:</strong> {urgency if urgency else 'Routine check'}</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Selected Package:</strong> {primary_package if primary_package else 'Custom Screenings'}</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Total Amount:</strong> ₹{payable_str}</p>
+            {booking_ref_html}
+        </div>
+        """
+
+    plain_body = f"""Dear {name},
+
+Welcome to EyeSphere Vision Wellness! Your patient account has been successfully created.
+
+--- ACCOUNT CREDENTIALS ---
+Patient ID: {patient_account_id}
+Login Username (Mobile): {mobile}
+Login Password: {password}
+Login Portal: https://netrascreen.in/patient/api/login/
+{summary_text}
+Please log in to your patient portal to track your vision screening reports, manage home test bookings, and consult with our eye specialists.
+
+Warm regards,
+EyeSphere Vision Wellness Team
+https://netrascreen.in
+"""
+
+    html_body = f"""
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; background-color: #ffffff;">
+        <div style="background-color: #0a2b3b; color: #ffffff; padding: 25px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; color: #c9a55c; letter-spacing: 2px;">EYESPHERE</h1>
+            <p style="margin: 5px 0 0 0; font-size: 12px; color: #f0dba8; letter-spacing: 1px;">VISION BEYOND LIMITS</p>
+        </div>
+        
+        <div style="padding: 30px; color: #333333;">
+            <h2 style="color: #0a2b3b; margin-top: 0;">Welcome, {name}!</h2>
+            <p style="font-size: 15px; line-height: 1.5;">Your EyeSphere patient account and login credentials have been successfully created.</p>
+            
+            <div style="background-color: #f7f9fa; border-left: 4px solid #c9a55c; padding: 15px 20px; margin: 20px 0; border-radius: 4px;">
+                <h3 style="margin-top: 0; color: #0a2b3b; font-size: 16px;">🔑 Your Login Credentials</h3>
+                <p style="margin: 6px 0; font-size: 14px;"><strong>Patient ID:</strong> <span style="color: #0a2b3b; font-weight: bold;">{patient_account_id}</span></p>
+                <p style="margin: 6px 0; font-size: 14px;"><strong>Mobile (Login Username):</strong> {mobile}</p>
+                <p style="margin: 6px 0; font-size: 14px;"><strong>Password:</strong> <span style="background: #eef2f5; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-weight: bold;">{password}</span></p>
+                <p style="margin: 12px 0 0 0;"><a href="https://netrascreen.in/patient/api/login/" style="display: inline-block; background-color: #0a2b3b; color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 5px; font-weight: bold; font-size: 13px;">Log In to Patient Portal →</a></p>
+            </div>
+            
+            {summary_html}
+
+            <p style="font-size: 13px; color: #777;">If you have any questions or need to modify your booking, please contact our support team at support@eyesphere.com.</p>
+        </div>
+
+        <div style="background-color: #f1f5f8; padding: 15px; text-align: center; font-size: 12px; color: #666; border-top: 1px solid #e0e0e0;">
+            EyeSphere Vision Wellness &copy; 2026. All rights reserved.
+        </div>
+    </div>
+    """
+
+    host_user = getattr(settings, 'EMAIL_HOST_USER', '')
+    is_placeholder = not host_user or 'your_email' in host_user or 'example' in host_user
+    if getattr(settings, 'EMAIL_BACKEND', '') == 'django.core.mail.backends.smtp.EmailBackend' and is_placeholder:
+        print(f"[MAIL LOG] Automated Credential Email generated for {name} ({email}):\nSubject: {subject}\nPatient ID: {patient_account_id}\nUsername: {mobile}\nPassword: {password}\n(Placeholder SMTP credentials detected in .env; email logged locally)")
+        return True, f"Credentials generated for {email}. (Logged locally to console; update EMAIL_HOST_USER/PASSWORD in .env to send via live SMTP)"
+
+    try:
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_body,
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@eyesphere.com'),
+            to=[email]
+        )
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
+        return True, f"Credentials emailed successfully to {email}."
+    except Exception as mail_err:
+        print(f"Email delivery error: {mail_err}")
+        return False, f"Account created, but email could not be sent: {str(mail_err)}"
+
+class PatientOnboardingView(TemplateView):
+    template_name = 'patients/onboarding.html'
+
+
+class OnboardPatientApiView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        try:
+            data = request.data if isinstance(request.data, dict) else json.loads(request.body)
+            
+            # Extract basic patient details
+            name = (data.get('name') or data.get('p_name') or '').strip()
+            mobile = (data.get('mobile') or data.get('phone_number') or data.get('p_mobile') or '').strip()
+            email = (data.get('email') or '').strip()
+            location = data.get('location') or data.get('p_loc') or ''
+            location_other = data.get('location_other') or data.get('p_loc_other') or ''
+            age_group = data.get('age_group') or data.get('age') or '' # under40, 40to49, 50plus
+            
+            # Numeric age derivation
+            raw_age = data.get('age_numeric') or data.get('age_years')
+            if not raw_age:
+                if age_group == 'under40': raw_age = 30
+                elif age_group == '40to49': raw_age = 45
+                elif age_group == '50plus': raw_age = 58
+                else: raw_age = 35
+            try:
+                age = int(raw_age)
+            except (ValueError, TypeError):
+                age = 35
+
+            gender = data.get('gender') or 'other'
+            address = data.get('address') or location or ''
+
+            if not name or not mobile:
+                return Response({'error': 'Patient Name and Mobile Number are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Systemic medical history
+            answers = data.get('answers') or {}
+            diabetes = bool(int(answers.get('diabetes', 0) or data.get('diabetes', 0) or 0))
+            diabetes_over_5yrs = bool(int(answers.get('dm5', 0) or data.get('dm5', 0) or 0))
+            hba1c_level = answers.get('hba1c') or data.get('hba1c') or ''
+            hypertension = bool(int(answers.get('htn', 0) or data.get('htn', 0) or 0))
+            thyroid = bool(int(answers.get('thyroid', 0) or data.get('thyroid', 0) or 0))
+            family_history = bool(int(answers.get('familyHx', 0) or answers.get('fh', 0) or data.get('fh', 0) or 0))
+            steroid_use = bool(int(answers.get('steroid', 0) or data.get('steroid', 0) or 0))
+
+            # Eye & Vision health history
+            spectacles_use = bool(int(answers.get('specs', 0) or data.get('specs', 0) or 0))
+            spectacles_power_high = bool(int(answers.get('specsPow', 0) or data.get('specspow', 0) or 0))
+            last_checkup = answers.get('checkupOld') or data.get('checkup') or ''
+            blurred_vision = answers.get('blur') or data.get('blur') or ''
+            symptoms = answers.get('symptoms') or data.get('symptoms') or ''
+
+            # Lifestyle factors
+            smoking = bool(int(answers.get('smoking', 0) or answers.get('smoke', 0) or data.get('smoke', 0) or 0))
+            alcohol = bool(int(answers.get('alcohol', 0) or data.get('alcohol', 0) or 0))
+            screen_time = answers.get('screen') or data.get('screen') or ''
+            physical_activity = answers.get('activity') or data.get('activity') or ''
+
+            # Risk scoring & output
+            risk_score_raw = int(data.get('riskRaw') or data.get('risk_score_raw') or 0)
+            risk_score_pct = int(data.get('riskPct') or data.get('risk_score_pct') or 0)
+            risk_band = data.get('riskBand') or data.get('risk_band') or 'Low risk'
+            urgency = data.get('urgency') or ''
+            conversion_likelihood = data.get('convLikelihood') or data.get('conv_likelihood') or ''
+            disease_top3 = data.get('diseaseTop3') or data.get('disease_top3') or []
+            selected_tests = data.get('tests') or data.get('selected_tests') or ''
+
+            # Package Deal & Booking Details
+            primary_package = data.get('primaryPackage') or data.get('primary_package') or ''
+            free_basic = data.get('freeBasic') == 'Yes' or data.get('free_basic') is True
+            add_on_people = data.get('addOns') or data.get('add_on_people') or []
+            people_count = int(data.get('peopleCount') or data.get('people_count') or 1)
+            payable_amount = float(data.get('payable') or data.get('payable_amount') or 0.0)
+            mrp_amount = float(data.get('mrp') or data.get('mrp_amount') or 0.0)
+            savings_amount = float(data.get('savings') or data.get('savings_amount') or 0.0)
+            tele_charge = float(data.get('teleCharge') or data.get('tele_charge') or 0.0)
+            ta_charge = float(data.get('taCharge') or data.get('ta_charge') or 0.0)
+            manual_discount = float(data.get('mdisc') or data.get('manual_discount') or 0.0)
+            referral_code = data.get('referral') or data.get('referral_code') or ''
+            booking_code = data.get('booking_code') or data.get('code') or ''
+            booking_date = data.get('booking_date') or data.get('date') or ''
+            booking_time = data.get('booking_time') or data.get('time') or ''
+            optometrist_assigned = data.get('optometrist') or data.get('optometrist_assigned') or ''
+            special_notes = data.get('msg') or data.get('special_notes') or ''
+
+            # Categorize risk_factor for Patient model
+            if risk_score_pct >= 65 or 'High' in risk_band or 'Urgent' in urgency:
+                risk_factor = 'high'
+            elif risk_score_pct >= 35 or 'Moderate' in risk_band:
+                risk_factor = 'moderate'
+            else:
+                risk_factor = 'low'
+
+            # Step 1: Create/Get Patient User Account (Optometrist model with role='patient')
+            user = Optometrist.objects.filter(phone_number=mobile).first()
+            is_new_user = False
+            
+            if not user:
+                # Make the credential recognizable to the patient while retaining
+                # enough random entropy that it cannot be guessed from the profile.
+                name_fragment = ''.join(
+                    character for character in name.upper()
+                    if character.isascii() and character.isalnum()
+                )[:5] or 'PATIENT'
+                phone_suffix = ''.join(character for character in mobile if character.isdigit())[-4:]
+                random_suffix = ''.join(
+                    secrets.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789')
+                    for _ in range(8)
+                )
+                generated_password = f"ES@{name_fragment}{phone_suffix}{age}{random_suffix}"
+                
+                # Assign email only if not taken by another user account
+                user_email = email if email and not Optometrist.objects.filter(email=email).exists() else None
+
+                user = Optometrist.objects.create_user(
+                    phone_number=mobile,
+                    name=name,
+                    password=generated_password,
+                    email=user_email,
+                    role='patient'
+                )
+                is_new_user = True
+            else:
+                # User already exists
+                if email and not user.email and not Optometrist.objects.filter(email=email).exclude(pk=user.pk).exists():
+                    user.email = email
+                    user.save(update_fields=['email'])
+                generated_password = "[Existing Password Maintained]"
+
+            # Generate Patient Account ID
+            ts_hash = abs(hash(mobile + str(timezone.now().timestamp()))) % 1000000
+            patient_account_id = data.get('pid') or f"ES-{str(ts_hash).zfill(6)}"
+
+            # Step 2: Create/Update Patient Record
+            patient_record, created = Patient.objects.update_or_create(
+                phone_number=mobile,
+                defaults={
+                    'name': name,
+                    'age': age,
+                    'gender': gender,
+                    'address': address,
+                    'email': email if email else None,
+                    'location': location,
+                    'location_other': location_other,
+                    'age_group': age_group,
+                    'diabetes': diabetes,
+                    'diabetes_over_5yrs': diabetes_over_5yrs,
+                    'hba1c_level': hba1c_level,
+                    'hypertension': hypertension,
+                    'thyroid': thyroid,
+                    'family_history': family_history,
+                    'steroid_use': steroid_use,
+                    'spectacles_use': spectacles_use,
+                    'spectacles_power_high': spectacles_power_high,
+                    'last_checkup': last_checkup,
+                    'blurred_vision': blurred_vision,
+                    'symptoms': str(symptoms),
+                    'smoking': smoking,
+                    'alcohol': alcohol,
+                    'screen_time': screen_time,
+                    'physical_activity': physical_activity,
+                    'risk_score_raw': risk_score_raw,
+                    'risk_score_pct': risk_score_pct,
+                    'risk_band': risk_band,
+                    'urgency': urgency,
+                    'conversion_likelihood': conversion_likelihood,
+                    'disease_top3': disease_top3 if isinstance(disease_top3, list) else [],
+                    'selected_tests': str(selected_tests),
+                    'primary_package': primary_package,
+                    'free_basic': free_basic,
+                    'add_on_people': add_on_people if isinstance(add_on_people, list) else [],
+                    'people_count': people_count,
+                    'payable_amount': payable_amount,
+                    'mrp_amount': mrp_amount,
+                    'savings_amount': savings_amount,
+                    'tele_charge': tele_charge,
+                    'ta_charge': ta_charge,
+                    'manual_discount': manual_discount,
+                    'referral_code': referral_code,
+                    'booking_code': booking_code,
+                    'booking_date': booking_date,
+                    'booking_time': booking_time,
+                    'optometrist_assigned': optometrist_assigned,
+                    'special_notes': special_notes,
+                    'patient_account_id': patient_account_id,
+                    'raw_answers': answers if isinstance(answers, dict) else {},
+                    'risk_factor': risk_factor
+                }
+            )
+
+            # Step 3: Send Email with credentials to Patient
+            target_email = email or user.email
+
+            email_sent, email_status_msg = send_patient_credentials_email(
+                name=name,
+                patient_account_id=patient_account_id,
+                mobile=mobile,
+                password=generated_password,
+                email=target_email,
+                risk_score_pct=risk_score_pct,
+                risk_band=risk_band,
+                urgency=urgency,
+                primary_package=primary_package,
+                payable_amount=payable_amount,
+                booking_code=booking_code,
+                booking_date=booking_date,
+                booking_time=booking_time
+            )
+
+            return Response({
+                'status': 'success',
+                'message': 'Patient successfully onboarded and backend record created!',
+                'patient_id': patient_account_id,
+                'patient_name': name,
+                'phone_number': mobile,
+                'email': target_email,
+                'password': generated_password,
+                'is_new_user': is_new_user,
+                'email_sent': email_sent,
+                'email_status': email_status_msg
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response({'error': f'Failed to onboard patient: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

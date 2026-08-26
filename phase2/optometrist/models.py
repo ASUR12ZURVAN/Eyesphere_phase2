@@ -91,6 +91,63 @@ class Patient(models.Model):
     company_name = models.CharField(max_length=200, blank=True, null=True)
     designation = models.CharField(max_length=200, blank=True, null=True)
 
+    # Onboarding Contact & Location Details
+    email = models.EmailField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    location_other = models.CharField(max_length=100, blank=True, null=True)
+    age_group = models.CharField(max_length=20, blank=True, null=True)
+
+    # Systemic Medical History
+    diabetes = models.BooleanField(default=False)
+    diabetes_over_5yrs = models.BooleanField(default=False)
+    hba1c_level = models.CharField(max_length=50, blank=True, null=True)
+    hypertension = models.BooleanField(default=False)
+    thyroid = models.BooleanField(default=False)
+    family_history = models.BooleanField(default=False)
+    steroid_use = models.BooleanField(default=False)
+
+    # Eye & Vision Health History
+    spectacles_use = models.BooleanField(default=False)
+    spectacles_power_high = models.BooleanField(default=False)
+    last_checkup = models.CharField(max_length=50, blank=True, null=True)
+    blurred_vision = models.CharField(max_length=50, blank=True, null=True)
+    symptoms = models.TextField(blank=True, null=True)
+
+    # Lifestyle Factors
+    smoking = models.BooleanField(default=False)
+    alcohol = models.BooleanField(default=False)
+    screen_time = models.CharField(max_length=50, blank=True, null=True)
+    physical_activity = models.CharField(max_length=50, blank=True, null=True)
+
+    # Vision Risk & Assessment Score Output
+    risk_score_raw = models.IntegerField(default=0)
+    risk_score_pct = models.IntegerField(default=0)
+    risk_band = models.CharField(max_length=50, blank=True, null=True)
+    urgency = models.CharField(max_length=100, blank=True, null=True)
+    conversion_likelihood = models.CharField(max_length=50, blank=True, null=True)
+    disease_top3 = models.JSONField(default=list, blank=True, null=True)
+    selected_tests = models.TextField(blank=True, null=True)
+
+    # Package Deal & Booking Details
+    primary_package = models.CharField(max_length=150, blank=True, null=True)
+    free_basic = models.BooleanField(default=False)
+    add_on_people = models.JSONField(default=list, blank=True, null=True)
+    people_count = models.IntegerField(default=1)
+    payable_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    mrp_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    savings_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    tele_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    ta_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    manual_discount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    referral_code = models.CharField(max_length=50, blank=True, null=True)
+    booking_code = models.CharField(max_length=50, blank=True, null=True)
+    booking_date = models.CharField(max_length=50, blank=True, null=True)
+    booking_time = models.CharField(max_length=50, blank=True, null=True)
+    optometrist_assigned = models.CharField(max_length=150, blank=True, null=True)
+    special_notes = models.TextField(blank=True, null=True)
+    patient_account_id = models.CharField(max_length=50, blank=True, null=True)
+    raw_answers = models.JSONField(default=dict, blank=True, null=True)
+
     risk_factor = models.CharField(
         max_length=20, 
         choices=[
@@ -108,6 +165,7 @@ class Patient(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.age}/{self.gender})"
+
 
 class EyeExamination(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='examinations')

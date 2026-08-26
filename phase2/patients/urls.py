@@ -5,12 +5,14 @@ from .views import (
     SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
     DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
     UpdatePatientProfileView, RedeemServiceView, GetOptometristsView, BookHomeTestView, GetPatientProfileView,
-    SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView
+    SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView,
+    PatientOnboardingView, OnboardPatientApiView
 )
 
 urlpatterns = [
     # Template pages
     path('', PatientDashboardView.as_view(), name='patient_dashboard'),
+    path('onboard/', PatientOnboardingView.as_view(), name='patient_onboarding'),
     path('api/login/', LoginPatient.as_view(), name='patient_login_page'),
     path('api/register/', RegisterPatient.as_view(), name='patient_register_page'),
     path('logout/', PatientLogoutView.as_view(), name='patient_logout'),
@@ -22,6 +24,7 @@ urlpatterns = [
     path('screening/blink/', BlinkTestView.as_view(), name='patient_blink_test'),
 
     # API endpoints
+    path('api/onboard/', OnboardPatientApiView.as_view(), name='api_onboard_patient'),
     path('api/save-screening-result/', SaveScreeningResultView.as_view(), name='save_screening_result'),
     path('api/request-session/', RequestOnlineSessionView.as_view(), name='request_online_session'),
     path('api/update-retention/', UpdateRetentionTimeView.as_view(), name='update_retention_time'),
