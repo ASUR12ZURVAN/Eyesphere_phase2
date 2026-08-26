@@ -1,0 +1,308 @@
+<script>
+    console.log('Retention tracking script loaded');
+    
+    // ===== CSRF Token Helper =====
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // ===== Retention Time Tracking ONLY =====
+    const RETENTION_URL = '/patient/api/update-retention/';
+    const HEARTBEAT_INTERVAL = 60; // seconds
+    let lastSentAt = Date.now();
+
+    function getElapsedSeconds() {
+        const now = Date.now();
+        const elapsed = Math.floor((now - lastSentAt) / 1000);
+        lastSentAt = now;
+        return elapsed;
+    }
+
+    function sendRetention(seconds) {
+        if (seconds <= 0) return;
+        const payload = JSON.stringify({ elapsed_seconds: seconds });
+        
+        if (navigator.sendBeacon) {
+            const blob = new Blob([payload], { type: 'application/json' });
+            navigator.sendBeacon(RETENTION_URL, blob);
+        } else {
+            fetch(RETENTION_URL, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: payload,
+                keepalive: true
+            }).catch(() => {});
+        }
+    }
+
+    setInterval(function () {
+        sendRetention(getElapsedSeconds());
+    }, HEARTBEAT_INTERVAL * 1000);
+
+    window.addEventListener('beforeunload', function () {
+        sendRetention(getElapsedSeconds());
+    });
+</script>
+
+<!-- Floating "Book Now" Button & Modal -->
+<style>
+    .floating-book-btn {
+        /* position: static or relative managed by parent flex */
+        z-index: 10;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 26px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        animation: pulseButton 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseButton {
+        0% { transform: scale(1); box-shadow: 0 4px 20px rgba(5, 150, 105, 0.5); }
+        50% { transform: scale(1.08); box-shadow: 0 8px 30px rgba(5, 150, 105, 0.7); }
+        100% { transform: scale(1); box-shadow: 0 4px 20px rgba(5, 150, 105, 0.5); }
+    }
+
+    .floating-book-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        animation: none; /* Pause pulse on hover for interaction clarity */
+    }
+
+    .floating-book-btn .btn-text {
+        opacity: 1;
+        font-size: 1rem;
+    }
+
+    .book-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    .book-modal-content {
+        background: white;
+        width: 100%;
+        max-width: 500px;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        animation: modalSlideUp 0.3s ease-out;
+    }
+
+    @keyframes modalSlideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .book-form-group {
+        margin-bottom: 1.2rem;
+    }
+
+    .book-form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+    }
+
+    .book-form-group input, .book-form-group select, .book-form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        font-family: inherit;
+        background: #f8fafc;
+    }
+
+    .book-form-group input:disabled {
+        background: #f1f5f9;
+        cursor: not-allowed;
+        color: #94a3b8;
+    }
+
+    .book-submit-btn {
+        width: 100%;
+        background: #059669;
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 1rem;
+    }
+
+    .book-submit-btn:hover {
+        background: #047857;
+    }
+</style>
+
+<!-- Button is now placed manually in template headers -->
+
+<div class="book-modal-overlay" id="bookModal">
+    <div class="book-modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+            <div>
+                <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 0.2rem;">Book At-Home Test</h2>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 0.5rem;">
+                    <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Request a visit</p>
+                    <button type="button" onclick="autoFillDetails()" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        Auto-fill Profile
+                    </button>
+                </div>
+            </div>
+            <button onclick="closeBookModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8;">&times;</button>
+        </div>
+
+        <form id="bookHomeTestForm">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="book-form-group">
+                    <label>Phone Number</label>
+                    <input type="text" value="{{ user.phone_number }}" disabled>
+                </div>
+                <div class="book-form-group">
+                    <label>Email</label>
+                    <input type="text" value="{{ user.email|default:'Not provided' }}" disabled>
+                </div>
+            </div>
+
+            <div class="book-form-group">
+                <label>Company Name</label>
+                <input type="text" id="bookCompany" value="Loading..." disabled>
+            </div>
+
+            <div class="book-form-group">
+                <label>Select Optometrist</label>
+                <select id="bookOptometrist" required>
+                    <option value="" disabled selected>Select an optometrist</option>
+                    <option value="auto">Auto-assign (Recommended)</option>
+                </select>
+            </div>
+
+            <div class="book-form-group">
+                <label>Visit Address</label>
+                <textarea id="bookAddress" rows="3" placeholder="Enter full address for the visit" required></textarea>
+            </div>
+
+            <button type="submit" class="book-submit-btn" id="bookSubmitBtn">Confirm Booking</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function openBookModal() {
+        document.getElementById('bookModal').style.display = 'flex';
+        
+        // Fetch Optometrists
+        try {
+            const resp = await fetch('/patient/api/get-optometrists/');
+            const opts = await resp.json();
+            const select = document.getElementById('bookOptometrist');
+            select.innerHTML = '<option value="" disabled>Select an optometrist</option><option value="auto" selected>Auto-assign (Recommended)</option>';
+            opts.forEach(o => {
+                const opt = document.createElement('option');
+                opt.value = o.id;
+                opt.textContent = o.name;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Failed to load optometrists', e);
+        }
+
+        // Initial Profile Fetch
+        await autoFillDetails();
+    }
+
+    async function autoFillDetails() {
+        try {
+             const companyInput = document.getElementById('bookCompany');
+             const addressInput = document.getElementById('bookAddress');
+             
+             const resp = await fetch('/patient/api/get-profile/');
+             const data = await resp.json();
+             
+             companyInput.value = data.company_name || "Not applicable";
+             addressInput.value = data.address || "";
+             
+             // Visual feedback for auto-fill
+             companyInput.style.borderColor = "#059669";
+             addressInput.style.borderColor = "#059669";
+             setTimeout(() => {
+                 companyInput.style.borderColor = "#e2e8f0";
+                 addressInput.style.borderColor = "#e2e8f0";
+             }, 1000);
+        } catch (e) {
+            console.error('Failed to load profile details', e);
+        }
+    }
+
+    function closeBookModal() {
+        document.getElementById('bookModal').style.display = 'none';
+    }
+
+    document.getElementById('bookHomeTestForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const submitBtn = document.getElementById('bookSubmitBtn');
+        const optometrist_id = document.getElementById('bookOptometrist').value;
+        const address = document.getElementById('bookAddress').value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Booking...';
+
+        try {
+            const response = await fetch('/patient/api/book-home-test/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ optometrist_id, address })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Success! Your home test visit has been requested.');
+                closeBookModal();
+            } else {
+                alert('Error: ' + (result.error || 'Something went wrong'));
+            }
+        } catch (error) {
+            alert('An error occurred. Please try again.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Confirm Booking';
+        }
+    });
+</script>

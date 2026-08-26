@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Vision Test | EyeSphere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#059669;--primary-light:#d1fae5;--primary-hover:#047857;--text-main:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--bg:#f0fdf4;--bg-card:#fff;--shadow:0 4px 20px -4px rgba(0,0,0,.08);--dark-bg:linear-gradient(145deg,rgba(8,15,30,.98),rgba(5,10,25,.99));}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif;}
+        html,body{height:100%;overflow-x:hidden;}
+        body{background:var(--bg);color:var(--text-main);display:flex;flex-direction:column;min-height:100vh;}
+
+        .top-bar{background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+        .back-btn{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--primary);font-weight:600;font-size:.95rem;padding:.5rem 1rem;border-radius:10px;border:1px solid var(--border);transition:all .2s;}
+        .back-btn:hover{background:var(--primary-light);}
+        .top-bar h1{font-size:1.3rem;font-weight:700;flex:1;text-align:center;}
+
+        main{background:var(--dark-bg);border-radius:20px;padding:1.5rem;width:95%;max-width:1000px;margin:2rem auto;box-shadow:0 15px 40px rgba(0,20,50,.3);overflow:hidden;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;color:#e8f2ff;position:relative;}
+        main h1{text-align:center;font-size:1.8rem;margin-bottom:.8rem;color:#e8f2ff;}
+        .instructions{font-size:.95rem;text-align:center;margin-bottom:1.5rem;color:rgba(200,220,255,.8);max-width:600px;}
+        .hidden{display:none!important;}
+
+        button{display:inline-block;background:linear-gradient(145deg,var(--primary),var(--primary-hover));border:none;color:#fff;font-weight:600;border-radius:12px;padding:.7rem 1.8rem;cursor:pointer;font-size:.95rem;margin:.3rem;transition:all .3s;box-shadow:var(--shadow);}
+        button:hover:not(:disabled){transform:translateY(-2px);}
+        button:disabled{opacity:.5;cursor:not-allowed;}
+        #submit-btn{background:linear-gradient(145deg,#065f46,#059669);}
+
+        #start-section{display:flex;flex-direction:column;align-items:center;width:100%;}
+        #test-container{display:flex;flex-direction:column;flex:1;min-height:0;position:relative;width:100%;max-width:100%;}
+        .test-plate{display:none;padding:1rem;border-radius:14px;border:2px solid rgba(5,150,105,.2);background:rgba(15,25,50,.9);flex:1;min-height:0;position:absolute;top:0;left:0;right:0;bottom:0;}
+        .test-plate.active{display:flex;flex-direction:column;position:relative;animation:fadeIn .4s ease;}
+        .test-plate h3{color:rgba(150,200,255,.9);font-size:1.1rem;margin-bottom:.5rem;}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+        .plate-image-placeholder{display:flex;justify-content:center;align-items:center;margin-bottom:.8rem;padding:.5rem;background:rgba(20,35,65,.7);border-radius:12px;flex:1;min-height:0;}
+        .plate-image{border-radius:10px;max-width:100%;max-height:100%;object-fit:contain;}
+
+        .input-container{background:rgba(15,25,50,.8);padding:.8rem;border-radius:12px;border:1px solid rgba(5,150,105,.2);flex-shrink:0;}
+        .input-container label{font-weight:500;margin-bottom:.4rem;color:rgba(220,235,255,.9);display:block;font-size:.9rem;}
+        .input-container input[type="number"]{width:100%;font-size:1rem;padding:.6rem .8rem;border-radius:10px;background:rgba(10,20,45,.9);border:2px solid rgba(5,150,105,.2);color:#e8f2ff;outline:none;font-family:'Outfit';}
+        .input-container input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+        .input-container input::placeholder{color:rgba(180,200,240,.5);}
+
+        .navigation{display:flex;justify-content:center;gap:.5rem;padding:.8rem 0;flex-shrink:0;width:100%;}
+        .progress-section{padding:.5rem 0;flex-shrink:0;width:100%;}
+        #progress-text{text-align:center;font-weight:600;color:rgba(150,200,255,.9);margin-bottom:.3rem;font-size:.9rem;}
+        .progress-container{background:rgba(10,20,45,.7);border-radius:20px;height:8px;margin:.3rem auto;overflow:hidden;max-width:400px;}
+        #progress-fill{background:linear-gradient(90deg,var(--primary),#38ef7d);height:100%;width:0%;border-radius:20px;transition:width .4s;}
+
+        #results{animation:fadeIn .6s;overflow-y:auto;flex:1;width:100%;display:flex;flex-direction:column;align-items:center;}
+        #results>*{width:100%;max-width:900px;}
+        #results table{width:100%;border-collapse:collapse;font-size:.85rem;border-radius:12px;overflow:hidden;margin:0 auto 1.5rem;}
+        #results th,#results td{border:1px solid rgba(5,150,105,.2);padding:.5rem;text-align:center;}
+        #results th{background:linear-gradient(145deg,var(--primary),var(--primary-hover));color:#fff;font-weight:600;text-transform:uppercase;font-size:.75rem;}
+        #results tr:nth-child(even){background:rgba(15,25,50,.5);}
+        #results tr:nth-child(odd){background:rgba(10,18,40,.5);}
+        #results tr:hover{background:rgba(30,50,90,.6);}
+        #results td{color:rgba(200,220,255,.8);}
+        tr.correct td:last-child{color:#4ade80;font-weight:600;}
+        tr.incorrect td:last-child,tr.red-green-deficiency td:last-child{color:#f87171;font-weight:600;}
+
+        #diagnosis{margin:1.5rem 0;font-size:1rem;font-weight:600;color:#e8f2ff;text-align:center;padding:.8rem;background:rgba(5,150,105,.2);border-radius:12px;border-left:5px solid var(--primary);}
+        .severity-levels{margin:1.5rem 0;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;}
+        .severity-level{border-radius:18px;padding:.4rem 1.2rem;border:2px solid rgba(5,150,105,.5);font-weight:600;color:rgba(150,200,255,.9);background:rgba(15,25,50,.6);font-size:.85rem;transition:all .3s;}
+        .severity-level.selected{color:#fff;background:var(--primary);border-color:var(--primary-hover);transform:translateY(-2px);}
+
+        #deficiency-info{margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;}
+        .deficiency-type{border-left:5px solid #4ade80;background:rgba(15,25,50,.8);padding:1rem;width:250px;border-radius:12px;}
+        .deficiency-type h4{margin:0 0 .5rem;color:rgba(150,200,255,.9);font-size:.95rem;}
+        .deficiency-type p{font-size:.85rem;color:rgba(200,220,255,.7);}
+        #protanopia{border-left-color:#f87171;}
+        #deuteranopia{border-left-color:#4ade80;}
+        #general{border-left-color:#fb923c;}
+        #saveStatus{margin-top:.5rem;text-align:center;font-size:.85rem;}
+
+        .nav-buttons{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin:1.5rem 0;}
+        .nav-buttons a{text-decoration:none;}
+
+        @media(max-width:768px){main{width:98%;padding:1rem;margin:1rem auto;border-radius:12px;}main h1{font-size:1.5rem;}.deficiency-type{width:100%;}}
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <a href="{% url 'patient_dashboard' %}" class="back-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back</a>
+    <h1>Color Vision Test</h1>
+    <button class="floating-book-btn" onclick="openBookModal()" style="font-size: 0.85rem; padding: 8px 16px; animation: pulseButton 2s infinite ease-in-out;">
+        <span class="btn-text">Book At-Home Test</span>
+    </button>
+</div>
+
+<main>
+    <h1>Color Vision Test</h1>
+    <div class="instructions" id="instructions"><p>This test consists of 15 plates to assess your color vision. Identify the number you see in each plate.</p></div>
+    <div id="start-section"><button id="start-test">Start Test</button></div>
+
+    <div id="test-container" class="hidden">
+        <div class="test-plate active" id="plate-1">
+            <h3>Plate 1</h3>
+            <div class="plate-image-placeholder"><img data-src="{% static 'plate1.png' %}" alt="Plate 1" class="plate-image"/></div>
+            <div class="input-container"><label for="answer-1">What number do you see?</label><input type="number" id="answer-1" min="0" max="99" placeholder="Enter number"/></div>
+        </div>
+        <div class="navigation">
+            <button id="prev-btn" disabled>Previous</button>
+            <button id="next-btn">Next</button>
+            <button id="submit-btn" class="hidden">Submit</button>
+        </div>
+        <div class="progress-section">
+            <div id="progress-text">Plate 1 of 15</div>
+            <div class="progress-container"><div id="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <div id="results" style="display:none;">
+        <h2 style="text-align:center;margin-bottom:1rem;">Test Results</h2>
+        <table><thead><tr><th>Plate</th><th>Your Answer</th><th>Expected</th><th>Result</th></tr></thead><tbody id="results-body"></tbody></table>
+        <div id="diagnosis"></div>
+        <div class="severity-levels"><div id="severity-none" class="severity-level">None</div><div id="severity-weak" class="severity-level">Weak</div><div id="severity-moderate" class="severity-level">Moderate</div><div id="severity-strong" class="severity-level">Strong</div></div>
+        <div id="deficiency-info">
+            <div class="deficiency-type" id="protanopia"><h4>Protanopia / Protanomaly</h4><p>Reduced sensitivity to red light.</p></div>
+            <div class="deficiency-type" id="deuteranopia"><h4>Deuteranopia / Deuteranomaly</h4><p>Reduced sensitivity to green light.</p></div>
+            <div class="deficiency-type" id="general"><h4>General Red-Green Color Blindness</h4><p>Some characteristics of red-green deficiency.</p></div>
+        </div>
+        <div id="saveStatus"></div>
+        <div class="nav-buttons">
+            <a href="{% url 'patient_dashboard' %}"><button type="button">Back to Dashboard</button></a>
+            <button id="restart-btn">Restart Test</button>
+        </div>
+    </div>
+</main>
+
+<script>const staticUrl="{% static '' %}";</script>
+<script>
+let normalCorrect=0,redGreenErrors=0,protanopiaIndicators=0,deuteranopiaIndicators=0,resultsHTML='';
+document.addEventListener('DOMContentLoaded',function(){
+    const testData=[{plateNumber:1,normalView:12,redGreenDeficiency:12,type:'number'},{plateNumber:2,normalView:8,redGreenDeficiency:3,type:'number'},{plateNumber:3,normalView:6,redGreenDeficiency:5,type:'number'},{plateNumber:4,normalView:29,redGreenDeficiency:70,type:'number'},{plateNumber:5,normalView:57,redGreenDeficiency:35,type:'number'},{plateNumber:6,normalView:5,redGreenDeficiency:2,type:'number'},{plateNumber:7,normalView:3,redGreenDeficiency:5,type:'number'},{plateNumber:8,normalView:15,redGreenDeficiency:17,type:'number'},{plateNumber:9,normalView:74,redGreenDeficiency:21,type:'number'},{plateNumber:10,normalView:2,redGreenDeficiency:null,type:'number'},{plateNumber:11,normalView:6,redGreenDeficiency:null,type:'number'},{plateNumber:12,normalView:97,redGreenDeficiency:null,type:'number'},{plateNumber:13,normalView:45,redGreenDeficiency:null,type:'number'},{plateNumber:14,normalView:5,redGreenDeficiency:null,type:'number'},{plateNumber:15,normalView:7,redGreenDeficiency:null,type:'number'}];
+
+    const startTestBtn=document.getElementById('start-test'),testContainer=document.getElementById('test-container'),instructionsDiv=document.getElementById('instructions');
+    const prevBtn=document.getElementById('prev-btn'),nextBtn=document.getElementById('next-btn'),submitBtn=document.getElementById('submit-btn');
+    const resultsDiv=document.getElementById('results'),diagnosisDiv=document.getElementById('diagnosis'),progressText=document.getElementById('progress-text'),progressFill=document.getElementById('progress-fill');
+    const resultsTableBody=document.getElementById('results-body'),restartBtn=document.getElementById('restart-btn');
+    const deficiencyInfoDiv=document.getElementById('deficiency-info'),deficiencyTypes=deficiencyInfoDiv.querySelectorAll('.deficiency-type');
+    let currentPlate=1;const userAnswers={};const totalPlates=15;
+
+    for(let i=2;i<=15;i++){createNumberPlate(i);}
+    function createNumberPlate(n){const d=document.createElement('div');d.classList.add('test-plate');d.id=`plate-${n}`;d.innerHTML=`<h3>Plate ${n}</h3><div class="plate-image-placeholder"><img data-src="${staticUrl}plate${n}.png" alt="Plate ${n}" class="plate-image"/></div><div class="input-container"><label for="answer-${n}">What number do you see?</label><input type="number" id="answer-${n}" min="0" max="99" placeholder="Enter number"/></div>`;testContainer.insertBefore(d,testContainer.querySelector('.navigation'));}
+    function loadImageForPlate(n){const p=document.getElementById(`plate-${n}`);if(!p)return;const img=p.querySelector('img.plate-image');if(!img)return;if(!img.src||img.src===window.location.href){const s=img.getAttribute('data-src');if(s)img.src=s;}}
+    loadImageForPlate(1);showPlate(currentPlate);updateProgress();
+
+    function showPlate(n){if(n<1||n>totalPlates)return;document.querySelectorAll('.test-plate').forEach(p=>p.classList.remove('active'));currentPlate=n;const nd=document.getElementById(`plate-${currentPlate}`);if(nd)nd.classList.add('active');prevBtn.disabled=(currentPlate===1);if(currentPlate===totalPlates){nextBtn.classList.add('hidden');submitBtn.classList.remove('hidden');}else{nextBtn.classList.remove('hidden');submitBtn.classList.add('hidden');}updateProgress();loadImageForPlate(currentPlate);if(currentPlate>1)loadImageForPlate(currentPlate-1);if(currentPlate<totalPlates)loadImageForPlate(currentPlate+1);}
+    function updateProgress(){progressText.textContent=`Plate ${currentPlate} of ${totalPlates}`;progressFill.style.width=`${(currentPlate/totalPlates)*100}%`;}
+    function getCookie(name){let v=null;if(document.cookie){document.cookie.split(';').forEach(c=>{c=c.trim();if(c.startsWith(name+'='))v=decodeURIComponent(c.substring(name.length+1));});}return v;}
+    function saveCurrentAnswer(){const inp=document.getElementById(`answer-${currentPlate}`);if(inp){const v=inp.value;userAnswers[currentPlate]=v!==''?parseInt(v):null;}}
+
+    function calculateResults(){normalCorrect=0;redGreenErrors=0;protanopiaIndicators=0;deuteranopiaIndicators=0;resultsHTML='';
+        for(let i=1;i<=15;i++){const plate=testData[i-1];const ua=userAnswers[i]??null;let result='incorrect',expected='';
+            if(i===1){if(ua===12){normalCorrect++;result='correct';}expected='12 (Control)';}
+            else if(i>=2&&i<=9){if(ua===plate.normalView){normalCorrect++;result='correct';}else if(ua===plate.redGreenDeficiency){redGreenErrors++;result='red-green deficiency';if([2,4,6].includes(i))protanopiaIndicators++;else if([3,5,7,8,9].includes(i))deuteranopiaIndicators++;}expected=`${plate.normalView} / ${plate.redGreenDeficiency}`;}
+            else{if(ua===plate.normalView){normalCorrect++;result='correct';}else{redGreenErrors++;result='red-green deficiency';}expected=`${plate.normalView} / None`;}
+            resultsHTML+=`<tr class="${result.replace(' ','-')}"><td>${i}</td><td>${ua!==null&&ua!==''?ua:'No answer'}</td><td>${expected}</td><td>${result}</td></tr>`;}
+        resultsTableBody.innerHTML=resultsHTML;determineDiagnosis();showDeficiencyInfo();autoSaveResults();}
+
+    function determineDiagnosis(){let diagnosis='',severity='none';const ti=15-normalCorrect;
+        if(ti<=2){severity='none';diagnosis='Your color vision appears to be normal.';}else if(ti<=5){severity='weak';}else if(ti<=10){severity='moderate';}else{severity='strong';}
+        if(severity!=='none'){let dt='';if(protanopiaIndicators>=2&&protanopiaIndicators>deuteranopiaIndicators)dt='protanopia/protanomaly';else if(deuteranopiaIndicators>=2&&deuteranopiaIndicators>protanopiaIndicators)dt='deuteranopia/deuteranomaly';else if(redGreenErrors>=3)dt='red-green color blindness';else dt='color vision deficiency';diagnosis=`You have <strong>${severity}</strong> ${dt}.`;}
+        diagnosisDiv.innerHTML=diagnosis;document.querySelectorAll('.severity-level').forEach(el=>el.classList.remove('selected'));const se=document.getElementById(`severity-${severity}`);if(se)se.classList.add('selected');}
+
+    function showDeficiencyInfo(){deficiencyTypes.forEach(t=>{t.style.borderLeft='5px solid #4ade80';});if(redGreenErrors>=3){if(protanopiaIndicators>=2&&protanopiaIndicators>deuteranopiaIndicators)document.getElementById('protanopia').style.borderLeft='5px solid #f87171';else if(deuteranopiaIndicators>=2&&deuteranopiaIndicators>protanopiaIndicators)document.getElementById('deuteranopia').style.borderLeft='5px solid #4ade80';else document.getElementById('general').style.borderLeft='5px solid #fb923c';}}
+
+    async function autoSaveResults(){const diagText=diagnosisDiv.innerText;const sev=document.querySelector('.severity-level.selected')?.id?.replace('severity-','')||'none';
+        try{const r=await fetch("{% url 'save_screening_result' %}",{method:'POST',headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},body:JSON.stringify({test_type:'colorblind',score:`${normalCorrect}/15 correct - ${sev}`,result_data:{normal_correct:normalCorrect,red_green_errors:redGreenErrors,protanopia_indicators:protanopiaIndicators,deuteranopia_indicators:deuteranopiaIndicators,severity:sev,diagnosis:diagText}})});
+            const d=await r.json();document.getElementById('saveStatus').textContent=d.status==='success'?'✅ Results saved!':'❌ Failed to save';document.getElementById('saveStatus').style.color=d.status==='success'?'#4ade80':'#f87171';
+        }catch(e){document.getElementById('saveStatus').textContent='❌ Error saving';document.getElementById('saveStatus').style.color='#f87171';}}
+
+    function resetTest(){currentPlate=1;Object.keys(userAnswers).forEach(k=>delete userAnswers[k]);for(let i=1;i<=15;i++){const inp=document.getElementById(`answer-${i}`);if(inp)inp.value='';}document.querySelectorAll('.test-plate').forEach(p=>p.classList.remove('active'));document.getElementById('plate-1')?.classList.add('active');prevBtn.disabled=true;nextBtn.classList.remove('hidden');submitBtn.classList.add('hidden');resultsDiv.style.display='none';testContainer.classList.add('hidden');instructionsDiv.classList.remove('hidden');document.getElementById('start-section').classList.remove('hidden');document.getElementById('start-section').style.display='flex';updateProgress();diagnosisDiv.innerHTML='';document.querySelectorAll('.severity-level').forEach(el=>el.classList.remove('selected'));deficiencyTypes.forEach(t=>t.style.borderLeft='5px solid #4ade80');}
+
+    startTestBtn.addEventListener('click',()=>{instructionsDiv.classList.add('hidden');document.getElementById('start-section').classList.add('hidden');testContainer.classList.remove('hidden');updateProgress();showPlate(currentPlate);});
+    prevBtn.addEventListener('click',()=>{saveCurrentAnswer();if(currentPlate>1)showPlate(currentPlate-1);});
+    nextBtn.addEventListener('click',()=>{saveCurrentAnswer();if(currentPlate<totalPlates)showPlate(currentPlate+1);});
+    submitBtn.addEventListener('click',()=>{saveCurrentAnswer();calculateResults();testContainer.classList.add('hidden');resultsDiv.style.display='block';});
+    restartBtn.addEventListener('click',resetTest);
+});
+</script>
+{% include 'patients/tracking_script.html' %}
+</body>
+</html>

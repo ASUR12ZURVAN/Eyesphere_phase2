@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Test | EyeSphere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary:#059669;--primary-light:#d1fae5;--primary-hover:#047857;--text-main:#0f172a;--text-muted:#64748b;--border:#e2e8f0;--bg:#f0fdf4;--bg-card:#ffffff;--shadow:0 4px 20px -4px rgba(0,0,0,.08); }
+        * { margin:0;padding:0;box-sizing:border-box;font-family:'Outfit',sans-serif; }
+        body { text-align:center;background:var(--bg);min-height:100vh;color:var(--text-main); }
+
+        .top-bar { background:#fff;border-bottom:1px solid var(--border);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.04); }
+        .back-btn { display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;color:var(--primary);font-weight:600;font-size:.95rem;padding:.5rem 1rem;border-radius:10px;border:1px solid var(--border);transition:all .2s; }
+        .back-btn:hover { background:var(--primary-light); }
+        .top-bar h1 { font-size:1.3rem;font-weight:700;flex:1;text-align:center; }
+
+        .container { max-width:900px;margin:0 auto;padding:1.5rem; }
+
+        .message-box { background:var(--bg-card);border-left:5px solid var(--primary);padding:1.5rem;margin:1.5rem auto;max-width:700px;border-radius:12px;box-shadow:var(--shadow);text-align:left;font-size:.95rem;line-height:1.6; }
+        .message-box img { max-width:80px;height:auto;margin:10px auto;display:block; }
+
+        .form-container { background:var(--bg-card);border-radius:16px;box-shadow:var(--shadow);padding:1.5rem;margin:1.5rem auto;max-width:600px; }
+        form { display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap; }
+
+        label { font-weight:600;color:var(--text-main);font-size:.95rem; }
+        select,input[type="number"] { padding:10px 12px;font-size:14px;border:2px solid var(--border);border-radius:10px;background:#fff;min-width:150px; }
+        select:focus,input[type="number"]:focus { border-color:var(--primary);outline:none;box-shadow:0 0 0 3px var(--primary-light); }
+
+        button { margin:10px;padding:12px 24px;font-size:.95rem;font-weight:600;border:none;border-radius:12px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow); }
+        button:hover { transform:translateY(-2px); }
+
+        #chartContainer { margin:1.5rem auto;padding:1rem;background:var(--bg-card);border-radius:16px;box-shadow:var(--shadow);max-width:100%;display:none; }
+
+        #fullscreenBtn { background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff; }
+        #pdfBtn { background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff; }
+        #setupForm button { background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff; }
+        #lineForm button { background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff; }
+
+        .actions-container { display:flex;justify-content:center;gap:10px;margin:1rem 0;flex-wrap:wrap; }
+
+        .line { opacity:0;animation:fadeInLine .5s ease forwards;margin:10px 0;transition:all .3s;letter-spacing:.1em; }
+        .line:hover { transform:scale(1.05);color:var(--primary); }
+        .highlight { color:#e74c3c;font-weight:bold;animation:pulse 2s infinite ease-in-out; }
+        @keyframes fadeInLine { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:.8} }
+
+        .chart-line-container { display:flex;justify-content:space-between;align-items:center;padding:12px 10px;gap:10px;width:100%;border-bottom:2px dotted rgba(5,150,105,.3);transition:all .3s; }
+        .chart-line-container:last-child { border-bottom:none; }
+        .chart-line-container:hover { background:var(--primary-light); }
+        .line-counter { color:var(--primary);font-size:18px;font-weight:600;min-width:30px;text-align:right;flex-shrink:0; }
+        .line-content-wrapper { flex:1;display:flex;justify-content:center;align-items:center;min-height:30px;overflow:hidden;min-width:0; }
+
+        .tick-button { background:#fff;color:#333;border:2px solid var(--border);border-radius:8px;width:35px;height:35px;cursor:pointer;font-size:16px;font-weight:bold;transition:all .2s;display:flex;align-items:center;justify-content:center;padding:0;margin:0;flex-shrink:0;min-width:35px; }
+        .tick-button:hover { border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light); }
+        .tick-button.selected { background:var(--primary);border-color:var(--primary-hover);color:#fff; }
+
+        .current-eye-indicator { background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;padding:8px 16px;border-radius:25px;font-weight:600;margin:10px 0;display:inline-block;box-shadow:var(--shadow); }
+
+        .combined-results { background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;padding:2rem;border-radius:20px;margin:2rem auto;max-width:600px;box-shadow:0 8px 25px rgba(5,150,105,.3); }
+        .combined-results h3 { margin-top:0;font-size:1.3em; }
+        .eye-result { display:flex;justify-content:space-between;align-items:center;margin:10px 0;padding:10px;background:rgba(255,255,255,.15);border-radius:10px; }
+
+        .radio-group { display:flex;gap:15px;align-items:center;margin:10px 0;justify-content:center;flex-wrap:wrap; }
+        .radio-option { display:flex;align-items:center;gap:6px; }
+        input[type="radio"] { width:18px;height:18px;accent-color:var(--primary); }
+        #headacheForm { width:100%;margin-top:15px;padding:15px;background:var(--primary-light);border-radius:10px;border:1px solid rgba(5,150,105,.2); }
+        #headacheForm label:first-child { display:block;margin-bottom:10px;text-align:center;font-weight:600;color:var(--text-main); }
+
+        .loading { display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,.8);z-index:1000;justify-content:center;align-items:center; }
+        .spinner { width:50px;height:50px;border:5px solid rgba(0,0,0,.1);border-radius:50%;border-top-color:var(--primary);animation:spin 1s ease-in-out infinite; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+
+        @media(max-width:768px) {
+            .top-bar h1 { font-size:1.1rem; }
+            .chart-line-container { padding:10px 5px;gap:6px; }
+            .line-counter { font-size:14px;min-width:22px; }
+            .tick-button { width:28px;height:28px;font-size:14px;min-width:28px; }
+            button { width:90%;max-width:300px; }
+            .actions-container { flex-direction:column;align-items:center; }
+        }
+    </style>
+</head>
+<body>
+<div class="loading" id="loading"><div class="spinner"></div></div>
+
+<div class="top-bar">
+    <a href="{% url 'patient_dashboard' %}" class="back-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+    </a>
+    <h1>Dynamic Snellen Chart — Vision Test</h1>
+    <button class="floating-book-btn" onclick="openBookModal()" style="font-size: 0.85rem; padding: 8px 16px; animation: pulseButton 2s infinite ease-in-out;">
+        <span class="btn-text">Book At-Home Test</span>
+    </button>
+</div>
+
+<div class="container">
+    <div class="message-box">
+        <strong>Vision Test Instructions:</strong><br><br>
+        <strong>Your device should be kept at a distance of 3 meters</strong><br><br>
+        <strong>Step 1:</strong> Cover your right eye and test left eye. Click the box of the line number until you can read clearly.<br>
+        <strong>Step 2:</strong> After submitting left eye, cover your left eye and test right eye.<br><br>
+        <strong>Important:</strong> Start from top and read up to line 10. Line 10 = normal vision at 3m distance.
+    </div>
+
+    <div class="current-eye-indicator" id="currentEyeIndicator" style="display:none;">Testing: <span id="currentEyeText"></span></div>
+
+    <div class="actions-container">
+        <button id="fullscreenBtn" style="display:none;">Go Fullscreen</button>
+        <button id="pdfBtn" style="display:none;">Download PDF</button>
+    </div>
+
+    <div id="chartContainer"></div>
+
+    <div class="form-container">
+        <form id="setupForm">
+            <label for="diagonal">Screen Size:</label>
+            <select id="diagonal" name="diagonal" required>
+                <option value="" disabled selected>Select screen size</option>
+                <option value="6.5">6.5" (Mobile)</option>
+                <option value="10.2">10.2" (Tablet)</option>
+                <option value="13.3">13.3" (Laptop)</option>
+                <option value="15.6">15.6" (Laptop)</option>
+                <option value="21.5">21.5" (Monitor)</option>
+                <option value="24">24" (Monitor)</option>
+                <option value="27">27" (Monitor)</option>
+                <option value="32">32" (TV/Monitor)</option>
+                <option value="55">55" (TV)</option>
+                <option value="65">65" (TV)</option>
+            </select>
+            <button type="submit">Start Eye Test</button>
+        </form>
+
+        <form id="lineForm" style="display:none;">
+            <input type="hidden" id="selectedEye" name="selectedEye" value="">
+            <input type="hidden" id="lineNumber" name="lineNumber" value="">
+            <div id="headacheForm">
+                <label>Are you having headache or strain while reading?</label>
+                <div class="radio-group">
+                    <div class="radio-option"><input type="radio" id="headacheYes" name="headache" value="yes"><label for="headacheYes">Yes</label></div>
+                    <div class="radio-option"><input type="radio" id="headacheNo" name="headache" value="no" checked><label for="headacheNo">No</label></div>
+                </div>
+            </div>
+            <button type="submit" id="diopterBtn" style="display:none;">Get Result</button>
+        </form>
+    </div>
+
+    <div id="combinedResults" class="combined-results" style="display:none;">
+        <h3>Complete Vision Test Results</h3>
+        <div class="eye-result"><span>Left Eye:</span><span id="leftEyeResult">-</span></div>
+        <div class="eye-result"><span>Right Eye:</span><span id="rightEyeResult">-</span></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+const chartLines=["E","FP","TOZ","LPED","PECFD","EDFCZP","FELOPZD","DEFPOTEC","LEFODPCT","FDPLTCEO","PDELOFZC","DEFPOCTLE"];
+const width_px=window.screen.width, height_px=window.screen.height;
+let currentEye='left', pixelSizes=[], eyeResults={left:null,right:null};
+
+function updateCurrentEyeDisplay(){document.getElementById('currentEyeIndicator').style.display='inline-block';document.getElementById('currentEyeText').textContent=currentEye.charAt(0).toUpperCase()+currentEye.slice(1)+' Eye';document.getElementById('selectedEye').value=currentEye;}
+function getScreenPPI(d){return Math.sqrt(width_px**2+height_px**2)/d;}
+function calculatePixelSizes(ppi){const ps=[];for(let i=0;i<12;i++){const logmar=(10-i)*.1;const hm=.00435*Math.pow(10,logmar)*1000;ps.push(hm*(ppi/25.4));}return ps;}
+function fitTextToContainer(el,container,initSize){el.style.fontSize=initSize+'px';let cs=initSize;while(el.scrollWidth>container.offsetWidth&&cs>8){cs-=1;el.style.fontSize=cs+'px';}}
+
+const chartContainer=document.getElementById('chartContainer'),setupForm=document.getElementById('setupForm'),lineForm=document.getElementById('lineForm');
+const fullscreenBtn=document.getElementById('fullscreenBtn'),pdfBtn=document.getElementById('pdfBtn'),loading=document.getElementById('loading'),combinedResults=document.getElementById('combinedResults');
+
+function renderChart(highlightIndex=null){
+    showLoading();chartContainer.innerHTML='';
+    chartLines.forEach((line,index)=>{
+        const c=document.createElement('div');c.classList.add('chart-line-container');
+        const counter=document.createElement('span');counter.classList.add('line-counter');counter.textContent=`${index+1}`;
+        const lw=document.createElement('div');lw.classList.add('line-content-wrapper');
+        const div=document.createElement('div');div.classList.add('line');if(highlightIndex===index)div.classList.add('highlight');div.textContent=line;
+        lw.appendChild(div);
+        const tb=document.createElement('button');tb.classList.add('tick-button');tb.innerHTML='';tb.type='button';tb.dataset.lineNumber=index+1;
+        tb.addEventListener('click',function(){
+            document.querySelectorAll('.tick-button').forEach(b=>{b.classList.remove('selected');b.innerHTML='';});
+            this.classList.add('selected');this.innerHTML='✓';
+            document.getElementById('lineNumber').value=this.dataset.lineNumber;
+            document.getElementById('diopterBtn').style.display='inline-block';
+            document.getElementById('lineForm').scrollIntoView({behavior:'smooth',block:'center'});
+        });
+        c.appendChild(counter);c.appendChild(lw);c.appendChild(tb);chartContainer.appendChild(c);
+        setTimeout(()=>{fitTextToContainer(div,lw,pixelSizes[index]);},100);
+    });
+    hideLoading();
+}
+function showLoading(){loading.style.display='flex';}
+function hideLoading(){setTimeout(()=>{loading.style.display='none';},500);}
+
+function showCombinedResults(){
+    document.getElementById('leftEyeResult').textContent=eyeResults.left;
+    document.getElementById('rightEyeResult').textContent=eyeResults.right;
+    combinedResults.style.display='block';
+    submitResultsToBackend();
+
+    const backBtn=document.createElement('a');
+    backBtn.href="{% url 'patient_dashboard' %}";
+    backBtn.textContent='← Back to Dashboard';
+    backBtn.style.cssText='display:inline-block;margin-top:20px;background:#fff;color:var(--primary);padding:12px 24px;border-radius:12px;text-decoration:none;font-weight:600;';
+    combinedResults.appendChild(backBtn);
+    combinedResults.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function submitResultsToBackend(){
+    const csrfToken=getCookie('csrftoken');
+    fetch("{% url 'save_screening_result' %}",{
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken},
+        body:JSON.stringify({test_type:'vision',score:`L:${eyeResults.left} R:${eyeResults.right}`,result_data:{left_eye:eyeResults.left,right_eye:eyeResults.right}})
+    }).then(r=>r.json()).then(d=>{if(d.status==='success')console.log('Vision results saved!');}).catch(e=>console.error('Error:',e));
+}
+
+function getCookie(name){let v=null;if(document.cookie){document.cookie.split(';').forEach(c=>{c=c.trim();if(c.startsWith(name+'='))v=decodeURIComponent(c.substring(name.length+1));});}return v;}
+
+setupForm.addEventListener('submit',function(e){
+    e.preventDefault();showLoading();
+    document.querySelector('.message-box').style.display='none';
+    window.scrollTo({top:0,behavior:'smooth'});
+    const d=parseFloat(document.getElementById('diagonal').value);
+    pixelSizes=calculatePixelSizes(getScreenPPI(d));
+    currentEye='left';updateCurrentEyeDisplay();
+    lineForm.style.display='block';fullscreenBtn.style.display='inline-block';pdfBtn.style.display='inline-block';
+    chartContainer.style.display='block';setupForm.style.display='none';
+    renderChart();
+    document.documentElement.requestFullscreen().catch(()=>{hideLoading();});
+    fullscreenBtn.textContent='Exit Fullscreen';
+});
+
+lineForm.addEventListener('submit',function(e){
+    e.preventDefault();showLoading();
+    const fd=new FormData(lineForm);const ln=parseInt(fd.get('lineNumber'));
+    let vr;if(ln>=10)vr="20/20";else{vr=`20/${Math.round(20*Math.pow(10,(10-ln)*.1))}`;}
+    eyeResults[currentEye]=vr;hideLoading();renderChart(ln-1);
+    if(currentEye==='left'){
+        const rd=document.createElement('div');rd.className='message-box';rd.style.borderLeftColor='var(--primary)';
+        rd.innerHTML=`<strong>Left Eye Complete!</strong><br>Result: <strong style="font-size:1.2em">${vr}</strong><br><button id="startRightEyeBtn" style="margin-top:15px;background:var(--primary);color:#fff;padding:12px 24px;border:none;border-radius:12px;cursor:pointer;font-weight:600;width:100%;max-width:300px;">Start Right Eye Test</button>`;
+        lineForm.parentNode.insertBefore(rd,lineForm);lineForm.style.display='none';
+        document.getElementById('startRightEyeBtn').addEventListener('click',function(){
+            currentEye='right';updateCurrentEyeDisplay();
+            document.getElementById('lineNumber').value='';document.getElementById('headacheNo').checked=true;
+            document.getElementById('diopterBtn').style.display='none';renderChart();lineForm.style.display='block';rd.remove();
+            window.scrollTo({top:0,behavior:'smooth'});
+        });
+    } else {
+        setTimeout(()=>{lineForm.style.display='none';document.getElementById('currentEyeIndicator').style.display='none';showCombinedResults();},2000);
+    }
+});
+
+fullscreenBtn.addEventListener('click',function(){if(document.fullscreenElement){document.exitFullscreen();fullscreenBtn.textContent='Go Fullscreen';}else{document.documentElement.requestFullscreen().catch(()=>{});fullscreenBtn.textContent='Exit Fullscreen';}});
+
+pdfBtn.addEventListener('click',async function(){
+    showLoading();
+    const pc=document.createElement('div');pc.style.cssText='padding:30px;background:#fff;color:#000;max-width:800px;margin:0 auto;font-family:Arial';
+    pc.innerHTML=`<h2 style="text-align:center;margin-bottom:30px">Vision Test Results</h2><p><strong>Left Eye:</strong> ${eyeResults.left}</p><p><strong>Right Eye:</strong> ${eyeResults.right}</p>`;
+    document.body.appendChild(pc);await new Promise(r=>setTimeout(r,300));
+    try{await html2pdf().set({margin:[15,10],filename:'vision_test_results.pdf',image:{type:'jpeg',quality:.98},html2canvas:{scale:2},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(pc).save();}catch(e){alert('Error generating PDF.');}finally{document.body.removeChild(pc);hideLoading();}
+});
+
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(chartContainer.style.display!=='none'){document.querySelectorAll('.chart-line-container').forEach((c,i)=>{const lw=c.querySelector('.line-content-wrapper'),ld=c.querySelector('.line');if(lw&&ld)fitTextToContainer(ld,lw,pixelSizes[i]);});}},250);});
+</script>
+{% include 'patients/tracking_script.html' %}
+</body>
+</html>

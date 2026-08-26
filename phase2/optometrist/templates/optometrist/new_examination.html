@@ -43,6 +43,16 @@
             </div>
         </div>
 
+        <!-- History Container (Hidden by default) -->
+        <div id="historyContainer" class="form-section animate-fade-in"
+            style="display: none; background: rgba(37,99,235,0.03); border-left: 4px solid var(--secondary); padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0;">
+            <h3 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1.1rem;">Clinical History for this
+                Patient</h3>
+            <div id="historyListContent">
+                <!-- Records will be populated here -->
+            </div>
+        </div>
+
         <!-- SECTION 2: Chief Complaints & History -->
         <h3 class="section-title">History & Complaints</h3>
         <div class="form-grid">
@@ -65,6 +75,30 @@
             <div class="form-group">
                 <label>H/o Eye Surgery</label>
                 <input type="text" name="history_eye_surgery" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Family History of Eye Disease</label>
+                <input type="text" name="family_history_eye_disease" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Outdoor Activities (Children) in hours</label>
+                <input type="text" name="outdoor_activity_hours" placeholder="e.g. 2 hrs/day">
+            </div>
+            <div class="form-group full-width">
+                <label>Glasses Made When &amp; Where</label>
+                <input type="text" name="glasses_made_when_where" placeholder="e.g. 2023, City Optics">
+            </div>
+            <div class="form-group">
+                <label>Medication Used for Eye</label>
+                <input type="text" name="eye_medication_used">
+            </div>
+            <div class="form-group">
+                <label>Systemic Medication</label>
+                <input type="text" name="systemic_medication" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Allergies with Medicine</label>
+                <input type="text" name="allergies_with_medicine" value="NA">
             </div>
         </div>
 
@@ -97,8 +131,8 @@
             </tbody>
         </table>
 
-        <!-- SECTION 4: Refraction -->
-        <h3 class="section-title">Refraction</h3>
+        <!-- SECTION 4a: AR Reading -->
+        <h3 class="section-title">AR Reading</h3>
         <table class="data-table">
             <thead>
                 <tr>
@@ -120,7 +154,101 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Distance (DV)</strong></td>
+                    <td><strong>DV</strong></td>
+                    <td><input type="text" name="ar_dv_sph_re" placeholder="-0.00"></td>
+                    <td><input type="text" name="ar_dv_cyl_re"></td>
+                    <td><input type="text" name="ar_dv_axis_re"></td>
+                    <td><input type="text" name="ar_dv_vision_re"></td>
+                    <td><input type="text" name="ar_dv_sph_le" placeholder="-0.00"></td>
+                    <td><input type="text" name="ar_dv_cyl_le"></td>
+                    <td><input type="text" name="ar_dv_axis_le"></td>
+                    <td><input type="text" name="ar_dv_vision_le"></td>
+                </tr>
+                <tr>
+                    <td><strong>NV</strong></td>
+                    <td><input type="text" name="ar_nv_sph_re"></td>
+                    <td><input type="text" name="ar_nv_cyl_re"></td>
+                    <td><input type="text" name="ar_nv_axis_re"></td>
+                    <td><input type="text" name="ar_nv_vision_re"></td>
+                    <td><input type="text" name="ar_nv_sph_le"></td>
+                    <td><input type="text" name="ar_nv_cyl_le"></td>
+                    <td><input type="text" name="ar_nv_axis_le"></td>
+                    <td><input type="text" name="ar_nv_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 4b: POG -->
+        <h3 class="section-title">POG (Power of Glasses)</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="4" style="text-align: center;">Right Eye</th>
+                    <th colspan="4" style="text-align: center;">Left Eye</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DV</strong></td>
+                    <td><input type="text" name="pog_dv_sph_re" placeholder="-0.00"></td>
+                    <td><input type="text" name="pog_dv_cyl_re"></td>
+                    <td><input type="text" name="pog_dv_axis_re"></td>
+                    <td><input type="text" name="pog_dv_vision_re"></td>
+                    <td><input type="text" name="pog_dv_sph_le" placeholder="-0.00"></td>
+                    <td><input type="text" name="pog_dv_cyl_le"></td>
+                    <td><input type="text" name="pog_dv_axis_le"></td>
+                    <td><input type="text" name="pog_dv_vision_le"></td>
+                </tr>
+                <tr>
+                    <td><strong>NV</strong></td>
+                    <td><input type="text" name="pog_nv_sph_re"></td>
+                    <td><input type="text" name="pog_nv_cyl_re"></td>
+                    <td><input type="text" name="pog_nv_axis_re"></td>
+                    <td><input type="text" name="pog_nv_vision_re"></td>
+                    <td><input type="text" name="pog_nv_sph_le"></td>
+                    <td><input type="text" name="pog_nv_cyl_le"></td>
+                    <td><input type="text" name="pog_nv_axis_le"></td>
+                    <td><input type="text" name="pog_nv_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 4c: Refraction Acceptance -->
+        <h3 class="section-title">Refraction Acceptance</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="4" style="text-align: center;">Right Eye</th>
+                    <th colspan="4" style="text-align: center;">Left Eye</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DV</strong></td>
                     <td><input type="text" name="dv_sph_re" placeholder="-0.00"></td>
                     <td><input type="text" name="dv_cyl_re"></td>
                     <td><input type="text" name="dv_axis_re"></td>
@@ -132,7 +260,7 @@
                     <td><input type="text" name="dv_vision_le"></td>
                 </tr>
                 <tr>
-                    <td><strong>Near (Add)</strong></td>
+                    <td><strong>NV</strong></td>
                     <td><input type="text" name="nv_sph_re"></td>
                     <td><input type="text" name="nv_cyl_re"></td>
                     <td><input type="text" name="nv_axis_re"></td>
@@ -183,6 +311,26 @@
                     <td><input type="text" name="slit_lamp_le" value="NORMAL"></td>
                 </tr>
                 <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Lens</td>
+                    <td><input type="text" name="lens_re"></td>
+                    <td><input type="text" name="lens_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Cornea</td>
+                    <td><input type="text" name="cornea_re"></td>
+                    <td><input type="text" name="cornea_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Conjunctiva</td>
+                    <td><input type="text" name="conjunctiva_re"></td>
+                    <td><input type="text" name="conjunctiva_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Iris</td>
+                    <td><input type="text" name="iris_re"></td>
+                    <td><input type="text" name="iris_le"></td>
+                </tr>
+                <tr>
                     <td>Fundus</td>
                     <td><input type="text" name="fundus_re" value="Normal"></td>
                     <td><input type="text" name="fundus_le" value="Normal"></td>
@@ -206,6 +354,18 @@
                 <label>Advice / Notes</label>
                 <textarea name="advice" rows="3"></textarea>
             </div>
+            <div class="form-group">
+                <label>Eye Health Rating (1 to 5 Stars)</label>
+                <input type="number" name="eye_health_rating" min="1" max="5" placeholder="Out of 5">
+            </div>
+            <div class="form-group">
+                <label>Patient Risk Factor</label>
+                <select name="risk_factor" class="form-control">
+                    <option value="low">Low Risk</option>
+                    <option value="moderate">Moderate Risk</option>
+                    <option value="high">High Risk</option>
+                </select>
+            </div>
         </div>
 
         <!-- SECTION 7: Helper / Doctor Assignment -->
@@ -222,8 +382,9 @@
             </div>
         </div>
 
-        <div class="btn-group" style="margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary">Save Consultation Report</button>
+        <div class="btn-group" style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save & Send to Doctor</button>
+            <button type="button" id="directSendBtn" class="btn" style="flex: 1; background: #059669; color: white;">Directly Send to Patient (Corporate)</button>
         </div>
     </form>
 </div>
@@ -321,20 +482,248 @@
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefillPhone = urlParams.get('phone');
+        const prefillConsultant = urlParams.get('consultant');
+
+        if (prefillPhone) {
+            const accessToken = localStorage.getItem('access_token');
+            try {
+                // 1. Try to fetch pending examination first
+                const examResponse = await fetch(`/api/exams/by-phone/${prefillPhone}/`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                
+                if (examResponse.ok) {
+                    const examData = await examResponse.json();
+                    populateForm(examData);
+                } else {
+                    // 2. Fallback: Fetch basic patient info if no pending exam
+                    const patientResponse = await fetch(`/api/patient-info/${prefillPhone}/`, {
+                        headers: { 'Authorization': `Bearer ${accessToken}` }
+                    });
+                    if (patientResponse.ok) {
+                        const patientData = await patientResponse.json();
+                        populatePatientFields(patientData);
+                    }
+                }
+                
+                fetchPatientHistory(prefillPhone);
+                checkPatientType(prefillPhone);
+                
+                if (prefillConsultant) {
+                    const form = document.getElementById('examForm');
+                    form.elements['consultant_id'].value = prefillConsultant;
+                }
+            } catch (err) {
+                console.error('Prefill failed', err);
+            }
+        }
+    });
+
+    function populatePatientFields(patient) {
+        const form = document.getElementById('examForm');
+        form.elements['name'].value = patient.name || '';
+        form.elements['age'].value = patient.age || '';
+        form.elements['gender'].value = patient.gender || 'male';
+        form.elements['phone_number'].value = patient.phone_number || '';
+        form.elements['address'].value = patient.address || '';
+    }
+
+    function populateForm(data) {
+        const form = document.getElementById('examForm');
+        // Basic patient info
+        if (data.patient) {
+            form.elements['name'].value = data.patient.name;
+            form.elements['age'].value = data.patient.age;
+            form.elements['gender'].value = data.patient.gender;
+            form.elements['phone_number'].value = data.patient.phone_number;
+            form.elements['address'].value = data.patient.address;
+        }
+
+        // Examination fields
+        const fields = [
+            'chief_complaints', 'systemic_history', 'screen_time', 'history_eye_disease', 'history_eye_surgery',
+            'family_history_eye_disease', 'outdoor_activity_hours', 'glasses_made_when_where', 'eye_medication_used', 'systemic_medication', 'allergies_with_medicine',
+            'uncorrected_vision_re', 'uncorrected_vision_le', 'pinhole_vision_re', 'pinhole_vision_le', 'corrected_vision_re', 'corrected_vision_le',
+            'dv_sph_re', 'dv_cyl_re', 'dv_axis_re', 'dv_vision_re', 'dv_sph_le', 'dv_cyl_le', 'dv_axis_le', 'dv_vision_le',
+            'nv_sph_re', 'nv_cyl_re', 'nv_axis_re', 'nv_vision_re', 'nv_sph_le', 'nv_cyl_le', 'nv_axis_le', 'nv_vision_le',
+            'ar_dv_sph_re', 'ar_dv_cyl_re', 'ar_dv_axis_re', 'ar_dv_vision_re', 'ar_dv_sph_le', 'ar_dv_cyl_le', 'ar_dv_axis_le', 'ar_dv_vision_le',
+            'ar_nv_sph_re', 'ar_nv_cyl_re', 'ar_nv_axis_re', 'ar_nv_vision_re', 'ar_nv_sph_le', 'ar_nv_cyl_le', 'ar_nv_axis_le', 'ar_nv_vision_le',
+            'pog_dv_sph_re', 'pog_dv_cyl_re', 'pog_dv_axis_re', 'pog_dv_vision_re', 'pog_dv_sph_le', 'pog_dv_cyl_le', 'pog_dv_axis_le', 'pog_dv_vision_le',
+            'pog_nv_sph_re', 'pog_nv_cyl_re', 'pog_nv_axis_re', 'pog_nv_vision_re', 'pog_nv_sph_le', 'pog_nv_cyl_le', 'pog_nv_axis_le', 'pog_nv_vision_le',
+            'schirmer_re', 'schirmer_le', 'tbut_re', 'tbut_le', 'slit_lamp_re', 'slit_lamp_le',
+            'lens_re', 'lens_le', 'cornea_re', 'cornea_le', 'conjunctiva_re', 'conjunctiva_le', 'iris_re', 'iris_le',
+            'fundus_re', 'fundus_le', 'iop_re', 'iop_le',
+            'provisional_diagnosis', 'advice', 'eye_health_rating'
+        ];
+
+        fields.forEach(f => {
+            if (form.elements[f] && data[f] !== undefined) {
+                form.elements[f].value = data[f];
+            }
+        });
+
+        // Checkboxes
+        const checkboxes = [
+            'performed_ar_assessment', 'performed_refraction', 'performed_schirmer', 'performed_tbut', 'performed_slit_lamp', 'performed_fundus', 'performed_iop'
+        ];
+        checkboxes.forEach(cb => {
+            if (form.elements[cb]) {
+                form.elements[cb].checked = !!data[cb];
+            }
+        });
+
+        // Consultant
+        if (data.consultant) {
+            form.elements['consultant_id'].value = data.consultant;
+        }
+    }
+
+    async function fetchPatientHistory(phone) {
+        if (!phone) return;
+        const accessToken = localStorage.getItem('access_token');
+        const container = document.getElementById('historyContainer');
+        const content = document.getElementById('historyListContent');
+
+        try {
+            const response = await fetch(`/api/patient-history/${phone}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                const history = await response.json();
+                if (history.length > 0) {
+                    container.style.display = 'block';
+                    content.innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                            ${history.map(item => `
+                                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                                    <div style="font-weight: 700; color: var(--primary); font-size: 0.9rem;">${item.date}</div>
+                                    <div style="font-size: 0.8rem; margin: 0.25rem 0;">Doctor: <strong>${item.consultant}</strong></div>
+                                    <div style="font-size: 0.78rem; color: var(--text-muted); min-height: 2.4rem; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                                        ${item.diagnosis}
+                                    </div>
+                                    <div style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: ${item.is_completed ? '#dcfce7' : '#fef3c7'}; color: ${item.is_completed ? '#166534' : '#92400e'};">
+                                            ${item.is_completed ? 'Completed' : 'Pending'}
+                                        </span>
+                                        <a href="#" onclick="viewPastExam(${item.id}); return false;" style="font-size: 0.7rem; color: var(--primary); text-decoration: none; font-weight: 600;">Details</a>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.style.display = 'none';
+                }
+            }
+        } catch (err) {
+            console.error('History fetch failed', err);
+        }
+    }
+
+    // Add event listener for real-time history & type check
+    let currentPatientType = null;
+
+    document.querySelector('input[name="phone_number"]').addEventListener('blur', async (e) => {
+        const phone = e.target.value;
+        if (!phone) return;
+        
+        const accessToken = localStorage.getItem('access_token');
+        
+        // Fetch patient history and type (for UI/Logic)
+        fetchPatientHistory(phone);
+        checkPatientType(phone);
+        
+        // Auto-fill basic details if form name is empty (to avoid overwriting user typing but help if blank)
+        const nameField = document.querySelector('input[name="name"]');
+        if (!nameField.value) {
+            try {
+                const response = await fetch(`/api/patient-info/${phone}/`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (response.ok) {
+                    const patient = await response.json();
+                    populatePatientFields(patient);
+                }
+            } catch (err) {
+                console.error('Auto-fill on blur failed', err);
+            }
+        }
+    });
+
+    async function checkPatientType(phone) {
+        if (!phone) {
+            currentPatientType = null;
+            return;
+        }
+        const accessToken = localStorage.getItem('access_token');
+        const consultantSelect = document.querySelector('select[name="consultant_id"]');
+        
+        try {
+            const response = await fetch(`/api/patient-info/${phone}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                currentPatientType = data.login_type;
+                if (currentPatientType === 'corporate') {
+                    consultantSelect.required = false; 
+                } else {
+                    consultantSelect.required = true;
+                }
+            } else {
+                currentPatientType = null;
+                consultantSelect.required = true;
+            }
+        } catch (err) {
+            console.error('Type check failed', err);
+            currentPatientType = null;
+        }
+    }
+
+    document.getElementById('directSendBtn').addEventListener('click', async function() {
+        if (!currentPatientType) {
+            const phone = document.querySelector('input[name="phone_number"]').value;
+            if (phone) {
+                // Try to fetch if not already done
+                await checkPatientType(phone);
+            }
+        }
+
+        if (currentPatientType !== 'corporate') {
+            alert('Access Denied: Direct report transmission is a premium feature available only for Corporate patients. For standard patients, please use the "Save & Send to Doctor" option.');
+            return;
+        }
+
+        const form = document.getElementById('examForm');
+        if (!form.reportValidity()) return;
+        
+        if (confirm('Are you sure you want to send this report directly to the patient? This bypasses doctor approval.')) {
+            submitExamination(true);
+        }
+    });
+
     document.getElementById('examForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = e.target.querySelector('button[type="submit"]');
+        submitExamination(false);
+    });
+
+    async function submitExamination(bypass = false) {
+        const form = document.getElementById('examForm');
+        const btn = form.querySelector('button[type="submit"]');
+        const directBtn = document.getElementById('directSendBtn');
         const originalText = btn.innerText;
-        btn.innerText = 'Saving...';
+        
         btn.disabled = true;
+        directBtn.disabled = true;
+        btn.innerText = 'Processing...';
 
-        const formData = new FormData(e.target);
-
-        // Convert to JSON
+        const formData = new FormData(form);
         const data = {};
         formData.forEach((value, key) => {
-            // Checkbox handling
-            if (e.target.elements[key].type === 'checkbox') {
+            if (form.elements[key].type === 'checkbox') {
                 data[key] = true;
             } else {
                 data[key] = value;
@@ -342,15 +731,11 @@
         });
 
         // Handle unchecked checkboxes
-        const checkboxes = e.target.querySelectorAll('input[type="checkbox"]');
-        checkboxes.forEach(cb => {
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
             if (!cb.checked) data[cb.name] = false;
         });
 
-        // Add user token auth if needed, but we rely on session/cookie usually?
-        // Wait, the views use APIView which might require Bearer token if not session authenticated.
-        // The existing login implementation stores 'access_token' in localStorage.
-
+        data['bypass_approval'] = bypass;
         const accessToken = localStorage.getItem('access_token');
 
         try {
@@ -365,19 +750,20 @@
             });
 
             if (response.ok) {
-                alert('Examination Report Saved Successfully!');
+                alert('Success! Examination Report ' + (bypass ? 'Sent Directly to Patient.' : 'Saved and Sent to Doctor.'));
                 window.location.href = '{% url "optometrist_dashboard" %}';
             } else {
                 const err = await response.json();
-                alert('Error: ' + JSON.stringify(err));
+                alert('Error: ' + (err.error || JSON.stringify(err)));
             }
         } catch (error) {
             console.error(error);
-            alert('Failed to save report.');
+            alert('Failed to process report.');
         } finally {
             btn.innerText = originalText;
             btn.disabled = false;
+            directBtn.disabled = false;
         }
-    });
+    }
 </script>
 {% endblock content %}

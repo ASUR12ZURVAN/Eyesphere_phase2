@@ -1,11 +1,20 @@
 from django.contrib import admin
-from .models import Optometrist, Patient, EyeExamination, Medication
+from .models import Optometrist, Patient, EyeExamination, Medication, DailyUserUsage, DailyTopTen, CMPRecord
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .forms import OptometristCreationForm, OptometristChangeForm
 
 class MedicationInline(admin.TabularInline):
     model = Medication
     extra = 1
+
+
+class CMPRecordInline(admin.TabularInline):
+    model = CMPRecord
+    extra = 0
+    fields = ('recorded_at', 'cmp_type', 'optometrist', 'hba1c_value', 'axial_length', 'dilated_refraction')
+    readonly_fields = ('recorded_at',)
+    ordering = ('-recorded_at',)
+    show_change_link = True
 
 @admin.register(EyeExamination)
 class EyeExaminationAdmin(admin.ModelAdmin):
@@ -16,24 +25,33 @@ class EyeExaminationAdmin(admin.ModelAdmin):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'age', 'gender', 'phone_number', 'created_at')
-    list_filter = ('gender', 'created_at')
-    search_fields = ('name', 'phone_number')
+    list_display = ('name', 'age', 'gender', 'phone_number', 'cmp_badge', 'created_at')
+    list_filter = ('is_cmp_patient', 'cmp_type', 'gender', 'created_at')
+    search_fields = ('name', 'phone_number', 'cmp_type')
+    list_select_related = True
+    inlines = [CMPRecordInline]
+
+    @admin.display(description='CMP', ordering='cmp_type')
+    def cmp_badge(self, obj):
+        if not obj.is_cmp_patient:
+            return '—'
+        return f"{obj.cmp_tag or 'CMP'} · {obj.get_cmp_type_display() or ''}"
 
 @admin.register(Optometrist)
 class OptometristAdmin(BaseUserAdmin):
     form = OptometristChangeForm
     add_form = OptometristCreationForm
     
-    list_display = ('name', 'phone_number', 'role', 'email', 'license_number', 'is_active', 'is_staff', 'created_at')
-    list_filter = ('role', 'is_active', 'is_staff', 'specialization', 'created_at')
+    list_display = ('name', 'phone_number', 'role', 'designation', 'email', 'license_number', 'is_active', 'is_staff', 'created_at')
+    list_filter = ('role', 'designation', 'is_active', 'is_staff', 'specialization', 'created_at')
     search_fields = ('name', 'phone_number', 'email', 'license_number', 'qualification')
     ordering = ('-created_at',)
     
     # UserAdmin specific fields
     fieldsets = (
         (None, {'fields': ('phone_number', 'password')}),
-        ('Role & Access', {'fields': ('role',)}),
+        ('Role & Access', {'fields': ('role', 'designation')}),
+        ('Corporate Information', {'fields': ('working_hospital', 'assigned_companies')}),
         ('Personal Information', {'fields': ('name', 'email', 'profile_picture', 'languages', 'bio')}),
         ('Professional Details', {'fields': ('license_number', 'qualification', 'specialization', 'experience_years', 'clinic_address', 'website', 'office_hours')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
@@ -44,7 +62,7 @@ class OptometristAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('phone_number', 'name', 'password1', 'password2', 'role', 'is_staff', 'is_active'),
+            'fields': ('phone_number', 'name', 'password1', 'password2', 'role', 'designation', 'is_staff', 'is_active'),
         }),
         ('Personal Information', {
             'fields': ('email', 'profile_picture', 'languages', 'bio'),
@@ -56,3 +74,36 @@ class OptometristAdmin(BaseUserAdmin):
             'fields': ('is_superuser', 'groups', 'user_permissions'),
         }),
     )
+
+@admin.register(CMPRecord)
+class CMPRecordAdmin(admin.ModelAdmin):
+    list_display = ('patient', 'cmp_type', 'optometrist', 'hba1c_value', 'axial_length', 'dilated_refraction', 'recorded_at')
+    list_filter = ('cmp_type', 'diabetes_type', 'has_kidney_disease', 'recorded_at')
+    search_fields = ('patient__name', 'patient__phone_number')
+    autocomplete_fields = ('patient', 'optometrist')
+    readonly_fields = ('recorded_at',)
+    date_hierarchy = 'recorded_at'
+    fieldsets = (
+        (None, {'fields': ('patient', 'optometrist', 'cmp_type', 'recorded_at')}),
+        ('Diabetic CMP (CMP1 / CMP2)', {
+            'fields': ('hba1c_value', 'hba1c_report', 'kft_report', 'diabetes_type',
+                       'current_diabetes_medications', 'has_kidney_disease', 'exercise_frequency'),
+        }),
+        ('Pediatric Myopia CMP (CMP3)', {
+            'fields': ('school_grade', 'axial_length', 'dilated_refraction',
+                       'avg_daily_screen_time', 'avg_daily_outdoor_time', 'eye_muscle_status'),
+        }),
+        ('Notes', {'fields': ('notes',)}),
+    )
+
+
+@admin.register(DailyUserUsage)
+class DailyUserUsageAdmin(admin.ModelAdmin):
+    list_display = ('user', 'date', 'total_seconds')
+    list_filter = ('date',)
+    search_fields = ('user__name', 'user__phone_number')
+
+@admin.register(DailyTopTen)
+class DailyTopTenAdmin(admin.ModelAdmin):
+    list_display = ('date',)
+    list_filter = ('date',)

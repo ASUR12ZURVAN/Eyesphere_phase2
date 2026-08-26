@@ -16,9 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('optometrist.urls')),
     path('doctor/', include('doctors.urls')),
+    path('patient/', include('patients.urls')),
+    path('sw.js', (lambda r: django.views.static.serve(r, 'sw.js', document_root=os.path.join(settings.BASE_DIR, 'patients', 'static'))), name='sw_js'),
 ]
+
+import django.views.static
+import os
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

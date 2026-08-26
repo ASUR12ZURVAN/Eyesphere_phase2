@@ -1,0 +1,3369 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard | EyeSphere</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-light: #d1fae5;
+            --primary-hover: #047857;
+            --primary-dark: #065f46;
+            --secondary: #2563eb;
+            --bg: #f0fdf4;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.08);
+            --sidebar-w: 260px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(180deg, #065f46 0%, #059669 100%);
+            color: #fff;
+            position: fixed;
+            top: var(--timer-bar-h, 0px);
+            left: 0;
+            bottom: 0;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            transition: transform .3s;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .15);
+        }
+
+        .sidebar-brand-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-brand span {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .85rem 1.5rem;
+            color: rgba(255, 255, 255, .75);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: .95rem;
+            transition: all .2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            color: #fff;
+            background: rgba(255, 255, 255, .12);
+            border-left-color: #fff;
+        }
+
+        .sidebar-nav a svg {
+            flex-shrink: 0;
+        }
+
+        .sidebar-user {
+            padding: 1.2rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, .15);
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .sidebar-user-avatar {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .85rem;
+        }
+
+        .sidebar-user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .sidebar-user-name {
+            font-weight: 600;
+            font-size: .9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: .75rem;
+            opacity: .7;
+        }
+
+        /* ===== MOBILE TOGGLE ===== */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: var(--timer-bar-h, 0px);
+            left: 0;
+            right: 0;
+            z-index: 150;
+            background: #fff;
+            padding: .8rem 1rem;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+        }
+
+        .hamburger {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: .3rem;
+        }
+
+        .hamburger svg {
+            display: block;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .4);
+            z-index: 190;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-width: 0;
+            padding-top: var(--timer-bar-h, 0px);
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ===== TAB CONTENT ===== */
+        .tab-content {
+            display: none;
+            animation: fadeUp .4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ===== COMMON COMPONENTS ===== */
+        .page-header {
+            margin-bottom: 1.8rem;
+        }
+
+        .page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            margin-top: .3rem;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform .2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon.green {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .stat-icon.blue {
+            background: #dbeafe;
+            color: var(--secondary);
+        }
+
+        .stat-icon.purple {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        .stat-icon.amber {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stat-label {
+            font-size: .85rem;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .card-header span {
+            font-size: .85rem;
+            color: var(--text-muted);
+        }
+
+        .card-body {
+            padding: 1.5rem 2rem;
+        }
+
+        /* Chart */
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .metric-select {
+            padding: .5rem 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .metric-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Table */
+        .queue-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .queue-table th {
+            text-align: left;
+            padding: 1rem 1.25rem;
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            background: #f8fafb;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .queue-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .queue-table tbody tr {
+            transition: background .15s;
+            cursor: pointer;
+        }
+
+        .queue-table tbody tr:hover {
+            background: #f0fdf4;
+        }
+
+        .badge {
+            padding: .3rem .7rem;
+            border-radius: 8px;
+            font-size: .78rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge-amber {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-purple {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        .btn-view {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: .5rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .btn-view:hover {
+            background: var(--primary-hover);
+            transform: scale(1.03);
+        }
+
+        /* ===== PATIENT INFO ===== */
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 72px;
+            height: 72px;
+            background: rgba(255, 255, 255, .2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .profile-name {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .profile-role {
+            opacity: .8;
+            font-size: .9rem;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .profile-item label {
+            display: block;
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .3rem;
+        }
+
+        .profile-item span {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .onboarding-summary .card-header {
+            background: #f8fafc;
+        }
+
+        .onboarding-summary .card-header h2 {
+            color: var(--primary-dark);
+        }
+
+        .onboarding-summary .profile-grid {
+            padding: 0;
+            gap: 1rem;
+        }
+
+        .onboarding-summary .profile-item {
+            min-width: 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #edf2f7;
+            border-radius: 12px;
+        }
+
+        .onboarding-summary .profile-item span {
+            display: block;
+            line-height: 1.45;
+            overflow-wrap: anywhere;
+        }
+
+        .onboarding-section-title {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            margin: 1.8rem 0 1rem;
+            color: var(--text-main);
+            font-size: 1.05rem;
+        }
+
+        .onboarding-section-title::before {
+            content: '';
+            width: 4px;
+            height: 1.2rem;
+            border-radius: 4px;
+            background: var(--primary);
+        }
+
+        .summary-value-pill {
+            display: inline-block !important;
+            width: fit-content;
+            max-width: 100%;
+            padding: .3rem .65rem;
+            border-radius: 999px;
+            background: #d1fae5;
+            color: #047857;
+            font-size: .85rem !important;
+            font-weight: 700 !important;
+        }
+
+        .summary-value-pill.warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .summary-value-pill.alert {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .disease-list,
+        .test-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .disease-chip,
+        .test-chip {
+            display: inline-flex;
+            align-items: center;
+            max-width: 100%;
+            padding: .45rem .7rem;
+            border-radius: 8px;
+            font-size: .85rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .disease-chip {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .test-chip {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #bbf7d0;
+        }
+
+        .empty-value {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            .onboarding-summary .card-header {
+                display: block;
+            }
+
+            .onboarding-summary .card-header span {
+                display: block;
+                margin-top: .35rem;
+            }
+
+            .onboarding-summary .card-body {
+                padding: 1rem;
+            }
+        }
+
+        /* ===== SCREENING GRID ===== */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .test-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: transform .2s;
+            text-align: center;
+        }
+
+        .test-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .test-card-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.8rem;
+        }
+
+        .test-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: .4rem;
+        }
+
+        .test-card p {
+            font-size: .85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.2rem;
+            line-height: 1.5;
+        }
+
+        .test-btn {
+            display: inline-block;
+            background: var(--primary);
+            color: #fff;
+            text-decoration: none;
+            padding: .7rem 1.8rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: .9rem;
+            transition: all .2s;
+        }
+
+        .test-btn:hover {
+            background: var(--primary-hover);
+            transform: scale(1.03);
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            width: 100%;
+            max-width: 900px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, .2);
+            animation: slideUp .35s ease;
+            margin: 2rem auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ===== SERVICE LOCK UI ===== */
+        .service-card {
+            position: relative;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .service-card.locked::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.03);
+            backdrop-filter: blur(2px);
+            z-index: 5;
+            transition: opacity 0.5s ease;
+        }
+
+        .lock-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+
+        .lock-icon-container {
+            background: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .service-card.unlocked .lock-icon-container {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        .service-card.unlocked::before {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .service-card-content {
+            transition: filter 0.3s ease;
+        }
+
+        .service-card.locked .service-card-content {
+            filter: blur(1px);
+        }
+
+        .service-card.unlocked .service-card-content {
+            filter: none;
+        }
+
+        .service-card-footer {
+            margin-top: auto;
+            padding: 0.8rem;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+            z-index: 15;
+            position: relative;
+            border-radius: 0 0 16px 16px;
+            margin: 0 -1.5rem -1.5rem -1.5rem; /* Offset the parent padding */
+        }
+
+        /* ===== TICKETS UI ===== */
+        .ticket-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            transition: transform 0.2s;
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .ticket-tag {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 50px;
+            text-transform: uppercase;
+        }
+
+        .ticket-code {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 0.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            padding: 1.8rem 2rem;
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .modal-header-meta {
+            font-size: .85rem;
+            opacity: .85;
+            margin-top: .3rem;
+        }
+
+        .close-modal {
+            background: rgba(255, 255, 255, .15);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s;
+            flex-shrink: 0;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, .3);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: .8rem;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .2rem;
+        }
+
+        .info-item span {
+            font-size: .92rem;
+            font-weight: 500;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .88rem;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            text-align: left;
+            padding: .6rem .8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .data-table td {
+            padding: .6rem .8rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .eye-label {
+            display: inline-block;
+            padding: .1rem .5rem;
+            border-radius: 5px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .eye-re {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .eye-le {
+            background: #fce7f3;
+            color: #9d174d;
+        }
+
+        .notes-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .8rem 1rem;
+            margin-bottom: .6rem;
+            line-height: 1.6;
+            font-size: .92rem;
+            white-space: pre-wrap;
+        }
+
+        .notes-label {
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: .3rem;
+        }
+
+        .med-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: .8rem;
+        }
+
+        .med-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: transform .2s;
+        }
+
+        .med-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .med-card-name {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: .5rem;
+        }
+
+        .med-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: .25rem;
+            font-size: .82rem;
+        }
+
+        .med-detail-label {
+            color: var(--text-muted);
+        }
+
+        .med-detail-value {
+            font-weight: 600;
+        }
+
+        .med-instructions {
+            margin-top: .4rem;
+            padding-top: .4rem;
+            border-top: 1px dashed var(--border);
+            font-size: .8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .providers {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: .4rem;
+        }
+
+        .provider-chip {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 50px;
+            padding: .3rem .8rem .3rem .3rem;
+            font-size: .85rem;
+            color: #fff;
+        }
+
+        .provider-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .7rem;
+            color: #fff;
+        }
+
+        .provider-avatar.opto {
+            background: var(--secondary);
+        }
+
+        .provider-avatar.doc {
+            background: #db2777;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+
+        .empty-state svg {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: .5rem;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+        }
+
+        .hide-mobile {}
+
+        /* Screening Results Filter */
+        .filter-tabs {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .filter-tab {
+            padding: .5rem 1.2rem;
+            border-radius: 50px;
+            border: 2px solid var(--border);
+            background: #fff;
+            font-weight: 600;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s;
+            color: var(--text-muted);
+        }
+
+        .filter-tab:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .show-more-btn {
+            display: block;
+            width: 100%;
+            padding: .8rem;
+            background: none;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: .9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: .8rem;
+        }
+
+        .show-more-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .result-row {
+            transition: all .3s ease;
+        }
+
+        .result-row.hidden-row {
+            display: none;
+        }
+
+        @media(max-width:768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .mobile-header {
+                display: flex;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .page {
+                padding: 5rem 1rem 4rem;
+            }
+
+            .hide-mobile {
+                display: none;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .med-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                border-radius: 16px;
+            }
+
+            .modal-header {
+                border-radius: 16px 16px 0 0;
+                padding: 1.2rem;
+            }
+
+            .modal-body {
+                padding: 1.2rem;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .filter-tabs {
+                gap: .4rem;
+            }
+
+            .filter-tab {
+                padding: .4rem .9rem;
+                font-size: .8rem;
+            }
+        }
+
+        @media(max-width:480px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <button class="hamburger" onclick="toggleSidebar()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+        </button>
+        <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere" style="height: 48px; object-fit: contain; border-radius: 8px;">
+        <span></span>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 52px; border-radius: 10px; object-fit: contain;">
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" data-tab="dashboard" onclick="switchTab('dashboard',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Dashboard
+            </a>
+            <a href="#" data-tab="patient" onclick="switchTab('patient',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+                Patient
+            </a>
+            {% if is_cmp_patient %}
+            <a href="#" data-tab="cmp" onclick="switchTab('cmp',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                    <path d="M3.5 12h3l1.5-3 2 6 1.5-3h2" opacity="0" />
+                </svg>
+                CMP Health
+            </a>
+            {% endif %}
+            <a href="#" data-tab="screening" onclick="switchTab('screening',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                Online Test
+            </a>
+            <a href="#" data-tab="reports" onclick="switchTab('reports',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Reports
+            </a>
+            <a href="#" data-tab="redeem" onclick="switchTab('redeem',this)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                Redeem Coins
+            </a>
+            <button onclick="performPatientLogout()" style="margin-top:auto;color:rgba(255,255,255,.6);background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:.8rem;padding:.85rem 1.5rem;font-weight:500;font-size:.95rem;transition:all .2s;width:100%;text-align:left;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                Logout
+            </button>
+        </nav>
+        <div class="sidebar-user">
+            <div class="sidebar-user-avatar">{{ user.name|first }}</div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">{{ user.name }}</div>
+                <div class="sidebar-user-role" style="display: flex; align-items: center; gap: 4px;">Patient &bull; <span class="coin-count" style="color: #fbbf24; font-weight: 700;">{{ user.coins }} 🪙</span></div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="page">
+
+            <!-- ==================== TAB 1: DASHBOARD ==================== -->
+            <div class="tab-content active" id="tab-dashboard">
+                <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <h1>Welcome, {{ user.name }} </h1>
+                        <p>Your eye health overview and progress tracking</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <button class="floating-book-btn" onclick="openBookModal()" style="position: static; animation: pulseButton 2s infinite ease-in-out;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                            </svg>
+                            <span class="btn-text">Book At-Home Test</span>
+                        </button>
+                        <div style="background: linear-gradient(135deg, #fef08a, #f59e0b); color: #78350f; padding: 0.6rem 1.4rem; border-radius: 50px; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                            <span style="font-size: 1.4rem;">🪙</span>
+                            <span class="coin-count" style="font-size: 1.1rem;">{{ user.coins }} Coins</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="stat-label">Total Visits</div>
+                            <div class="stat-value">{{ examinations.count }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="stat-label">Screening Tests</div>
+                            <div class="stat-value">{{ screening_results.count }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon amber">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="stat-label">Risk Factor</div>
+                            <div class="stat-value" style="font-size: 1.2rem;">
+                                {% if patient_records %}
+                                    {% if patient_records.first.risk_factor == 'high' %}
+                                        <span style="color: #dc2626;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% elif patient_records.first.risk_factor == 'moderate' %}
+                                        <span style="color: #d97706;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% elif patient_records.first.risk_factor == 'low' %}
+                                        <span style="color: #059669;">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% else %}
+                                        <span style="color: var(--text-muted);">{{ patient_records.first.get_risk_factor_display }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: #64748b;">Unknown</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if examinations %}
+                <div class="card" style="margin-bottom:2rem;border-radius:20px;">
+                    <div class="card-body">
+                        <div class="chart-controls">
+                            <div class="chart-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)"
+                                    stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                Health Progress Trends
+                            </div>
+                            <select id="metricSelector" class="metric-select">
+                                <option value="iop">Intraocular Pressure (IOP)</option>
+                                <option value="schirmer">Schirmer Test (Dry Eye)</option>
+                                <option value="tbut">TBUT Findings</option>
+                                <option value="sph">Refraction Power (SPH)</option>
+                                <option value="cyl">Refraction Power (CYL)</option>
+                            </select>
+                        </div>
+                        <div style="height:300px;width:100%;"><canvas id="trendsChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Recent Exam Results -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Recent Eye Test Results</h2>
+                        <span>Latest examination findings</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Date</th>
+                                    <th>Vision RE</th>
+                                    <th>Vision LE</th>
+                                    <th>IOP RE</th>
+                                    <th>IOP LE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exam in examinations %}
+                                <tr>
+                                    <td style="font-weight:600">{{ exam.patient.name }}</td>
+                                    <td style="color:var(--text-muted)">{{ exam.date_of_visit|date:"d M Y" }}</td>
+                                    <td>{{ exam.uncorrected_vision_re|default:"-" }}</td>
+                                    <td>{{ exam.uncorrected_vision_le|default:"-" }}</td>
+                                    <td>{{ exam.iop_re|default:"-" }}</td>
+                                    <td>{{ exam.iop_le|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Screening Results Section -->
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2> Screening Results</h2>
+                        <span>Your self-test history</span>
+                    </div>
+                    <div class="card-body">
+                        
+                        {% if screening_results %}
+                        <div class="chart-controls" style="margin-bottom:1.5rem">
+                            <div class="chart-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                                Screening Trends
+                            </div>
+                            <select id="screeningMetricSelector" class="metric-select">
+                                <option value="vision">Vision Acuity (Denominator)</option>
+                                <option value="colorblind">Color Blindness Score</option>
+                                <option value="dryeye">OSDI Score (Dry Eye)</option>
+                                <option value="blink">Blink Rate</option>
+                            </select>
+                        </div>
+                        <div style="height:300px;width:100%;margin-bottom:2rem;"><canvas id="screeningTrendsChart"></canvas></div>
+                        {% endif %}
+
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="filterResults('all',this)">All Tests</button>
+                            <button class="filter-tab" onclick="filterResults('vision',this)">Vision</button>
+                            <button class="filter-tab" onclick="filterResults('colorblind',this)">Color
+                                Blindness</button>
+                            <button class="filter-tab" onclick="filterResults('dryeye',this)">OSDI</button>
+                            <button class="filter-tab" onclick="filterResults('blink',this)">Blink Rate</button>
+                        </div>
+                        {% if screening_results %}
+                        <div style="overflow-x:auto;">
+                            <table class="queue-table" id="screeningTable">
+                                <thead>
+                                    <tr>
+                                        <th>Test</th>
+                                        <th>Score</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="screeningTableBody">
+                                    {% for r in screening_results %}
+                                    <tr class="result-row" data-type="{{ r.test_type }}">
+                                        <td><span class="badge badge-{% if r.test_type == 'vision' %}green{% elif r.test_type == 'colorblind' %}purple{% elif r.test_type == 'dryeye' %}amber{% else %}blue{% endif %}">
+    {% if r.test_type == 'vision' %}Vision
+    {% elif r.test_type == 'colorblind' %}Color Blindness
+    {% elif r.test_type == 'dryeye' %}OSDI
+    {% else %}Blink Rate{% endif %}
+</span></td>
+                                        <td style="font-weight:600">{{ r.score|default:"-" }}</td>
+                                        <td style="color:var(--text-muted)">{{ r.created_at|date:"d M Y, H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="show-more-btn" id="showMoreBtn" onclick="showMoreResults()">Show More ↓</button>
+                        {% else %}
+                        <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+                            <p>No screening results yet. Take a test from the <strong>Online Test</strong> tab!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 2: PATIENT INFO ==================== -->
+            <div class="tab-content" id="tab-patient">
+                <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h1>My Profile</h1>
+                        <p>Your personal and medical information</p>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="openModal('change-password-modal')" class="btn" style="background:#f1f5f9;color:var(--text-main);border:1px solid var(--border);padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;">
+                            Change Password
+                        </button>
+                        <button onclick="openModal('edit-profile-modal')" class="btn" style="background:var(--primary);color:#fff;border:none;padding:0.7rem 1.5rem;border-radius:10px;font-weight:600;cursor:pointer;">
+                            Edit Profile
+                        </button>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">{{ user.name|first }}</div>
+                        <div>
+                            <div class="profile-name">{{ user.name }}</div>
+                            <div class="profile-role">Patient Account</div>
+                        </div>
+                    </div>
+                    <div class="profile-grid">
+                        <div class="profile-item"><label>Full Name</label><span>{{ user.name }}</span></div>
+                        <div class="profile-item"><label>Phone Number</label><span>{{ user.phone_number }}</span></div>
+                        <div class="profile-item"><label>Email</label><span>{{ user.email|default:"Not provided" }}</span></div>
+                        <div class="profile-item"><label>Account Created</label><span>{{ user.created_at|date:"d M Y" }}</span></div>
+                        {% if patient_records %}
+                        {% with patient_records.first as pr %}
+                        <div class="profile-item"><label>Age</label><span>{{ pr.age }} years</span></div>
+                        <div class="profile-item"><label>Gender</label><span>{{ pr.gender|title }}</span></div>
+                        <div class="profile-item"><label>Address</label><span>{{ pr.address|default:"Not provided" }}</span></div>
+                        <div class="profile-item"><label>Registration Type</label><span>{{ pr.get_login_type_display }}</span></div>
+                        {% if pr.login_type == 'corporate' %}
+                        <div class="profile-item"><label>Company Name</label><span>{{ pr.company_name }}</span></div>
+                        <div class="profile-item"><label>Designation</label><span>{{ pr.designation|default:"Not provided" }}</span></div>
+                        {% endif %}
+                        {% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if patient_records %}
+                {% with onboarding=patient_records.first %}
+                <div class="card onboarding-summary" data-testid="bd-onboarding-summary" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>BD onboarding record</h2>
+                        <span>Assessment and booking details saved by EyeSphere</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-grid">
+                            <div class="profile-item"><label>Patient ID</label><span data-testid="patient-account-id">{{ onboarding.patient_account_id }}</span></div>
+                            <div class="profile-item"><label>Location</label><span data-testid="patient-location">{{ onboarding.location|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Age Group</label><span data-testid="patient-age-group">{{ onboarding.age_group|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Risk Score</label><span data-testid="risk-score">{{ onboarding.risk_score_raw }} / {{ onboarding.risk_score_pct }}%</span></div>
+                            <div class="profile-item"><label>Risk Band</label><span class="summary-value-pill {% if onboarding.risk_factor == 'high' %}alert{% elif onboarding.risk_factor == 'moderate' %}warning{% endif %}" data-testid="risk-band">{{ onboarding.risk_band }}</span></div>
+                            <div class="profile-item"><label>Urgency</label><span class="summary-value-pill {% if onboarding.risk_factor == 'high' %}alert{% elif onboarding.risk_factor == 'moderate' %}warning{% endif %}" data-testid="risk-urgency">{{ onboarding.urgency|default:"Routine" }}</span></div>
+                            <div class="profile-item"><label>Conversion Likelihood</label><span data-testid="conversion-likelihood">{{ onboarding.conversion_likelihood|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Diseases Screenable</label><span class="disease-list" data-testid="disease-top3">{% for disease in onboarding.disease_top3 %}<span class="disease-chip">{{ disease }}</span>{% empty %}<span class="empty-value">No diseases listed</span>{% endfor %}</span></div>
+                            <div class="profile-item"><label>Selected Tests</label><span class="test-list" data-testid="selected-tests">{% if onboarding.selected_tests %}<span class="test-chip">{{ onboarding.selected_tests }}</span>{% else %}<span class="empty-value">No tests listed</span>{% endif %}</span></div>
+                            <div class="profile-item"><label>Primary Package</label><span data-testid="primary-package">{{ onboarding.primary_package|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Payable</label><span class="summary-value-pill" data-testid="payable-amount">&#8377;{{ onboarding.payable_amount|floatformat:2 }}</span></div>
+                            <div class="profile-item"><label>MRP / Savings</label><span data-testid="pricing-summary">&#8377;{{ onboarding.mrp_amount|floatformat:2 }} <small style="color:#047857;">(&#8377;{{ onboarding.savings_amount|floatformat:2 }} saved)</small></span></div>
+                            <div class="profile-item"><label>Booking Code</label><span class="summary-value-pill" data-testid="booking-code">{{ onboarding.booking_code|default:"Not provided" }}</span></div>
+                            <div class="profile-item"><label>Booking Date / Time</label><span data-testid="booking-slot">{% if onboarding.booking_date %}{{ onboarding.booking_date }}{% else %}<span class="empty-value">Date not set</span>{% endif %}{% if onboarding.booking_time %} <small>at {{ onboarding.booking_time }}</small>{% endif %}</span></div>
+                            <div class="profile-item"><label>Assigned Optometrist</label><span data-testid="assigned-optometrist">{{ onboarding.optometrist_assigned|default:"Not provided" }}</span></div>
+                        </div>
+                        <div>
+                            <h3 class="onboarding-section-title">Risk factors and history</h3>
+                            <div class="profile-grid">
+                                <div class="profile-item"><label>Diabetes</label><span data-testid="factor-diabetes">{{ onboarding.diabetes|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Diabetes over 5 years</label><span data-testid="factor-diabetes-over-5">{{ onboarding.diabetes_over_5yrs|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>HbA1c</label><span data-testid="factor-hba1c">{{ onboarding.hba1c_level|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Hypertension</label><span data-testid="factor-hypertension">{{ onboarding.hypertension|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Thyroid</label><span data-testid="factor-thyroid">{{ onboarding.thyroid|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Family history</label><span data-testid="factor-family-history">{{ onboarding.family_history|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Steroid use</label><span data-testid="factor-steroid">{{ onboarding.steroid_use|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Wears spectacles</label><span data-testid="factor-spectacles">{{ onboarding.spectacles_use|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>High spectacle power</label><span data-testid="factor-spectacle-power">{{ onboarding.spectacles_power_high|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Last check-up</label><span data-testid="factor-last-checkup">{{ onboarding.last_checkup|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Blurred vision</label><span data-testid="factor-blurred-vision">{{ onboarding.blurred_vision|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Symptoms</label><span data-testid="factor-symptoms">{{ onboarding.symptoms|default:"None" }}</span></div>
+                                <div class="profile-item"><label>Smoking</label><span data-testid="factor-smoking">{{ onboarding.smoking|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Alcohol</label><span data-testid="factor-alcohol">{{ onboarding.alcohol|yesno:"Yes,No" }}</span></div>
+                                <div class="profile-item"><label>Screen time</label><span data-testid="factor-screen-time">{{ onboarding.screen_time|default:"Not provided" }}</span></div>
+                                <div class="profile-item"><label>Physical activity</label><span data-testid="factor-activity">{{ onboarding.physical_activity|default:"Not provided" }}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endif %}
+
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>Send Your Query 💬</h2>
+                        <span>Fill in the form below and submit your query to our team</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Auto-filled patient info row -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                            <div>
+                                <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Name</label>
+                                <input type="text" value="{{ user.name }}" disabled style="width:100%; padding:0.65rem 0.9rem; border:1px solid var(--border); border-radius:10px; background:#f1f5f9; color:#94a3b8; font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Phone</label>
+                                <input type="text" value="{{ user.phone_number }}" disabled style="width:100%; padding:0.65rem 0.9rem; border:1px solid var(--border); border-radius:10px; background:#f1f5f9; color:#94a3b8; font-family:inherit;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:0.3rem;">Email</label>
+                                <input type="text" value="{{ user.email|default:'Not provided' }}" disabled style="width:100%; padding:0.65rem 0.9rem; border:1px solid var(--border); border-radius:10px; background:#f1f5f9; color:#94a3b8; font-family:inherit;">
+                            </div>
+                        </div>
+
+                        <!-- Query textarea -->
+                        <div style="margin-bottom: 0.5rem;">
+                            <label style="display:block; font-size:0.85rem; font-weight:700; color:var(--text-main); margin-bottom:0.5rem;">Your Query <span style="color:#94a3b8; font-weight:400;">(max 500 words)</span></label>
+                            <textarea id="patientQueryText" rows="6" maxlength="4000" placeholder="Describe your concern or question in detail..." oninput="updateQueryWordCount(this)" style="width:100%; padding:0.85rem 1rem; border:1.5px solid var(--border); border-radius:12px; font-family:inherit; font-size:0.95rem; resize:vertical; transition: border-color 0.2s; outline:none;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                            <div style="display:flex; justify-content:space-between; margin-top:0.4rem;">
+                                <span id="queryWordError" style="font-size:0.8rem; color:#dc2626; display:none;">⚠️ Query exceeds 500 words</span>
+                                <span style="margin-left:auto; font-size:0.8rem; color:var(--text-muted);"><span id="queryWordCount">0</span> / 500 words</span>
+                            </div>
+                        </div>
+
+                        <!-- Response message -->
+                        <div id="queryResponseMsg" style="display:none; padding:0.9rem 1.2rem; border-radius:10px; margin-bottom:1rem; font-weight:600; font-size:0.9rem;"></div>
+
+                        <!-- Submit button -->
+                        <button id="submitQueryBtn" onclick="submitPatientQuery()" style="background:linear-gradient(135deg, var(--primary), var(--primary-hover));color:#fff;border:none;padding:0.8rem 2rem;border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(5,150,105,0.3);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            Submit Query
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Change Password Modal -->
+                <div class="modal-overlay" id="change-password-modal">
+                    <div class="modal-content" style="max-width: 500px;">
+                        <div class="modal-header">
+                            <div>
+                                <h2>Change Password</h2>
+                                <div class="modal-header-meta">Update your account security</div>
+                            </div>
+                            <button class="close-modal" onclick="closeModal('change-password-modal')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="changePasswordForm">
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">New Password</label>
+                                    <input type="password" id="cpNewPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Confirm New Password</label>
+                                    <input type="password" id="cpConfirmPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                <button type="submit" class="btn" style="width: 100%; background:var(--primary);color:#fff;border:none;padding:0.8rem;border-radius:10px;font-weight:600;cursor:pointer;" id="btnChangePass">Update Password</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Profile Modal -->
+                <div class="modal-overlay" id="edit-profile-modal">
+                    <div class="modal-content" style="max-width: 600px;">
+                        <div class="modal-header">
+                            <div>
+                                <h2>Update Profile</h2>
+                                <div class="modal-header-meta">Change your personal details</div>
+                            </div>
+                            <button class="close-modal" onclick="closeModal('edit-profile-modal')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editProfileForm">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Full Name (Immutable)</label>
+                                        <input type="text" value="{{ user.name }}" disabled style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: var(--text-muted);">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Phone Number (Immutable)</label>
+                                        <input type="text" value="{{ user.phone_number }}" disabled style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); background: #f1f5f9; cursor: not-allowed; font-weight: bold; color: var(--text-muted);">
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Age</label>
+                                        <input type="number" id="profileAge" min="1" max="150" value="{% if patient_records %}{{ patient_records.first.age }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                    </div>
+                                    <div>
+                                        <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Gender</label>
+                                        <select id="profileGender" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; background: var(--bg-card);">
+                                            {% if patient_records %}
+                                                <option value="male" {% if patient_records.first.gender == 'male' %}selected{% endif %}>Male</option>
+                                                <option value="female" {% if patient_records.first.gender == 'female' %}selected{% endif %}>Female</option>
+                                                <option value="other" {% if patient_records.first.gender == 'other' %}selected{% endif %}>Other</option>
+                                            {% else %}
+                                                <option value="male">Male</option>
+                                                <option value="female">Female</option>
+                                                <option value="other">Other</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Email Address</label>
+                                    <input type="email" id="profileEmail" value="{{ user.email|default:'' }}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Registration Type</label>
+                                    <div style="display: flex; gap: 1rem; margin-top: 0.4rem;">
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; flex: 1; font-size: 0.9rem;">
+                                            <input type="radio" name="profileLoginType" value="at_home" {% if not patient_records.first or patient_records.first.login_type == 'at_home' %}checked{% endif %} onchange="toggleProfileCorporateFields(false)">
+                                            <span>At Home</span>
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.6rem; border: 1px solid var(--border); border-radius: 8px; flex: 1; font-size: 0.9rem;">
+                                            <input type="radio" name="profileLoginType" value="corporate" {% if patient_records.first and patient_records.first.login_type == 'corporate' %}checked{% endif %} onchange="toggleProfileCorporateFields(true)">
+                                            <span>Corporate</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div id="profileCorporateFields" style="{% if not patient_records.first or patient_records.first.login_type == 'at_home' %}display: none;{% endif %} border: 1px dashed var(--primary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                        <div>
+                                            <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Company Name</label>
+                                            <input type="text" id="profileCompany" value="{% if patient_records %}{{ patient_records.first.company_name|default:'' }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                        </div>
+                                        <div>
+                                            <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Designation</label>
+                                            <input type="text" id="profileDesignation" value="{% if patient_records %}{{ patient_records.first.designation|default:'' }}{% endif %}" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Residential Address</label>
+                                    <textarea id="profileAddress" rows="3" style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit; resize: vertical;">{% if patient_records %}{{ patient_records.first.address|default:'' }}{% endif %}</textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn" style="width: 100%; background:var(--primary);color:#fff;border:none;padding:0.8rem;border-radius:10px;font-weight:600;cursor:pointer;">Save Changes</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================== TAB 3: ONLINE TEST ==================== -->
+            <div class="tab-content" id="tab-screening">
+                <div class="page-header">
+                    <h1>Online Test</h1>
+                    <p>Take self-service eye screening tests from the comfort of your home</p>
+                </div>
+                <div class="test-grid">
+                    <div class="test-card">
+                        <div class="test-card-icon" style="background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">👁️</div>
+                        <h3>Vision Test</h3>
+                        <p>Dynamic Snellen Chart to measure your visual acuity for both eyes</p>
+                        <a href="{% url 'patient_vision_test' %}" class="test-btn">Start Test →</a>
+                    </div>
+                    <div class="test-card">
+                        <div class="test-card-icon" style="background:#fce7f3;color:#db2777;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎨</div>
+                        <h3>Color Blindness Test</h3>
+                        <p>Ishihara-style 15-plate color vision assessment</p>
+                        <a href="{% url 'patient_colorblind_test' %}" class="test-btn">Start Test →</a>
+                    </div>
+                    <div class="test-card">
+                        <div class="test-card-icon" style="background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">💧</div>
+                        <h3>Dry Eye (OSDI) Test</h3>
+                        <p>Ocular Surface Disease Index to assess dry eye symptoms</p>
+                        <a href="{% url 'patient_osdi_test' %}" class="test-btn">Start Test →</a>
+                    </div>
+                    <div class="test-card">
+                        <div class="test-card-icon" style="background:#ede9fe;color:#7c3aed;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">⏲️</div>
+                        <h3>Blink Rate Test</h3>
+                        <p>AI-powered 30-second blink rate detection using your camera</p>
+                        <a href="{% url 'patient_blink_test' %}" class="test-btn">Start Test →</a>
+                    </div>
+                </div>
+
+                {% if screening_results %}
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>Recent Results</h2><span>Your latest screening results</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>Test</th>
+                                    <th>Score</th>
+                                    <th>Date</th>
+                                    <th>Download</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in screening_results|slice:":10" %}
+                                <tr>
+                                    <td><span class="badge badge-{% if r.test_type == 'vision' %}green{% elif r.test_type == 'colorblind' %}purple{% elif r.test_type == 'dryeye' %}amber{% else %}blue{% endif %}">
+    {% if r.test_type == 'vision' %}Vision
+    {% elif r.test_type == 'colorblind' %}Color Blindness
+    {% elif r.test_type == 'dryeye' %}OSDI
+    {% else %}Blink Rate{% endif %}
+</span></td>
+                                    <td style="font-weight:600">{{ r.score|default:"-" }}</td>
+                                    <td style="color:var(--text-muted)">{{ r.created_at|date:"d M Y, H:i" }}</td>
+                                    <td>
+                                        <a href="{% url 'download_screening_pdf' r.id %}" target="_blank" class="btn" style="padding:0.3rem 0.6rem; font-size:0.8rem; border:1px solid #ddd; text-decoration:none; color:var(--text-main); display:inline-flex; align-items:center; gap:0.3rem;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ==================== TAB 4: REPORTS ==================== -->
+            <div class="tab-content" id="tab-reports">
+                <div class="page-header">
+                    <h1>Reports</h1>
+                    <p>Your complete appointment and examination history</p>
+                </div>
+
+                {% if examinations %}
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Appointment History</h2>
+                        <span>Sorted by most recent</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="queue-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient Name</th>
+                                    <th>Date</th>
+                                    <th class="hide-mobile">Optometrist</th>
+                                    <th class="hide-mobile">Doctor</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exam in examinations %}
+                                <tr onclick="openModal('modal-{{ exam.id }}')">
+                                    <td style="font-weight:600">{{ exam.patient.name }}</td>
+                                    <td style="color:var(--text-muted)">{{ exam.date_of_visit|date:"d M Y" }}</td>
+                                    <td class="hide-mobile">{{ exam.optometrist.name }}</td>
+                                    <td class="hide-mobile">{% if exam.consultant %}Dr. {{ exam.consultant.name }}{% else %}&mdash;{% endif %}</td>
+                                    <td>
+                                        {% if exam.is_completed %}<span class="badge badge-green">Completed</span>
+                                        {% else %}<span class="badge badge-amber">Pending</span>{% endif %}
+                                    </td>
+                                    <td><button class="btn-view"
+                                            onclick="event.stopPropagation();openModal('modal-{{ exam.id }}')">View</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {% for exam in examinations %}
+                <div class="modal-overlay" id="modal-{{ exam.id }}">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <h2>Eye Examination &mdash; {{ exam.patient.name }}</h2>
+                                <div class="modal-header-meta">{{ exam.date_of_visit|date:"d M Y" }}</div>
+                                <div class="providers">
+                                    {% if exam.optometrist %}<div class="provider-chip">
+                                        <div class="provider-avatar opto">{{ exam.optometrist.name|first }}</div>
+                                        Optometrist: {{ exam.optometrist.name }}
+                                    </div>{% endif %}
+                                    {% if exam.consultant %}<div class="provider-chip">
+                                        Doctor:
+                                        {{ exam.consultant.name }}
+                                    </div>{% endif %}
+                                    {% if exam.is_completed %}
+                                    <div style="margin-top: 10px;">
+                                        <a href="{% url 'download_exam_pdf' exam.id %}" target="_blank" class="btn" style="background:#2563eb; color:white; border:none; padding:0.4rem 0.8rem; font-size:0.85rem; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> View Report PDF
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <button class="close-modal" onclick="closeModal('modal-{{ exam.id }}')">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Patient Info -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg> Patient Information</div>
+                                <div class="info-grid">
+                                    <div class="info-item"><label>Name</label><span>{{ exam.patient.name }}</span></div>
+                                    <div class="info-item"><label>Age</label><span>{{ exam.patient.age }} years</span>
+                                    </div>
+                                    <div class="info-item"><label>Gender</label><span>{{ exam.patient.gender|title }}</span></div>
+                                    <div class="info-item"><label>Phone</label><span>{{ exam.patient.phone_number|default:"N/A" }}</span></div>
+                                </div>
+                            </div>
+                            <!-- Chief Complaints -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                    </svg> Chief Complaints &amp; History</div>
+                                <div class="info-grid">
+                                    <div class="info-item"><label>Chief Complaints</label><span>{{ exam.chief_complaints|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Systemic History</label><span>{{ exam.systemic_history|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Screen Time</label><span>{{ exam.screen_time|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Eye Disease History</label><span>{{ exam.history_eye_disease|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Eye Surgery History</label><span>{{ exam.history_eye_surgery|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Family History of Eye Disease</label><span>{{ exam.family_history_eye_disease|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Outdoor Activities (Children)</label><span>{{ exam.outdoor_activity_hours|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Glasses Made When &amp; Where</label><span>{{ exam.glasses_made_when_where|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Medication Used for Eye</label><span>{{ exam.eye_medication_used|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Systemic Medication</label><span>{{ exam.systemic_medication|default:"N/A" }}</span></div>
+                                    <div class="info-item"><label>Allergies with Medicine</label><span>{{ exam.allergies_with_medicine|default:"N/A" }}</span></div>
+                                </div>
+                            </div>
+                            <!-- Visual Acuity -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg> Visual Acuity</div>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Eye</th>
+                                            <th>Uncorrected</th>
+                                            <th>Pinhole</th>
+                                            <th>Corrected</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.uncorrected_vision_re|default:"-" }}</td>
+                                            <td>{{ exam.pinhole_vision_re|default:"-" }}</td>
+                                            <td>{{ exam.corrected_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.uncorrected_vision_le|default:"-" }}</td>
+                                            <td>{{ exam.pinhole_vision_le|default:"-" }}</td>
+                                            <td>{{ exam.corrected_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- AR Reading -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> AR Reading</div>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Distance Vision (DV)</p>
+                                <table class="data-table" style="margin-bottom:1rem">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.ar_dv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.ar_dv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_dv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Near Vision (NV)</p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.ar_nv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.ar_nv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.ar_nv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- POG (Power of Glasses) -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> POG (Power of Glasses)</div>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Distance Vision (DV)</p>
+                                <table class="data-table" style="margin-bottom:1rem">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.pog_dv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.pog_dv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_dv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Near Vision (NV)</p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr><th>Eye</th><th>SPH</th><th>CYL</th><th>AXIS</th><th>Vision</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.pog_nv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.pog_nv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.pog_nv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Refraction Acceptance -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> Refraction Acceptance</div>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Distance Vision (DV)</p>
+                                <table class="data-table" style="margin-bottom:1rem">
+                                    <thead>
+                                        <tr>
+                                            <th>Eye</th>
+                                            <th>SPH</th>
+                                            <th>CYL</th>
+                                            <th>AXIS</th>
+                                            <th>Vision</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.dv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.dv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.dv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.dv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.dv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.dv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.dv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.dv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p style="font-weight:600;font-size:.82rem;color:var(--text-muted);margin-bottom:.4rem">
+                                    Near Vision (NV)</p>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Eye</th>
+                                            <th>SPH</th>
+                                            <th>CYL</th>
+                                            <th>AXIS</th>
+                                            <th>Vision</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><span class="eye-label eye-re">RE</span></td>
+                                            <td>{{ exam.nv_sph_re|default:"-" }}</td>
+                                            <td>{{ exam.nv_cyl_re|default:"-" }}</td>
+                                            <td>{{ exam.nv_axis_re|default:"-" }}</td>
+                                            <td>{{ exam.nv_vision_re|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><span class="eye-label eye-le">LE</span></td>
+                                            <td>{{ exam.nv_sph_le|default:"-" }}</td>
+                                            <td>{{ exam.nv_cyl_le|default:"-" }}</td>
+                                            <td>{{ exam.nv_axis_le|default:"-" }}</td>
+                                            <td>{{ exam.nv_vision_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Investigations -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                    </svg> Investigations</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+                                    {% if exam.performed_ar_assessment %}<span class="badge badge-green">✓ AR</span>{% else %}<span class="badge badge-amber">✗ AR</span>{% endif %}
+                                    {% if exam.performed_refraction %}<span class="badge badge-green">✓ Refr</span>{% else %}<span class="badge badge-amber">✗ Refr</span>{% endif %}
+                                    {% if exam.performed_schirmer %}<span class="badge badge-green">✓ Schirmer</span>{% else %}<span class="badge badge-amber">✗ Schirmer</span>{% endif %}
+                                    {% if exam.performed_tbut %}<span class="badge badge-green">✓ TBUT</span>{% else %}<span class="badge badge-amber">✗ TBUT</span>{% endif %}
+                                    {% if exam.performed_slit_lamp %}<span class="badge badge-green">✓ Slit Lamp</span>{% else %}<span class="badge badge-amber">✗ Slit Lamp</span>{% endif %}
+                                    {% if exam.performed_fundus %}<span class="badge badge-green">✓ Fundus</span>{% else %}<span class="badge badge-amber">✗ Fundus</span>{% endif %}
+                                    {% if exam.performed_iop %}<span class="badge badge-green">✓ IOP</span>{% else %}<span class="badge badge-amber">✗ IOP</span>{% endif %}
+                                </div>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Finding</th>
+                                            <th>Right Eye (RE)</th>
+                                            <th>Left Eye (LE)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Schirmer</td>
+                                            <td>{{ exam.schirmer_re|default:"-" }}</td>
+                                            <td>{{ exam.schirmer_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TBUT</td>
+                                            <td>{{ exam.tbut_re|default:"-" }}</td>
+                                            <td>{{ exam.tbut_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Slit Lamp</td>
+                                            <td>{{ exam.slit_lamp_re|default:"-" }}</td>
+                                            <td>{{ exam.slit_lamp_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Lens</td>
+                                            <td>{{ exam.lens_re|default:"-" }}</td>
+                                            <td>{{ exam.lens_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Cornea</td>
+                                            <td>{{ exam.cornea_re|default:"-" }}</td>
+                                            <td>{{ exam.cornea_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Conjunctiva</td>
+                                            <td>{{ exam.conjunctiva_re|default:"-" }}</td>
+                                            <td>{{ exam.conjunctiva_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-left:1.25rem">&#8627; Iris</td>
+                                            <td>{{ exam.iris_re|default:"-" }}</td>
+                                            <td>{{ exam.iris_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Fundus</td>
+                                            <td>{{ exam.fundus_re|default:"-" }}</td>
+                                            <td>{{ exam.fundus_le|default:"-" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>IOP</td>
+                                            <td>{{ exam.iop_re|default:"-" }}</td>
+                                            <td>{{ exam.iop_le|default:"-" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- Doctor Consultation -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                                    </svg> Doctor's Consultation</div>
+                                {% if exam.diagnosis_notes %}<div style="margin-bottom:.6rem">
+                                    <div class="notes-label">Diagnosis Notes</div>
+                                    <div class="notes-box">{{ exam.diagnosis_notes }}</div>
+                                </div>{% endif %}
+                                {% if exam.provisional_diagnosis %}<div style="margin-bottom:.6rem">
+                                    <div class="notes-label">Provisional Diagnosis</div>
+                                    <div class="notes-box">{{ exam.provisional_diagnosis }}</div>
+                                </div>{% endif %}
+                                {% if exam.advice %}<div>
+                                    <div class="notes-label">Advice</div>
+                                    <div class="notes-box">{{ exam.advice }}</div>
+                                </div>{% endif %}
+                                {% if not exam.diagnosis_notes and not exam.provisional_diagnosis and not exam.advice %}
+                                <p style="color:var(--text-muted);font-style:italic">Consultation details pending from
+                                    your doctor.</p>{% endif %}
+                            </div>
+                            <!-- Medications -->
+                            <div class="section">
+                                <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="8" y1="12" x2="16" y2="12" />
+                                    </svg> Medications</div>
+                                {% if exam.medications.all %}
+                                <div class="med-grid">
+                                    {% for med in exam.medications.all %}
+                                    <div class="med-card">
+                                        <div class="med-card-name">{{ med.name }}</div>
+                                        <div class="med-detail"><span class="med-detail-label">Quantity</span><span
+                                                class="med-detail-value">{{ med.quantity|default:"-" }}</span></div>
+                                        <div class="med-detail"><span class="med-detail-label">Frequency</span><span
+                                                class="med-detail-value">{{ med.frequency|default:"-" }}</span></div>
+                                        <div class="med-detail"><span class="med-detail-label">Eye</span><span
+                                                class="med-detail-value">{{ med.eye }}</span></div>
+                                        <div class="med-detail"><span class="med-detail-label">Duration</span><span
+                                                class="med-detail-value">{{ med.duration|default:"-" }}</span></div>
+                                        {% if med.instructions %}<div class="med-instructions">{{ med.instructions }}
+                                        </div>{% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}<p style="color:var(--text-muted);font-style:italic">No medications prescribed
+                                    yet.</p>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% else %}
+                <div class="empty-state">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <h3>No Appointments Found</h3>
+                    <p>Once your optometrist creates an examination record with your phone number, it will appear here.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- ==================== TAB 5: REDEEM COINS ==================== -->
+            <div class="tab-content" id="tab-redeem">
+                <div class="page-header" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <h1>Redeem & Earn Coins 🪙</h1>
+                        <p>Complete tasks to earn coins and redeem them for rewards!</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Ways to Earn</h2>
+                        <span>Complete these processes to gain more coins</span>
+                    </div>
+                    <div class="card-body">
+                        <div style="overflow-x:auto;">
+                            <table class="queue-table">
+                                <thead>
+                                    <tr>
+                                        <th>Task</th>
+                                        <th>Reward</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:600">Daily Login</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+10 Coins 🪙</td>
+                                        <td><span class="badge badge-green">Received Today</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Take a Self-Screening Test</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+50 Coins 🪙</td>
+                                        <td><span class="badge badge-blue">Every 3 Days</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Book an Online Session</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+20 Coins 🪙</td>
+                                        <td><span class="badge badge-blue">Repeatable</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600">Complete Profile Data</td>
+                                        <td style="color:#f59e0b;font-weight:700;">+100 Coins 🪙</td>
+                                        <td>
+                                            {% if patient_records.first.has_received_reward %}
+                                            <span class="badge badge-green">Claimed</span>
+                                            {% else %}
+                                            <span class="badge badge-amber">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>Rewards & Offers</h2>
+                        <span>Redeem your coins for exclusive perks</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                            {% for service in redeemable_services %}
+                            <div class="service-card locked" id="service-{{ service.id }}">
+                                <div class="lock-overlay">
+                                    <div class="lock-icon-container">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                    </div>
+                                    <button class="btn" style="background:#f59e0b; color:#fff; border:none; padding:0.6rem 1.2rem; border-radius:8px; font-weight:700; cursor:pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);" onclick="confirmRedemption('{{ service.id }}', '{{ service.name }}', {{ service.coins_required }})">
+                                        Redeem {{ service.coins_required }} 🪙
+                                    </button>
+                                </div>
+                                <div class="service-card-content">
+                                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ service.icon|default:"🎁" }}</div>
+                                    <h3 style="margin-bottom: 0.5rem; font-size:1.2rem; color: var(--text-main);">{{ service.name }}</h3>
+                                    <div style="margin-top: auto; padding-top: 0.8rem; border-top: 1px solid #f1f5f9; color:var(--text-muted); font-size: 0.85rem; line-height: 1.4;">
+                                        {{ service.description }}
+                                    </div>
+                                </div>
+                                <div class="service-card-footer">
+                                    {{ service.name }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
+                        <h2>My Tickets</h2>
+                        <span>Your redeemed service vouchers</span>
+                    </div>
+                    <div class="card-body">
+                        {% if my_tickets %}
+                        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                            {% for ticket in my_tickets %}
+                            <div class="ticket-card">
+                                <div class="ticket-tag">{% if ticket.is_used %}Used{% else %}Active{% endif %}</div>
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <div style="font-size: 1.5rem;">{{ ticket.service.icon|default:"🎫" }}</div>
+                                    <div style="font-weight: 700; color: var(--text-main);">{{ ticket.service.name }}</div>
+                                </div>
+                                <div class="ticket-code">{{ ticket.ticket_code }}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-muted); text-align: center; font-style: italic;">
+                                    {{ ticket.service.description }}
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; border-top: 1px solid #f1f5f9; padding-top: 0.5rem;">
+                                    Redeemed on {{ ticket.redeemed_at|date:"d M Y" }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>You haven't redeemed any services yet. Earn coins and unlock rewards!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if is_cmp_patient %}
+            <!-- ==================== TAB: CMP HEALTH ==================== -->
+            <div class="tab-content" id="tab-cmp">
+                <div class="page-header" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;">
+                    <div>
+                        <h1>CMP Health</h1>
+                        <p>Chronic Management Program &mdash; {{ cmp_type_display }}</p>
+                    </div>
+                    <span style="background:#059669;color:#fff;padding:.4rem 1rem;border-radius:999px;font-weight:700;">{{ cmp_patient.cmp_tag }}</span>
+                </div>
+
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:.75rem 1rem;border-radius:10px;margin-bottom:1.5rem;font-size:.9rem;">
+                    🔒 This clinical data is recorded and updated by your optometrist. It is shown here for your reference (view only).
+                </div>
+
+                {% if cmp_latest %}
+                <!-- Latest snapshot -->
+                <div class="cmp-card">
+                    <div class="cmp-card-head">
+                        <h3>Latest Reading</h3>
+                        <span style="color:var(--muted,#64748b);font-size:.85rem;">Recorded {{ cmp_latest.recorded_at|date:'d M Y, H:i' }}</span>
+                    </div>
+                    <div class="cmp-metric-grid">
+                        {% if cmp_is_diabetic %}
+                            <div class="cmp-metric"><span class="cmp-metric-label">HbA1c</span><span class="cmp-metric-val">{{ cmp_latest.hba1c_value|default:"—" }}{% if cmp_latest.hba1c_value %} %{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Diabetes Type</span><span class="cmp-metric-val">{{ cmp_latest.get_diabetes_type_display|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Kidney Disease</span><span class="cmp-metric-val">{% if cmp_latest.has_kidney_disease == True %}Yes{% elif cmp_latest.has_kidney_disease == False %}No{% else %}—{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Exercise</span><span class="cmp-metric-val">{{ cmp_latest.exercise_frequency|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Medications</span><span class="cmp-metric-val">{{ cmp_latest.current_diabetes_medications|default:"—" }}</span></div>
+                            <div class="cmp-metric">
+                                <span class="cmp-metric-label">Reports</span>
+                                <span class="cmp-metric-val" style="font-size:.95rem;">
+                                    {% if cmp_latest.hba1c_report %}<a href="{{ cmp_latest.hba1c_report.url }}" target="_blank">HbA1c</a>{% endif %}
+                                    {% if cmp_latest.kft_report %} &nbsp;<a href="{{ cmp_latest.kft_report.url }}" target="_blank">KFT</a>{% endif %}
+                                    {% if not cmp_latest.hba1c_report and not cmp_latest.kft_report %}—{% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                        {% if cmp_is_pediatric %}
+                            <div class="cmp-metric"><span class="cmp-metric-label">School Grade</span><span class="cmp-metric-val">{{ cmp_latest.school_grade|default:"—" }}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Axial Length</span><span class="cmp-metric-val">{{ cmp_latest.axial_length|default:"—" }}{% if cmp_latest.axial_length %} mm{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Dilated Refraction</span><span class="cmp-metric-val">{{ cmp_latest.dilated_refraction|default:"—" }}{% if cmp_latest.dilated_refraction %} D{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Screen Time</span><span class="cmp-metric-val">{{ cmp_latest.avg_daily_screen_time|default:"—" }}{% if cmp_latest.avg_daily_screen_time %} hrs{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Outdoor Time</span><span class="cmp-metric-val">{{ cmp_latest.avg_daily_outdoor_time|default:"—" }}{% if cmp_latest.avg_daily_outdoor_time %} hrs{% endif %}</span></div>
+                            <div class="cmp-metric"><span class="cmp-metric-label">Eye Muscle Status</span><span class="cmp-metric-val">{{ cmp_latest.eye_muscle_status|default:"—" }}</span></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Trend charts -->
+                {% if cmp_is_diabetic %}
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>HbA1c Trend</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpHba1cChart"></canvas></div>
+                </div>
+                {% endif %}
+                {% if cmp_is_pediatric %}
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Axial Length Progression</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpAxialChart"></canvas></div>
+                </div>
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Refraction Progression</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpRefractionChart"></canvas></div>
+                </div>
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>Screen Time vs Outdoor Activity</h3></div>
+                    <div style="height:300px;width:100%;"><canvas id="cmpActivityChart"></canvas></div>
+                </div>
+                {% endif %}
+
+                <!-- Full history -->
+                <div class="cmp-card">
+                    <div class="cmp-card-head"><h3>History</h3></div>
+                    <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                {% if cmp_is_diabetic %}
+                                <th>HbA1c (%)</th><th>Diab. Type</th><th>Kidney</th><th>Exercise</th><th>Reports</th>
+                                {% endif %}
+                                {% if cmp_is_pediatric %}
+                                <th>Grade</th><th>Axial (mm)</th><th>Refraction (D)</th><th>Screen (h)</th><th>Outdoor (h)</th><th>Eye Muscle</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in cmp_records %}
+                            <tr>
+                                <td>{{ r.recorded_at|date:'d M Y' }}</td>
+                                {% if cmp_is_diabetic %}
+                                <td>{{ r.hba1c_value|default:"—" }}</td>
+                                <td>{{ r.get_diabetes_type_display|default:"—" }}</td>
+                                <td>{% if r.has_kidney_disease == True %}Yes{% elif r.has_kidney_disease == False %}No{% else %}—{% endif %}</td>
+                                <td>{{ r.exercise_frequency|default:"—" }}</td>
+                                <td>
+                                    {% if r.hba1c_report %}<a href="{{ r.hba1c_report.url }}" target="_blank">HbA1c</a>{% endif %}
+                                    {% if r.kft_report %} <a href="{{ r.kft_report.url }}" target="_blank">KFT</a>{% endif %}
+                                    {% if not r.hba1c_report and not r.kft_report %}—{% endif %}
+                                </td>
+                                {% endif %}
+                                {% if cmp_is_pediatric %}
+                                <td>{{ r.school_grade|default:"—" }}</td>
+                                <td>{{ r.axial_length|default:"—" }}</td>
+                                <td>{{ r.dilated_refraction|default:"—" }}</td>
+                                <td>{{ r.avg_daily_screen_time|default:"—" }}</td>
+                                <td>{{ r.avg_daily_outdoor_time|default:"—" }}</td>
+                                <td>{{ r.eye_muscle_status|default:"—" }}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+                {% else %}
+                <div class="cmp-card">
+                    <p style="color:#64748b;text-align:center;padding:2rem 0;">No CMP clinical data has been recorded by your optometrist yet.</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div><!-- .page -->
+    </div><!-- .main -->
+
+    <style>
+        .cmp-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 4px 6px -1px rgba(0,0,0,.05); }
+        .cmp-card-head { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; }
+        .cmp-card-head h3 { margin:0; font-size:1.1rem; color:#0f172a; }
+        .cmp-metric-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; }
+        .cmp-metric { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:.85rem 1rem; }
+        .cmp-metric-label { display:block; font-size:.75rem; text-transform:uppercase; letter-spacing:.03em; color:#64748b; margin-bottom:.25rem; }
+        .cmp-metric-val { display:block; font-size:1.15rem; font-weight:700; color:#0f172a; word-break:break-word; }
+    </style>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName, el) {
+            event.preventDefault();
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if (el) el.classList.add('active');
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+        }
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('show');
+        }
+
+        // Modal functions
+        function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', function (e) { if (e.target === this) { this.classList.remove('active'); document.body.style.overflow = ''; } });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { document.querySelectorAll('.modal-overlay.active').forEach(m => { m.classList.remove('active'); }); document.body.style.overflow = ''; }
+        });
+
+        {% if is_cmp_patient %}
+        // ===== CMP Health charts =====
+        const cmpRecords = [
+            {% for r in cmp_records %}
+            {
+                date: "{{ r.recorded_at|date:'d M Y' }}",
+                hba1c: {{ r.hba1c_value|default_if_none:'null' }},
+                axial: {{ r.axial_length|default_if_none:'null' }},
+                refraction: {{ r.dilated_refraction|default_if_none:'null' }},
+                screen: {{ r.avg_daily_screen_time|default_if_none:'null' }},
+                outdoor: {{ r.avg_daily_outdoor_time|default_if_none:'null' }}
+            },
+            {% endfor %}
+        ].reverse();  // chronological order for progression charts
+
+        function makeCmpLine(canvasId, datasets, unit) {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return;
+            const labels = cmpRecords.map(r => r.date);
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets: datasets.map(ds => ({
+                    label: ds.label, data: ds.data, borderColor: ds.color,
+                    backgroundColor: ds.color + '20', borderWidth: 3, tension: .3,
+                    pointRadius: 5, pointHoverRadius: 7, fill: ds.fill !== false, spanGaps: true
+                })) },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 18, font: { family: 'Outfit', size: 12, weight: '600' } } },
+                        tooltip: { backgroundColor: '#0f172a', padding: 12, cornerRadius: 10,
+                            callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y + (unit || '') } }
+                    },
+                    scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } },
+                              x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } } }
+                }
+            });
+        }
+
+        if (cmpRecords.length > 0) {
+            makeCmpLine('cmpHba1cChart', [{ label: 'HbA1c (%)', data: cmpRecords.map(r => r.hba1c), color: '#059669' }], ' %');
+            makeCmpLine('cmpAxialChart', [{ label: 'Axial Length (mm)', data: cmpRecords.map(r => r.axial), color: '#2563eb' }], ' mm');
+            makeCmpLine('cmpRefractionChart', [{ label: 'Dilated Refraction (D)', data: cmpRecords.map(r => r.refraction), color: '#db2777' }], ' D');
+            makeCmpLine('cmpActivityChart', [
+                { label: 'Screen Time (hrs)', data: cmpRecords.map(r => r.screen), color: '#f59e0b', fill: false },
+                { label: 'Outdoor Time (hrs)', data: cmpRecords.map(r => r.outdoor), color: '#10b981', fill: false }
+            ], ' hrs');
+        }
+        {% endif %}
+
+        // Chart
+        const rawExams = [
+            {% for exam in examinations %}
+        {
+            date: "{{ exam.date_of_visit|date:'d M Y' }}", iop_re: parseFloat("{{ exam.iop_re }}") || null, iop_le: parseFloat("{{ exam.iop_le }}") || null,
+                schirmer_re: parseFloat("{{ exam.schirmer_re }}") || null, schirmer_le: parseFloat("{{ exam.schirmer_le }}") || null,
+                    tbut_re: parseFloat("{{ exam.tbut_re }}") || null, tbut_le: parseFloat("{{ exam.tbut_le }}") || null,
+                        sph_re: parseFloat("{{ exam.dv_sph_re }}") || null, sph_le: parseFloat("{{ exam.dv_sph_le }}") || null,
+                            cyl_re: parseFloat("{{ exam.dv_cyl_re }}") || null, cyl_le: parseFloat("{{ exam.dv_cyl_le }}") || null
+        },
+        {% endfor %}
+].reverse();
+
+        let currentChart = null;
+        function updateChart(metric) {
+            const ctx = document.getElementById('trendsChart');
+            if (!ctx) return;
+            if (currentChart) currentChart.destroy();
+            const labels = rawExams.map(e => e.date);
+            let dataRE = [], dataLE = [], unit = '';
+            switch (metric) {
+                case 'iop': dataRE = rawExams.map(e => e.iop_re); dataLE = rawExams.map(e => e.iop_le); unit = ' mmHg'; break;
+                case 'schirmer': dataRE = rawExams.map(e => e.schirmer_re); dataLE = rawExams.map(e => e.schirmer_le); unit = ' mm'; break;
+                case 'tbut': dataRE = rawExams.map(e => e.tbut_re); dataLE = rawExams.map(e => e.tbut_le); unit = ' sec'; break;
+                case 'sph': dataRE = rawExams.map(e => e.sph_re); dataLE = rawExams.map(e => e.sph_le); unit = ' D'; break;
+                case 'cyl': dataRE = rawExams.map(e => e.cyl_re); dataLE = rawExams.map(e => e.cyl_le); unit = ' D'; break;
+            }
+            currentChart = new Chart(ctx, {
+                type: 'line', data: {
+                    labels, datasets: [
+                        { label: 'Right Eye (RE)', data: dataRE, borderColor: '#2563eb', backgroundColor: '#2563eb20', borderWidth: 3, tension: .3, pointRadius: 5, pointHoverRadius: 7, fill: true },
+                        { label: 'Left Eye (LE)', data: dataLE, borderColor: '#db2777', backgroundColor: '#db277720', borderWidth: 3, tension: .3, pointRadius: 5, pointHoverRadius: 7, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Outfit', size: 12, weight: '600' } } },
+                        tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Outfit', size: 14 }, bodyFont: { family: 'Outfit', size: 13 }, padding: 12, cornerRadius: 10, callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + unit; } } }
+                    },
+                    scales: { y: { beginAtZero: false, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } }, x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } } }
+                }
+            });
+        }
+        if (rawExams.length > 0) {
+            updateChart('iop');
+            const sel = document.getElementById('metricSelector');
+            if (sel) sel.addEventListener('change', e => updateChart(e.target.value));
+        }
+
+        // Screening Chart
+        const rawScreenings = [
+            {% for r in screening_results %}
+            { test_type: "{{ r.test_type }}", score: "{{ r.score }}", date: "{{ r.created_at|date:'d M Y' }}" },
+            {% endfor %}
+        ].reverse();
+
+        let screeningChart = null;
+        function updateScreeningChart(metric) {
+            const ctx = document.getElementById('screeningTrendsChart');
+            if (!ctx) return;
+            if (screeningChart) screeningChart.destroy();
+            
+            const filtered = rawScreenings.filter(s => s.test_type === metric);
+            const labels = filtered.map(s => s.date);
+            
+            let data = [];
+            let unit = '';
+            
+            filtered.forEach(s => {
+                let val = 0;
+                if (metric === 'vision') {
+                    // if formatted like "20/40", extract the denominator. If not, try raw float.
+                    if (s.score.includes('/')) {
+                        const parts = s.score.split('/');
+                        val = parseFloat(parts[1]) || 0;
+                    } else {
+                        val = parseFloat(s.score) || 0;
+                    }
+                    unit = '';
+                } else {
+                    val = parseFloat(s.score) || 0;
+                    if (metric === 'colorblind') unit = ' pts';
+                    if (metric === 'dryeye') unit = ' OSDI';
+                    if (metric === 'blink') unit = ' blinks/min';
+                }
+                data.push(val);
+            });
+
+            let labelTitle = 'Score';
+            if (metric === 'vision') labelTitle = 'Vision Denominator (e.g. 40 in 20/40)';
+
+            screeningChart = new Chart(ctx, {
+                type: 'line', data: {
+                    labels, datasets: [
+                        { label: labelTitle, data: data, borderColor: '#10b981', backgroundColor: '#10b98120', borderWidth: 3, tension: .3, pointRadius: 5, pointHoverRadius: 7, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 20, font: { family: 'Outfit', size: 12, weight: '600' } } },
+                        tooltip: { backgroundColor: '#0f172a', titleFont: { family: 'Outfit', size: 14 }, bodyFont: { family: 'Outfit', size: 13 }, padding: 12, cornerRadius: 10, callbacks: { label: function (c) { return c.dataset.label + ': ' + c.parsed.y + unit; } } }
+                    },
+                    scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Outfit' } } }, x: { grid: { display: false }, ticks: { font: { family: 'Outfit' } } } }
+                }
+            });
+        }
+        
+        if (rawScreenings.length > 0) {
+            updateScreeningChart('vision');
+            const scrSel = document.getElementById('screeningMetricSelector');
+            if (scrSel) scrSel.addEventListener('change', e => updateScreeningChart(e.target.value));
+        }
+
+        // ===== Screening Results: Filter + Show More =====
+        let currentFilter = 'all';
+        const RESULTS_PER_PAGE = 5;
+        let visibleCount = RESULTS_PER_PAGE;
+
+        function getFilteredRows() {
+            const rows = document.querySelectorAll('#screeningTableBody .result-row');
+            if (!rows.length) return [];
+            return Array.from(rows).filter(r => currentFilter === 'all' || r.dataset.type === currentFilter);
+        }
+
+        function applyVisibility() {
+            const allRows = document.querySelectorAll('#screeningTableBody .result-row');
+            if (!allRows.length) return;
+            allRows.forEach(r => r.classList.add('hidden-row'));
+            const filtered = getFilteredRows();
+            filtered.forEach((r, i) => {
+                if (i < visibleCount) r.classList.remove('hidden-row');
+            });
+            const btn = document.getElementById('showMoreBtn');
+            if (btn) {
+                if (visibleCount >= filtered.length) {
+                    btn.style.display = 'none';
+                } else {
+                    btn.style.display = 'block';
+                    btn.textContent = 'Show More (' + (filtered.length - visibleCount) + ' remaining) \u2193';
+                }
+            }
+        }
+
+        function filterResults(type, el) {
+            currentFilter = type;
+            visibleCount = RESULTS_PER_PAGE;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+            applyVisibility();
+        }
+
+        function showMoreResults() {
+            visibleCount += RESULTS_PER_PAGE;
+            applyVisibility();
+        }
+
+        // Initialize screening results visibility on page load
+        document.addEventListener('DOMContentLoaded', function () { 
+            applyVisibility();
+        });
+
+        async function requestOnlineSession() {
+            try {
+                const response = await fetch('/patient/api/request-session/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const el = document.getElementById('sessionResponse');
+                    el.style.display = 'block';
+                    el.innerText = 'Approval request sent';
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('An error occurred');
+            }
+        }
+
+        // ===== Patient Query Form =====
+        function updateQueryWordCount(textarea) {
+            const text = textarea.value.trim();
+            const words = text === '' ? 0 : text.split(/\s+/).length;
+            document.getElementById('queryWordCount').innerText = words;
+            const errorEl = document.getElementById('queryWordError');
+            const btn = document.getElementById('submitQueryBtn');
+            if (words > 500) {
+                errorEl.style.display = 'inline';
+                textarea.style.borderColor = '#dc2626';
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            } else {
+                errorEl.style.display = 'none';
+                textarea.style.borderColor = words > 0 ? 'var(--primary)' : 'var(--border)';
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        }
+
+        async function submitPatientQuery() {
+            const queryText = document.getElementById('patientQueryText').value.trim();
+            const responseEl = document.getElementById('queryResponseMsg');
+            const btn = document.getElementById('submitQueryBtn');
+
+            if (!queryText) {
+                responseEl.style.display = 'block';
+                responseEl.style.background = '#fee2e2';
+                responseEl.style.color = '#b91c1c';
+                responseEl.innerText = '⚠️ Please enter your query before submitting.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Submitting...';
+
+            try {
+                const response = await fetch('/patient/api/submit-query/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ query_text: queryText })
+                });
+                const data = await response.json();
+                responseEl.style.display = 'block';
+                if (response.ok && data.status === 'success') {
+                    responseEl.style.background = '#d1fae5';
+                    responseEl.style.color = '#065f46';
+                    responseEl.innerText = '✅ ' + data.message;
+                    document.getElementById('patientQueryText').value = '';
+                    document.getElementById('queryWordCount').innerText = '0';
+                } else {
+                    responseEl.style.background = '#fee2e2';
+                    responseEl.style.color = '#b91c1c';
+                    responseEl.innerText = '⚠️ ' + (data.error || 'Something went wrong.');
+                }
+            } catch (err) {
+                responseEl.style.display = 'block';
+                responseEl.style.background = '#fee2e2';
+                responseEl.style.color = '#b91c1c';
+                responseEl.innerText = '⚠️ An error occurred. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Submit Query';
+                setTimeout(() => { responseEl.style.display = 'none'; }, 5000);
+            }
+        }
+
+        // CSRF Token Helper - DUPLICATE (removed, using one inside DOMContentLoaded instead)
+
+        // ===== CSRF Token Helper for Patient =====
+        function getCookiePatient(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // ===== Patient Logout Handler =====
+        window.performPatientLogout = async function() {
+            const confirmed = confirm('Are you sure you want to log out?');
+            if (confirmed) {
+                try {
+                    const csrfToken = getCookiePatient('csrftoken');
+                    const response = await fetch('{% url "patient_logout" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        }
+                    });
+                    window.location.href = '{% url "patient_login_page" %}';
+                } catch (err) {
+                    console.error('Logout error:', err);
+                    window.location.href = '{% url "patient_login_page" %}';
+                }
+            }
+        };
+
+        // ===== Back Button Detection for Patient =====
+        console.log('Setting up back button detection for patient');
+        history.pushState({page: 'dashboard'}, null, window.location.href);
+
+        window.addEventListener('popstate', function(event) {
+            console.log('Patient popstate fired, event:', event);
+            const confirmed = confirm('Are you sure you want to log out? Pressing back will end your session.');
+            if (confirmed) {
+                window.performPatientLogout();
+            } else {
+                history.pushState({page: 'dashboard'}, null, window.location.href);
+            }
+        });
+
+        // ===== 20-20 Rule Timer (Patient Dashboard Only) =====
+        function init2020Timer() {
+            console.log('Initializing 20-20 timer');
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('SW Registered', reg);
+                }).catch(err => console.log('SW Fail', err));
+            }
+            if (document.getElementById("twenty-twenty-timer")) {
+                console.log('Timer already exists');
+                return;
+            }
+            
+            const timerDiv = document.createElement("div");
+            timerDiv.id = "twenty-twenty-timer";
+            Object.assign(timerDiv.style, {
+                position: "fixed", top: "0", left: "0", width: "100%",
+                backgroundColor: "rgba(37, 99, 235, 0.95)", color: "white",
+                display: "flex", justifyContent: "center", alignItems: "center", gap: "15px",
+                padding: "8px", zIndex: "10000",
+                fontWeight: "600", fontSize: "14px",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.15)",
+                backdropFilter: "blur(4px)"
+            });
+            
+            const timerText = document.createElement("span");
+            timerText.id = "timer-text-content";
+            timerDiv.appendChild(timerText);
+
+            const notifyBtn = document.createElement("button");
+            notifyBtn.id = "enable-notify-btn";
+            notifyBtn.innerText = "🔔 Enable Alerts";
+            Object.assign(notifyBtn.style, {
+                padding: "2px 10px", borderRadius: "5px", border: "1px solid white",
+                backgroundColor: "transparent", color: "white", fontSize: "12px",
+                cursor: "pointer", display: Notification.permission === "granted" ? "none" : "inline-block"
+            });
+            notifyBtn.onclick = () => {
+                Notification.requestPermission().then(perm => {
+                    if (perm === "granted") {
+                        notifyBtn.style.display = "none";
+                        const options = { 
+                            body: "You will now receive eye-rest alerts.",
+                            tag: "test-notify",
+                            requireInteraction: true
+                        };
+                        if ('serviceWorker' in navigator) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification("Notifications Enabled!", options);
+                            });
+                        } else {
+                            new Notification("Notifications Enabled!", options);
+                        }
+                    }
+                });
+            };
+            timerDiv.appendChild(notifyBtn);
+
+            document.body.appendChild(timerDiv);
+            console.log('Timer div appended with notification button');
+            // Push main content below the timer bar
+            const timerH = timerDiv.offsetHeight || 40;
+            document.documentElement.style.setProperty('--timer-bar-h', timerH + 'px');
+
+            let endTime = sessionStorage.getItem('twentyTwentyTimer');
+            // Reset timer to 20 minutes for production
+            if (!endTime || Date.now() > parseInt(endTime) || (parseInt(endTime) - Date.now() > 21 * 60 * 1000)) {
+                endTime = Date.now() + 20 * 60 * 1000; 
+                sessionStorage.setItem('twentyTwentyTimer', endTime);
+                console.log('Timer reset to 20 min:', endTime);
+            }
+
+            function updateTimer() {
+                let timeLeft = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+                if (timeLeft > 0) {
+                    let m = Math.floor(timeLeft / 60);
+                    let s = timeLeft % 60;
+                    timerText.innerText = `👁️ 20-20 Rule Timer: Take a break in ${m}:${s < 10 ? '0' : ''}${s}`;
+                } else {
+                    // Play notification sound
+                    const audio = new Audio("{% static 'audio/timer_alert.mp3' %}");
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                    
+                    if ("Notification" in window) {
+                        const options = {
+                            body: "Please look at something 20 feet away for 20 seconds to relax your eye muscles.",
+                            icon: "/static/images/logo.png",
+                            tag: "eye-rest",
+                            renotify: true,
+                            requireInteraction: true
+                        };
+
+                        if (Notification.permission === "granted") {
+                            if ('serviceWorker' in navigator) {
+                                navigator.serviceWorker.ready.then(reg => {
+                                    reg.showNotification("Time to Rest! 👁️", options);
+                                });
+                            } else {
+                                new Notification("Time to Rest! 👁️", options);
+                            }
+                        } else if (Notification.permission !== "denied") {
+                            Notification.requestPermission().then(permission => {
+                                if (permission === "granted") {
+                                    if ('serviceWorker' in navigator) {
+                                        navigator.serviceWorker.ready.then(reg => {
+                                            reg.showNotification("Time to Rest! 👁️", options);
+                                        });
+                                    } else {
+                                        new Notification("Time to Rest! 👁️", options);
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Show custom non-blocking modal with countdown
+                    openModal('twentyTwentyModal');
+                    startRestCountdown();
+
+                    // Reset for next cycle (20 minutes)
+                    endTime = Date.now() + 20 * 60 * 1000; 
+                    sessionStorage.setItem('twentyTwentyTimer', endTime);
+                }
+            }
+
+            function startRestCountdown() {
+                let restLeft = 20;
+                const restDisplay = document.getElementById('restCountdown');
+                const restBtn = document.getElementById('restDoneBtn');
+                restBtn.disabled = true;
+                restBtn.innerText = `Resting... (${restLeft}s)`;
+                
+                const restInterval = setInterval(() => {
+                    restLeft--;
+                    if (restLeft > 0) {
+                        restBtn.innerText = `Resting... (${restLeft}s)`;
+                        if (restDisplay) restDisplay.innerText = restLeft;
+                    } else {
+                        clearInterval(restInterval);
+                        restBtn.disabled = false;
+                        restBtn.innerText = "I'm Done! (Rest Complete)";
+                        restBtn.style.background = "var(--primary)";
+                        if (restDisplay) restDisplay.innerText = "0";
+                    }
+                }, 1000);
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+            console.log('Timer update interval started');
+        }
+        
+        // Start timer immediately on patient dashboard load
+        init2020Timer();
+
+        // Edit Profile Submission Handler
+        const editProfileForm = document.getElementById('editProfileForm');
+
+        function toggleProfileCorporateFields(show) {
+            const fields = document.getElementById('profileCorporateFields');
+            if (show) {
+                fields.style.display = 'block';
+            } else {
+                fields.style.display = 'none';
+            }
+        }
+
+        if (editProfileForm) {
+            editProfileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const age = document.getElementById('profileAge').value;
+                const gender = document.getElementById('profileGender').value;
+                const email = document.getElementById('profileEmail').value;
+                const address = document.getElementById('profileAddress').value;
+                
+                const login_type = document.querySelector('input[name="profileLoginType"]:checked').value;
+                const company_name = document.getElementById('profileCompany').value;
+                const designation = document.getElementById('profileDesignation').value;
+                
+                const btn = this.querySelector('button[type="submit"]');
+                const oldText = btn.innerText;
+                btn.innerText = 'Saving...';
+                btn.disabled = true;
+
+                try {
+                    // Need to get CSRF token - define it here
+                    function getCookieForProfile(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+
+                    const response = await fetch('/patient/api/update-profile/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookieForProfile('csrftoken')
+                        },
+                        body: JSON.stringify({ age, gender, email, address, login_type, company_name, designation })
+                    });
+                    const data = await response.json();
+                    if (response.ok && (data.status === 'success' || data.message)) {
+                        alert('Profile updated successfully!');
+                        window.location.reload();
+                    } else {
+                        // Display the specific error message from the server if available
+                        const errMsg = data.error || data.message || 'Failed to update profile';
+                        alert('Error: ' + errMsg);
+                        btn.innerText = oldText;
+                        btn.disabled = false;
+                    }
+                } catch (err) {
+                    console.error('Profile update error:', err);
+                    alert('An error occurred while updating the profile. Please check your internet connection and try again.');
+                    btn.innerText = oldText;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        // ===== Coin Redemption Logic =====
+        async function confirmRedemption(serviceId, serviceName, cost) {
+            const currentCoins = parseInt("{{ user.coins }}");
+            if (currentCoins < cost) {
+                alert(`Insufficient coins! You need ${cost} coins, but you only have ${currentCoins}.`);
+                return;
+            }
+
+            if (confirm(`Are you sure you want to redeem "${serviceName}" for ${cost} coins?`)) {
+                await redeemService(serviceId);
+            }
+        }
+
+        async function redeemService(serviceId) {
+            const card = document.getElementById('service-' + serviceId);
+            const btn = card.querySelector('button');
+            const oldBtnText = btn.innerText;
+            
+            btn.innerText = 'Unlocking...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/patient/api/redeem-service/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookiePatient('csrftoken')
+                    },
+                    body: JSON.stringify({ service_id: serviceId })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    // Start Unlock Animation
+                    card.classList.remove('locked');
+                    card.classList.add('unlocked');
+                    
+                    btn.innerText = 'Unlocked! 🎇';
+                    btn.style.background = 'var(--primary)';
+                    
+                    // Update coin displays
+                    document.querySelectorAll('.coin-count').forEach(el => {
+                        el.innerText = data.remaining_coins;
+                    });
+                    
+                    // Update the sidebar coin count if it exists
+                    const sidebarCoins = document.querySelector('.sidebar-user-role span');
+                    if (sidebarCoins) sidebarCoins.innerText = data.remaining_coins + ' 🪙';
+
+                    setTimeout(() => {
+                        alert(`Success! ${data.message}\nYour ticket code is: ${data.ticket_code}\n\nYou can find all your redeemed tickets in the "My Tickets" section.`);
+                        window.location.reload(); // Reload to show the new ticket in the list
+                    }, 800);
+                } else {
+                    alert('Redemption failed: ' + (data.error || 'Unknown error'));
+                    btn.innerText = oldBtnText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Redemption error:', err);
+                alert('An error occurred during redemption. Please try again.');
+                btn.innerText = oldBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // Handle Change Password Form
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const newPass = document.getElementById('cpNewPass').value;
+            const confirmPass = document.getElementById('cpConfirmPass').value;
+            const btn = document.getElementById('btnChangePass');
+            
+            if (newPass !== confirmPass) {
+                alert('Passwords do not match!');
+                return;
+            }
+
+            btn.innerText = 'Updating...';
+            btn.disabled = true;
+            
+            try {
+                const response = await fetch('/patient/api/change-password/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ new_password: newPass, confirm_password: confirmPass })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    closeModal('change-password-modal');
+                    this.reset();
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch(err) {
+                console.error(err);
+                alert('An error occurred while changing password');
+            } finally {
+                btn.innerText = 'Update Password';
+                btn.disabled = false;
+            }
+        });
+
+    </script>
+
+    <div class="modal-overlay" id="twentyTwentyModal">
+        <div class="modal-content" style="max-width: 500px; text-align: center; border: 2px solid var(--primary); box-shadow: 0 10px 25px rgba(5, 150, 105, 0.2);">
+            <div class="modal-header">
+                <h2 style="color: white; font-size: 1.4rem;">Time to Rest! 👁️</h2>
+                <button class="close-modal" onclick="closeModal('twentyTwentyModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 2.5rem;">
+                <div style="font-size: 3.5rem; margin-bottom: 1rem;">🌳</div>
+                <h3 style="color: var(--primary); margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem;">20-20-20 Rule Alert</h3>
+                <p style="color: var(--text-muted); line-height: 1.6; font-size: 1.1rem;">
+                    Please look at something <strong>20 feet away</strong> for <strong><span id="restCountdown">20</span> seconds</strong> to relax your eye muscles.
+                </p>
+                <button id="restDoneBtn" class="btn" style="margin-top: 1.5rem; background: #94a3b8; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; font-size: 1rem;" onclick="closeModal('twentyTwentyModal')">
+                    Resting... (20s)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% if examinations %}
+        {% with latest_exam=examinations.first %}
+            {% if latest_exam.eye_health_rating and latest_exam.eye_health_rating < 2 %}
+            <div class="modal-overlay active" id="criticalHealthModal" style="display: flex;">
+                <div class="modal-content" style="max-width: 500px; text-align: center; border: 2px solid #ef4444; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.2);">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                        <h2 style="color: white; font-size: 1.4rem;">Critical Health Alert</h2>
+                        <button class="close-modal" onclick="document.getElementById('criticalHealthModal').style.display='none'">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 2.5rem;">
+                        <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+                        <h3 style="color: #dc2626; margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem;">Urgent Attention Required</h3>
+                        <p style="color: var(--text-muted); line-height: 1.6; font-size: 1rem;">Your recent eye examination indicates that your eye health is in a critical condition (Rating: {{ latest_exam.eye_health_rating }}/5). Please consult your doctor immediately or follow the prescribed treatment plan carefully.</p>
+                        <button class="btn" style="margin-top: 1.5rem; background: #dc2626; color: white; padding: 0.8rem 2rem; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; transition: background 0.2s; font-size: 1rem;" onclick="document.getElementById('criticalHealthModal').style.display='none'" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">I Understand</button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endwith %}
+    {% endif %}
+    {% include 'patients/tracking_script.html' %}
+</body>
+
+</html>

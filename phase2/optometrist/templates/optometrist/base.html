@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -174,30 +175,227 @@
                 font-size: 2rem;
             }
         }
+
+        /* Proper Header Styles */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .logo-link {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-link:hover {
+            transform: scale(1.02);
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        /* Proper Footer Styles */
+        .site-footer {
+            background: var(--glass-bg);
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 2rem 1.5rem;
+            margin-top: auto;
+        }
+
+        .footer-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col h4 {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-col ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-size: 0.95rem;
+        }
+
+        .footer-col ul li a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--glass-border);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
     </style>
     {% block extra_head %}{% endblock extra_head %}
 </head>
 
 <body>
-    <header style="padding: 2rem; text-align: center;">
-        <a href="{% url 'landing_page' %}"
-            style="font-size: 1.5rem; font-weight: 700; color: white; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
-            <div
-                style="width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    style="color: white;">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </div>
-            <span>EyeSphere</span>
+    <header class="site-header animate-fade-in">
+        <a href="{% url 'landing_page' %}" class="logo-link">
+            <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 52px; border-radius: 10px; object-fit: contain;">
         </a>
+        <nav class="header-nav">
+            <a href="#" class="nav-link">About Us</a>
+            <a href="#" class="nav-link">Services</a>
+            <a href="#" class="nav-link">Contact</a>
+        </nav>
     </header>
-    <div class="container"
-        style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 1rem 2rem 4rem 2rem;">
+
+    <main class="container">
         {% block content %}{% endblock content %}
-    </div>
+    </main>
+
+    <footer class="site-footer animate-fade-in">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <div class="footer-brand" style="margin-bottom: 1rem;">
+                    <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 40px; border-radius: 6px; object-fit: contain;">
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                    Empowering vision care professionals with modern tools to deliver the best patient experience.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4>Platform</h4>
+                <ul>
+                    <li><a href="{% url 'doctor_login_page' %}">Doctor Portal</a></li>
+                    <li><a href="{% url 'optometrist_login_page' %}">Optometrist Portal</a></li>
+                    <li><a href="{% url 'patient_login_page' %}">Patient Portal</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Terms & Conditions</h4>
+                <ul>
+                    <li><a href="{% url 'privacy_policy' %}">Privacy Policy</a></li>
+                    <li><a href="{% url 'corporate_terms' %}">Corporate Terms</a></li>
+                    <li><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EyeSphere. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            // ===== Retention Time Tracking =====
+            const RETENTION_URL = '/patient/api/update-retention/';
+            const HEARTBEAT_INTERVAL = 60; // seconds
+            let lastSentAt = Date.now();
+
+            function getElapsedSeconds() {
+                const now = Date.now();
+                const elapsed = Math.floor((now - lastSentAt) / 1000);
+                lastSentAt = now;
+                return elapsed;
+            }
+
+            function sendRetention(seconds) {
+                if (seconds <= 0) return;
+                const payload = JSON.stringify({ elapsed_seconds: seconds });
+                // Use sendBeacon for reliable delivery on page unload
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: 'application/json' });
+                    navigator.sendBeacon(RETENTION_URL, blob);
+                } else {
+                    fetch(RETENTION_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: payload,
+                        keepalive: true
+                    }).catch(() => {});
+                }
+            }
+
+            // Heartbeat every 60 seconds
+            setInterval(function () {
+                sendRetention(getElapsedSeconds());
+            }, HEARTBEAT_INTERVAL * 1000);
+
+            // Flush on tab/window close or navigation away
+            window.addEventListener('beforeunload', function () {
+                sendRetention(getElapsedSeconds());
+            });
+
+        });
+    </script>
 </body>
 
 </html>

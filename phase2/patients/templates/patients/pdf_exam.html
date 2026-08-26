@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Eye Examination Report</title>
+    <style>
+        body { font-family: Helvetica, sans-serif; font-size: 13px; color: #333; line-height: 1.4; }
+        .header { border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 20px; }
+        .header table { width: 100%; }
+        .header td { vertical-align: top; }
+        .logo { font-size: 24px; font-weight: bold; color: #059669; }
+        .subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+
+        .info-box { border: 1px solid #ccc; background: #f9f9f9; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+        .info-box table { width: 100%; font-size: 13px; }
+        .info-box td { padding: 4px; }
+
+        h3 { color: #059669; border-bottom: 1px solid #eee; padding-bottom: 3px; font-size: 15px; margin-top: 20px; margin-bottom: 10px; }
+        
+        .grid-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .grid-table th, .grid-table td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .grid-table th { background: #f0fdf4; color: #065f46; font-size: 12px; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 11px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }
+
+        .signature { margin-top: 40px; text-align: right; margin-right: 20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table>
+            <tr>
+                <td style="width: 60%;">
+                    {% load static %}
+                    <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 80px; margin-bottom: 10px; border-radius: 12px;">
+                    <div class="subtitle">Comprehensive Eye Examination Report</div>
+                </td>
+                <td style="width: 40%; text-align: right;">
+                    <strong>Date:</strong> {{ exam.date_of_visit|date:"d M Y" }}<br>
+                    <strong>Exam ID:</strong> EX-{{ exam.id }}<br>
+                    {% if exam.consultant %}
+                    <strong>Consultant:</strong> Dr. {{ exam.consultant.name }}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-box">
+        <table>
+            <tr>
+                <td style="width: 25%;"><strong>Patient Name:</strong></td><td style="width: 25%;">{{ exam.patient.name }}</td>
+                <td style="width: 25%;"><strong>Age/Gender:</strong></td><td style="width: 25%;">{{ exam.patient.age }} / {{ exam.patient.gender|title }}</td>
+            </tr>
+            <tr>
+                <td><strong>Phone:</strong></td><td>{{ exam.patient.phone_number }}</td>
+                <td><strong>Optometrist:</strong></td><td>{{ exam.optometrist.name }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3>1. Chief Complaints & History</h3>
+    <table class="grid-table">
+        <tr>
+            <td style="width: 25%;"><strong>Chief Complaints</strong></td>
+            <td style="width: 25%;">{{ exam.chief_complaints|default:"None" }}</td>
+            <td style="width: 25%;"><strong>Systemic History</strong></td>
+            <td style="width: 25%;">{{ exam.systemic_history|default:"None" }}</td>
+        </tr>
+        <tr>
+            <td><strong>H/o Eye Disease</strong></td>
+            <td>{{ exam.history_eye_disease|default:"NA" }}</td>
+            <td><strong>H/o Eye Surgery</strong></td>
+            <td>{{ exam.history_eye_surgery|default:"NA" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Family H/o Eye Disease</strong></td>
+            <td>{{ exam.family_history_eye_disease|default:"NA" }}</td>
+            <td><strong>Screen Time</strong></td>
+            <td>{{ exam.screen_time|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Outdoor Activities (Children)</strong></td>
+            <td>{{ exam.outdoor_activity_hours|default:"-" }}</td>
+            <td><strong>Glasses Made When &amp; Where</strong></td>
+            <td>{{ exam.glasses_made_when_where|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Medication Used for Eye</strong></td>
+            <td>{{ exam.eye_medication_used|default:"-" }}</td>
+            <td><strong>Systemic Medication</strong></td>
+            <td>{{ exam.systemic_medication|default:"NA" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Allergies with Medicine</strong></td>
+            <td>{{ exam.allergies_with_medicine|default:"NA" }}</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <h3>2. Visual Acuity (Snellen)</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Eye</th>
+            <th>Uncorrected Vision</th>
+            <th>Pinhole Vision</th>
+            <th>Corrected Vision</th>
+        </tr>
+        <tr>
+            <td><strong>Right Eye (RE)</strong></td>
+            <td>{{ exam.uncorrected_vision_re|default:"-" }}</td>
+            <td>{{ exam.pinhole_vision_re|default:"-" }}</td>
+            <td>{{ exam.corrected_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Left Eye (LE)</strong></td>
+            <td>{{ exam.uncorrected_vision_le|default:"-" }}</td>
+            <td>{{ exam.pinhole_vision_le|default:"-" }}</td>
+            <td>{{ exam.corrected_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>3. AR Reading</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.ar_dv_sph_re|default:"-" }}</td><td>{{ exam.ar_dv_cyl_re|default:"-" }}</td><td>{{ exam.ar_dv_axis_re|default:"-" }}</td><td>{{ exam.ar_dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.ar_nv_sph_re|default:"-" }}</td><td>{{ exam.ar_nv_cyl_re|default:"-" }}</td><td>{{ exam.ar_nv_axis_re|default:"-" }}</td><td>{{ exam.ar_nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.ar_dv_sph_le|default:"-" }}</td><td>{{ exam.ar_dv_cyl_le|default:"-" }}</td><td>{{ exam.ar_dv_axis_le|default:"-" }}</td><td>{{ exam.ar_dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.ar_nv_sph_le|default:"-" }}</td><td>{{ exam.ar_nv_cyl_le|default:"-" }}</td><td>{{ exam.ar_nv_axis_le|default:"-" }}</td><td>{{ exam.ar_nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>4. POG (Power of Glasses)</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.pog_dv_sph_re|default:"-" }}</td><td>{{ exam.pog_dv_cyl_re|default:"-" }}</td><td>{{ exam.pog_dv_axis_re|default:"-" }}</td><td>{{ exam.pog_dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.pog_nv_sph_re|default:"-" }}</td><td>{{ exam.pog_nv_cyl_re|default:"-" }}</td><td>{{ exam.pog_nv_axis_re|default:"-" }}</td><td>{{ exam.pog_nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.pog_dv_sph_le|default:"-" }}</td><td>{{ exam.pog_dv_cyl_le|default:"-" }}</td><td>{{ exam.pog_dv_axis_le|default:"-" }}</td><td>{{ exam.pog_dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.pog_nv_sph_le|default:"-" }}</td><td>{{ exam.pog_nv_cyl_le|default:"-" }}</td><td>{{ exam.pog_nv_axis_le|default:"-" }}</td><td>{{ exam.pog_nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>5. Refraction Acceptance</h3>
+    <table class="grid-table">
+        <tr>
+            <th rowspan="2" style="vertical-align: middle;">Eye</th>
+            <th colspan="4" style="text-align: center;">Distance Vision (DV)</th>
+            <th colspan="4" style="text-align: center;">Near Vision (NV)</th>
+        </tr>
+        <tr>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+            <th>SPH</th><th>CYL</th><th>AXIS</th><th>VA</th>
+        </tr>
+        <tr>
+            <td><strong>RE</strong></td>
+            <td>{{ exam.dv_sph_re|default:"-" }}</td><td>{{ exam.dv_cyl_re|default:"-" }}</td><td>{{ exam.dv_axis_re|default:"-" }}</td><td>{{ exam.dv_vision_re|default:"-" }}</td>
+            <td>{{ exam.nv_sph_re|default:"-" }}</td><td>{{ exam.nv_cyl_re|default:"-" }}</td><td>{{ exam.nv_axis_re|default:"-" }}</td><td>{{ exam.nv_vision_re|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td><strong>LE</strong></td>
+            <td>{{ exam.dv_sph_le|default:"-" }}</td><td>{{ exam.dv_cyl_le|default:"-" }}</td><td>{{ exam.dv_axis_le|default:"-" }}</td><td>{{ exam.dv_vision_le|default:"-" }}</td>
+            <td>{{ exam.nv_sph_le|default:"-" }}</td><td>{{ exam.nv_cyl_le|default:"-" }}</td><td>{{ exam.nv_axis_le|default:"-" }}</td><td>{{ exam.nv_vision_le|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <h3>6. Investigations &amp; Findings</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Test</th>
+            <th>Right Eye (RE)</th>
+            <th>Left Eye (LE)</th>
+        </tr>
+        <tr><td><strong>Schirmer</strong></td><td>{{ exam.schirmer_re|default:"-" }}</td><td>{{ exam.schirmer_le|default:"-" }}</td></tr>
+        <tr><td><strong>TBUT</strong></td><td>{{ exam.tbut_re|default:"-" }}</td><td>{{ exam.tbut_le|default:"-" }}</td></tr>
+        <tr><td><strong>Slit Lamp</strong></td><td>{{ exam.slit_lamp_re|default:"-" }}</td><td>{{ exam.slit_lamp_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Lens</td><td>{{ exam.lens_re|default:"-" }}</td><td>{{ exam.lens_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Cornea</td><td>{{ exam.cornea_re|default:"-" }}</td><td>{{ exam.cornea_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Conjunctiva</td><td>{{ exam.conjunctiva_re|default:"-" }}</td><td>{{ exam.conjunctiva_le|default:"-" }}</td></tr>
+        <tr><td style="padding-left: 18px;">&#8627; Iris</td><td>{{ exam.iris_re|default:"-" }}</td><td>{{ exam.iris_le|default:"-" }}</td></tr>
+        <tr><td><strong>Fundus</strong></td><td>{{ exam.fundus_re|default:"-" }}</td><td>{{ exam.fundus_le|default:"-" }}</td></tr>
+        <tr><td><strong>IOP</strong></td><td>{{ exam.iop_re|default:"-" }}</td><td>{{ exam.iop_le|default:"-" }}</td></tr>
+    </table>
+
+    <h3>7. Diagnosis</h3>
+    <p><strong>Provisional:</strong> {{ exam.provisional_diagnosis|default:"No explicit diagnosis entered." }}</p>
+
+    <h3>8. Doctor's Advice</h3>
+    <p>{{ exam.advice|default:"No specific advice provided." }}</p>
+
+    {% if exam.medications.all %}
+    <h3>9. Prescribed Medications</h3>
+    <table class="grid-table">
+        <tr>
+            <th>Medication</th>
+            <th>Frequency</th>
+            <th>Eye</th>
+            <th>Duration</th>
+        </tr>
+        {% for med in exam.medications.all %}
+        <tr>
+            <td>{{ med.name }} {{ med.quantity }}<br><small>{{ med.instructions }}</small></td>
+            <td>{{ med.frequency }}</td>
+            <td>{{ med.eye }}</td>
+            <td>{{ med.duration }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    {% if is_cmp_patient %}
+    <h3>10. CMP Details &mdash; {{ cmp_patient.get_cmp_type_display }}</h3>
+    {% if cmp_latest %}
+    <p style="font-size: 11px; color: #777; margin: 0 0 6px 0;">
+        Latest record: {{ cmp_latest.recorded_at|date:"d M Y, H:i" }}{% if cmp_latest.optometrist %} &bull; by {{ cmp_latest.optometrist.name }}{% endif %}
+    </p>
+    {% if cmp_patient.is_diabetic_cmp %}
+    <table class="grid-table">
+        <tr>
+            <th>HbA1c</th><th>Diabetes Type</th><th>Kidney Disease</th><th>Exercise</th><th>Current Medications</th>
+        </tr>
+        <tr>
+            <td>{{ cmp_latest.hba1c_value|default:"-" }}{% if cmp_latest.hba1c_value %} %{% endif %}</td>
+            <td>{{ cmp_latest.get_diabetes_type_display|default:"-" }}</td>
+            <td>{% if cmp_latest.has_kidney_disease == True %}Yes{% elif cmp_latest.has_kidney_disease == False %}No{% else %}-{% endif %}</td>
+            <td>{{ cmp_latest.exercise_frequency|default:"-" }}</td>
+            <td>{{ cmp_latest.current_diabetes_medications|default:"-" }}</td>
+        </tr>
+    </table>
+    {% else %}
+    <table class="grid-table">
+        <tr>
+            <th>School Grade</th><th>Axial Length</th><th>Dilated Refraction</th><th>Screen Time</th><th>Outdoor Time</th><th>Eye Muscle Status</th>
+        </tr>
+        <tr>
+            <td>{{ cmp_latest.school_grade|default:"-" }}</td>
+            <td>{{ cmp_latest.axial_length|default:"-" }}{% if cmp_latest.axial_length %} mm{% endif %}</td>
+            <td>{{ cmp_latest.dilated_refraction|default:"-" }}{% if cmp_latest.dilated_refraction %} D{% endif %}</td>
+            <td>{{ cmp_latest.avg_daily_screen_time|default:"-" }}{% if cmp_latest.avg_daily_screen_time %} hrs{% endif %}</td>
+            <td>{{ cmp_latest.avg_daily_outdoor_time|default:"-" }}{% if cmp_latest.avg_daily_outdoor_time %} hrs{% endif %}</td>
+            <td>{{ cmp_latest.eye_muscle_status|default:"-" }}</td>
+        </tr>
+    </table>
+    {% endif %}
+    {% if cmp_latest.notes %}<p><strong>CMP Notes:</strong> {{ cmp_latest.notes }}</p>{% endif %}
+    {% else %}
+    <p>No CMP clinical records recorded yet.</p>
+    {% endif %}
+    {% endif %}
+
+    <div class="signature">
+        {% if exam.patient.login_type == 'corporate' and not exam.consultant %}
+        <p style="color: #dc2626; font-size: 14px; font-weight: bold; margin-bottom: 15px;">Not verified by doctor</p>
+        {% endif %}
+        <p>___________________________________</p>
+        <p><strong>{% if exam.consultant %}Dr. {{ exam.consultant.name }}{% else %}{{ exam.optometrist.name }}{% endif %}</strong></p>
+        <p>Authorized Signature</p>
+    </div>
+
+    <div class="footer">
+        Generated on {% now "d F Y H:i" %} &bull; EyeSphere Digital Portal
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        window.onload = function() {
+            html2pdf().set({
+                margin: [10, 10, 10, 10],
+                filename: 'exam_prescription_{{ exam.id }}.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            }).from(document.body).save().then(function() {
+                setTimeout(() => {
+                    document.body.innerHTML = '<div style="text-align:center; margin-top: 50px; font-family: sans-serif; color: #059669;"><h2>Download Complete</h2><p>Your PDF has been saved. You can now safely close this tab.</p></div>';
+                }, 1000);
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 {% extends "optometrist/base.html" %}
+{% load static %}
 
 {% block title %}Dashboard | EyeSphere Optometrist{% endblock title %}
 
@@ -179,6 +180,65 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* Corporate section styles */
+    .corporate-filter {
+        margin-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .corporate-filter select {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--glass-border);
+        background: var(--glass-bg);
+        color: var(--text-main);
+        outline: none;
+        cursor: pointer;
+    }
+    
+    .professional-info-badge {
+        font-size: 0.8rem;
+        color: var(--primary);
+        background: rgba(37, 99, 235, 0.05);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        margin-right: 0.5rem;
+    }
+
+    /* Patient Dropdown Styles */
+    .patient-dropdown summary {
+        list-style: none;
+        outline: none;
+        cursor: pointer;
+        user-select: none;
+    }
+    .patient-dropdown summary::-webkit-details-marker {
+        display: none;
+    }
+    .patient-dropdown[open] summary .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.05);
+        color: var(--primary);
+    }
+    .patient-list-container {
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 1rem;
+        background: rgba(0,0,0,0.01);
+    }
 </style>
 {% endblock extra_head %}
 
@@ -187,9 +247,18 @@
     <div class="welcome-header">
         <div class="welcome-text">
             <h2 id="welcomeName">Welcome back, Dr. User</h2>
+            <div id="professionalStatus" style="margin-bottom: 0.5rem;">
+                <!-- Will be populated by JS -->
+            </div>
             <p>Here's what's happening with your practice today.</p>
         </div>
-        <button class="btn-logout" id="logoutBtn">Log Out</button>
+        <div style="display: flex; gap: 1rem;">
+
+            {% if request.user.designation == 'regular' %}
+            <button class="btn" style="background: var(--glass-bg); color: var(--text-main); border: 1px solid var(--glass-border);" onclick="openProfileModal()">Update Profile</button>
+            {% endif %}
+            <button class="btn-logout" id="logoutBtn">Log Out</button>
+        </div>
     </div>
 
     <div class="stats-grid">
@@ -242,59 +311,178 @@
         </div>
     </div>
 
-    <div class="action-grid">
+    <div class="action-grid" {% if request.user.designation != 'corporate' %}style="grid-template-columns: 1fr;"{% endif %}>
+        {% if request.user.designation == 'corporate' %}
         <div class="main-panel">
-            <h3 class="panel-title">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-                </svg>
-                Upcoming Appointments
-            </h3>
-            <div id="appointmentsList">
-                <div class="appointment-item">
-                    <div class="patient-info">
-                        <div class="patient-avatar">SJ</div>
-                        <div class="patient-details">
-                            <span class="name">Sarah Johnson</span>
-                            <span class="time">10:30 AM - General Checkup</span>
+            <details class="patient-dropdown" open>
+                <summary style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 class="panel-title" style="margin-bottom: 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        Corporate Patients List
+                    </h3>
+                    <div class="dropdown-arrow">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                </summary>
+                
+                <div style="margin-top: 1.5rem;">
+                    <div class="corporate-filter" style="justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                        <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-main);">Select a patient to begin examination</span>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <label style="font-size: 0.9rem; color: var(--text-muted);">Filter:</label>
+                            <select id="companyFilter" onchange="filterCorporatePatients()">
+                                <option value="">All Companies</option>
+                                {% for company in company_names %}
+                                <option value="{{ company }}">{{ company }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
+            
+            <div id="corporatePatientsList" class="patient-list-container">
+                <div class="appointment-item" style="border-bottom: 1px solid var(--glass-border); font-weight: 700; background: rgba(37, 99, 235, 0.05); padding: 0.75rem 1rem;">
+                    <div style="flex: 2; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Patient Info</div>
+                    <div style="flex: 2; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Company</div>
+                    <div style="flex: 1; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Stats</div>
+                    <div style="flex: 1; text-align: right; font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Action</div>
                 </div>
-                <div class="appointment-item">
-                    <div class="patient-info">
-                        <div class="patient-avatar">MB</div>
-                        <div class="patient-details">
-                            <span class="name">Michael Brown</span>
-                            <span class="time">11:15 AM - Lens Fitting</span>
+                <div id="corporateTableBody" style="max-height: 350px; overflow-y: auto;">
+                    {% for patient in corporate_patients %}
+                    <div class="appointment-item corporate-row" data-company="{{ patient.company_name }}">
+                        <div style="flex: 2;" class="patient-info">
+                            <div class="patient-avatar">{{ patient.name|slice:":2"|upper }}</div>
+                            <div class="patient-details">
+                                <span class="name">{{ patient.name }}</span>
+                                <span class="time">{{ patient.phone_number }}</span>
+                            </div>
+                        </div>
+                        <div style="flex: 2;">
+                            <span style="font-weight: 500; color: var(--text-main);">{{ patient.company_name|default:"N/A" }}</span>
+                        </div>
+                        <div style="flex: 1; color: var(--text-muted); font-size: 0.9rem;">
+                            {{ patient.gender|title }}, {{ patient.age }}y
+                        </div>
+                        <div style="flex: 1; text-align: right;">
+                            <button class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto; font-weight: 600;"
+                                onclick="startExamFromCorporate('{{ patient.phone_number }}')">Begin Exam</button>
                         </div>
                     </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
-                </div>
-                <div class="appointment-item">
-                    <div class="patient-info">
-                        <div class="patient-avatar">EM</div>
-                        <div class="patient-details">
-                            <span class="name">Emily Miller</span>
-                            <span class="time">02:00 PM - Vision Therapy</span>
-                        </div>
+                    {% empty %}
+                    <div style="padding: 3rem 2rem; text-align: center; color: var(--text-muted);">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;">📋</div>
+                        <div style="font-weight: 500;">No corporate patients found.</div>
                     </div>
-                    <span class="status-badge status-upcoming">Confirmed</span>
+                    {% endfor %}
                 </div>
             </div>
+                </div>
+            </details>
         </div>
+        {% endif %}
 
         <div class="side-panel">
             <h3 class="panel-title">Quick Actions</h3>
             <a href="{% url 'new_examination_page' %}" class="btn btn-primary"
                 style="margin-bottom: 1rem; text-decoration: none;">New Examination</a>
+            <a href="{% url 'cmp_record_page' %}" class="btn"
+                style="margin-bottom: 1rem; text-decoration: none; background: #059669; color: white;">CMP Clinical Record</a>
             <button class="btn"
                 style="background: rgba(255, 255, 255, 0.05); color: white; border: 1px solid var(--glass-border); margin-bottom: 1rem; width: 100%;">View
                 All Patients</button>
         </div>
     </div>
 
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="glass-card" style="max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 id="resultPatientName">Patient Result</h3>
+                <button onclick="closeResultModal()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div id="resultContent">
+                <div class="form-group">
+                    <label>Provisional Diagnosis</label>
+                    <div id="resDiagnosis" class="detail-value"
+                        style="background: rgba(0,0,0,0.03); padding: 0.75rem; border-radius: 8px;"></div>
+                </div>
+                <div class="form-group">
+                    <label>Doctor's Advice</label>
+                    <div id="resAdvice" class="detail-value"
+                        style="background: rgba(0,0,0,0.03); padding: 0.75rem; border-radius: 8px; white-space: pre-wrap;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Medications</label>
+                    <div id="resMedications" style="margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button class="btn btn-primary" onclick="closeResultModal()" style="width: 100%;">Close</button>
+            </div>
+        </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="glass-card" style="max-width: 500px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Change Password</h3>
+                <button onclick="closeChangePasswordModal()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="cpOldPass" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
+                </div>
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>New Password</label>
+                    <input type="password" id="cpNewPass" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="button" class="btn" style="flex: 1; background: var(--glass-border); color: var(--text-main);" onclick="closeChangePasswordModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;" id="btnChangePass">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div class="glass-card" style="max-width: 500px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Update Professional Profile</h3>
+                <button onclick="closeProfileModal()"
+                    style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <form id="profileForm">
+                <div class="form-group">
+                    <label>Working Hospital</label>
+                    <input type="text" name="working_hospital" id="profHospital" placeholder="Enter hospital name" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
+                </div>
+                {% if request.user.designation == 'corporate' %}
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Assigned Companies (Comma separated)</label>
+                    <textarea name="assigned_companies" id="profCompanies" placeholder="e.g. Google, Apple, Microsoft" rows="3" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-family: inherit;"></textarea>
+                </div>
+                {% endif %}
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                    <button type="button" class="btn" style="flex: 1; background: var(--glass-border); color: var(--text-main);" onclick="closeProfileModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 2;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -307,14 +495,225 @@
     } else {
         const user = JSON.parse(userString);
         document.getElementById('welcomeName').innerText = `Welcome back, Dr. ${user.name}`;
+        
+        // Populate professional info if exists
+        updateProfessionalDisplay(user);
     }
 
-    // Logout functionality
-    document.getElementById('logoutBtn').addEventListener('click', () => {
+    function updateProfessionalDisplay(user) {
+        const statusDiv = document.getElementById('professionalStatus');
+        if (user.working_hospital || user.assigned_companies) {
+            let html = '';
+            if (user.working_hospital) {
+                html += `<span class="professional-info-badge">🏥 ${user.working_hospital}</span>`;
+            }
+            if (user.assigned_companies) {
+                const comps = user.assigned_companies.split(',').map(c => c.trim()).filter(c => c);
+                if (comps.length > 0) {
+                    html += `<span class="professional-info-badge">🏢 ${comps.length} Companies</span>`;
+                }
+            }
+            statusDiv.innerHTML = html;
+        }
+    }
+
+    function filterCorporatePatients() {
+        const filterValue = document.getElementById('companyFilter').value;
+        const rows = document.querySelectorAll('.corporate-row');
+        
+        rows.forEach(row => {
+            if (!filterValue || row.dataset.company === filterValue) {
+                row.style.display = 'flex';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function startExamFromCorporate(phone) {
+        window.location.href = `{% url 'new_examination_page' %}?phone=${phone}`;
+    }
+
+    function openProfileModal() {
+        const user = JSON.parse(localStorage.getItem('user'));
+        document.getElementById('profHospital').value = user.working_hospital || '';
+        const companiesInput = document.getElementById('profCompanies');
+        if (companiesInput) companiesInput.value = user.assigned_companies || '';
+        document.getElementById('profileModal').style.display = 'flex';
+    }
+
+    function closeProfileModal() {
+        document.getElementById('profileModal').style.display = 'none';
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hospital = document.getElementById('profHospital').value;
+        const companiesInput = document.getElementById('profCompanies');
+        const payload = {
+            working_hospital: hospital
+        };
+        if (companiesInput) {
+            payload.assigned_companies = companiesInput.value;
+        }
+
+        const accessToken = localStorage.getItem('access_token');
+        try {
+            const response = await fetch('{% url "update_profile_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                // Update local storage
+                const user = JSON.parse(localStorage.getItem('user'));
+                const newUser = { ...user, ...updatedUser };
+                localStorage.setItem('user', JSON.stringify(newUser));
+                
+                updateProfessionalDisplay(newUser);
+                closeProfileModal();
+                alert('Profile updated successfully!');
+            } else {
+                alert('Failed to update profile.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error updating profile.');
+        }
+    });
+
+    // ===== Logout Handler Function =====
+    function performLogout() {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
-        window.location.href = '{% url "optometrist_login_page" %}';
+        sessionStorage.removeItem('dashboardEntryPoint');
+        sessionStorage.removeItem('twentyTwentyTimer');
+        window.location.href = '{% url "landing_page" %}';
+    }
+
+    // Logout button click
+    if (document.getElementById('logoutBtn')) {
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            const confirmed = confirm('Are you sure you want to log out?');
+            if (confirmed) {
+                performLogout();
+            }
+        });
+    }
+
+    // Modal functions
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; document.body.style.overflow = ''; }
+
+    // ===== Back Button Detection =====
+    console.log('Setting up back button detection for optometrist');
+    history.pushState({page: 'dashboard'}, null, window.location.href);
+
+    window.addEventListener('popstate', function(event) {
+        console.log('Optometrist popstate fired, event:', event);
+        const confirmed = confirm('Are you sure you want to log out? Pressing back will end your session.');
+        if (confirmed) {
+            performLogout();
+        } else {
+            history.pushState({page: 'dashboard'}, null, window.location.href);
+        }
+    });
+
+    function editExam(phoneNumber, consultantId) {
+        // Pre-filling normally requires fetching the latest data.
+        // For simplicity and since we track by phone number, we can redirect to new_examination with a 'prefill' flag
+        // and fetch the details there if we want, or just pass the phone number.
+        window.location.href = `{% url 'new_examination_page' %}?phone=${phoneNumber}&consultant=${consultantId}`;
+    }
+
+    async function viewExam(examId) {
+        const accessToken = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`/api/exams/${examId}/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('resultPatientName').innerText = `Result for ${data.patient.name}`;
+                document.getElementById('resDiagnosis').innerText = data.provisional_diagnosis || 'Pending...';
+                document.getElementById('resAdvice').innerText = data.advice || 'No advice provided yet.';
+
+                const medList = document.getElementById('resMedications');
+                if (data.medications && data.medications.length > 0) {
+                    medList.innerHTML = `<table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                        <tr style="border-bottom: 1px solid #ddd; text-align: left;">
+                            <th>Name</th><th>Freq</th><th>Eye</th><th>Dur</th>
+                        </tr>
+                        ${data.medications.map(m => `
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td>${m.name}</td><td>${m.frequency}</td><td>${m.eye}</td><td>${m.duration}</td>
+                        </tr>
+                        `).join('')}
+                    </table>`;
+                } else {
+                    medList.innerHTML = '<p style="color: var(--text-muted);">No medications prescribed.</p>';
+                }
+
+                document.getElementById('resultModal').style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('Failed to fetch exam result', err);
+        }
+    }
+
+    function closeResultModal() {
+        document.getElementById('resultModal').style.display = 'none';
+    }
+    </script>
+
+<script>
+    // Change Password Logic
+    function openChangePasswordModal() {
+        document.getElementById('changePasswordModal').style.display = 'flex';
+    }
+    
+    function closeChangePasswordModal() {
+        document.getElementById('changePasswordModal').style.display = 'none';
+    }
+    
+    document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const oldPass = document.getElementById('cpOldPass').value;
+        const newPass = document.getElementById('cpNewPass').value;
+        const btn = document.getElementById('btnChangePass');
+        
+        btn.innerText = 'Updating...';
+        btn.disabled = true;
+        
+        try {
+            const response = await fetch('/patient/api/change-password/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ old_password: oldPass, new_password: newPass })
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                alert('Password changed successfully!');
+                closeChangePasswordModal();
+                this.reset();
+            } else {
+                alert('Error: ' + (data.error || 'Unknown error'));
+            }
+        } catch(err) {
+            console.error(err);
+            alert('An error occurred while changing password');
+        } finally {
+            btn.innerText = 'Update Password';
+            btn.disabled = false;
+        }
     });
 </script>
 {% endblock content %}
