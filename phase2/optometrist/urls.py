@@ -3,7 +3,8 @@ from .views import (
     RegisterOptometrist, LoginOptometrist, OptometristListView, OptometristDetailView,
     OptometristDashboardPageView, LandingPageView, EyeExaminationCreateAPIView, NewExaminationPageView,
     EyeExaminationDetailView, ExaminationByPhoneView, PatientHistoryAPIView, PatientInfoByPhoneView,
-    OptometristProfileUpdateAPIView, CorporatePatientsAPIView
+    OptometristProfileUpdateAPIView, CorporatePatientsAPIView,
+    CMPRecordPageView, CMPRecordCreateAPIView, CMPHistoryByPhoneView
 )
 
 from django.views.generic import TemplateView
@@ -21,11 +22,14 @@ urlpatterns = [
     path('api/exams/by-phone/<str:phone_number>/', ExaminationByPhoneView.as_view(), name='exam_by_phone_api'),
     path('api/patient-history/<str:phone_number>/', PatientHistoryAPIView.as_view(), name='patient_history_api'),
     path('api/patient-info/<str:phone_number>/', PatientInfoByPhoneView.as_view(), name='patient_info_api'),
-    
+    path('api/cmp/create/', CMPRecordCreateAPIView.as_view(), name='cmp_create_api'),
+    path('api/cmp/history/<str:phone_number>/', CMPHistoryByPhoneView.as_view(), name='cmp_history_api'),
+
     # Template pages
     path('', LandingPageView.as_view(), name='landing_page'),
     path('dashboard/', OptometristDashboardPageView.as_view(), name='optometrist_dashboard'),
     path('new-examination/', NewExaminationPageView.as_view(), name='new_examination_page'),
+    path('cmp/new/', CMPRecordPageView.as_view(), name='cmp_record_page'),
     path('privacy-policy/', TemplateView.as_view(template_name='optometrist/privacy_policy.html'), name='privacy_policy'),
     path('corporate-terms/', TemplateView.as_view(template_name='optometrist/corporate_terms.html'), name='corporate_terms'),
     path('terms/', TemplateView.as_view(template_name='optometrist/terms.html'), name='terms_of_service'),

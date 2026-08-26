@@ -267,10 +267,22 @@
                                 dv: { re: { sph: '{{ exam.dv_sph_re|escapejs }}', cyl: '{{ exam.dv_cyl_re|escapejs }}', axis: '{{ exam.dv_axis_re|escapejs }}', vision: '{{ exam.dv_vision_re|escapejs }}' }, le: { sph: '{{ exam.dv_sph_le|escapejs }}', cyl: '{{ exam.dv_cyl_le|escapejs }}', axis: '{{ exam.dv_axis_le|escapejs }}', vision: '{{ exam.dv_vision_le|escapejs }}' } },
                                 nv: { re: { sph: '{{ exam.nv_sph_re|escapejs }}', cyl: '{{ exam.nv_cyl_re|escapejs }}', axis: '{{ exam.nv_axis_re|escapejs }}', vision: '{{ exam.nv_vision_re|escapejs }}' }, le: { sph: '{{ exam.nv_sph_le|escapejs }}', cyl: '{{ exam.nv_cyl_le|escapejs }}', axis: '{{ exam.nv_axis_le|escapejs }}', vision: '{{ exam.nv_vision_le|escapejs }}' } }
                             },
+                            ar: {
+                                dv: { re: { sph: '{{ exam.ar_dv_sph_re|escapejs }}', cyl: '{{ exam.ar_dv_cyl_re|escapejs }}', axis: '{{ exam.ar_dv_axis_re|escapejs }}', vision: '{{ exam.ar_dv_vision_re|escapejs }}' }, le: { sph: '{{ exam.ar_dv_sph_le|escapejs }}', cyl: '{{ exam.ar_dv_cyl_le|escapejs }}', axis: '{{ exam.ar_dv_axis_le|escapejs }}', vision: '{{ exam.ar_dv_vision_le|escapejs }}' } },
+                                nv: { re: { sph: '{{ exam.ar_nv_sph_re|escapejs }}', cyl: '{{ exam.ar_nv_cyl_re|escapejs }}', axis: '{{ exam.ar_nv_axis_re|escapejs }}', vision: '{{ exam.ar_nv_vision_re|escapejs }}' }, le: { sph: '{{ exam.ar_nv_sph_le|escapejs }}', cyl: '{{ exam.ar_nv_cyl_le|escapejs }}', axis: '{{ exam.ar_nv_axis_le|escapejs }}', vision: '{{ exam.ar_nv_vision_le|escapejs }}' } }
+                            },
+                            pog: {
+                                dv: { re: { sph: '{{ exam.pog_dv_sph_re|escapejs }}', cyl: '{{ exam.pog_dv_cyl_re|escapejs }}', axis: '{{ exam.pog_dv_axis_re|escapejs }}', vision: '{{ exam.pog_dv_vision_re|escapejs }}' }, le: { sph: '{{ exam.pog_dv_sph_le|escapejs }}', cyl: '{{ exam.pog_dv_cyl_le|escapejs }}', axis: '{{ exam.pog_dv_axis_le|escapejs }}', vision: '{{ exam.pog_dv_vision_le|escapejs }}' } },
+                                nv: { re: { sph: '{{ exam.pog_nv_sph_re|escapejs }}', cyl: '{{ exam.pog_nv_cyl_re|escapejs }}', axis: '{{ exam.pog_nv_axis_re|escapejs }}', vision: '{{ exam.pog_nv_vision_re|escapejs }}' }, le: { sph: '{{ exam.pog_nv_sph_le|escapejs }}', cyl: '{{ exam.pog_nv_cyl_le|escapejs }}', axis: '{{ exam.pog_nv_axis_le|escapejs }}', vision: '{{ exam.pog_nv_vision_le|escapejs }}' } }
+                            },
                             investigations: {
                                 schirmer: { re: '{{ exam.schirmer_re|escapejs }}', le: '{{ exam.schirmer_le|escapejs }}' },
                                 tbut: { re: '{{ exam.tbut_re|escapejs }}', le: '{{ exam.tbut_le|escapejs }}' },
                                 slitlamp: { re: '{{ exam.slit_lamp_re|escapejs }}', le: '{{ exam.slit_lamp_le|escapejs }}' },
+                                lens: { re: '{{ exam.lens_re|escapejs }}', le: '{{ exam.lens_le|escapejs }}' },
+                                cornea: { re: '{{ exam.cornea_re|escapejs }}', le: '{{ exam.cornea_le|escapejs }}' },
+                                conjunctiva: { re: '{{ exam.conjunctiva_re|escapejs }}', le: '{{ exam.conjunctiva_le|escapejs }}' },
+                                iris: { re: '{{ exam.iris_re|escapejs }}', le: '{{ exam.iris_le|escapejs }}' },
                                 fundus: { re: '{{ exam.fundus_re|escapejs }}', le: '{{ exam.fundus_le|escapejs }}' },
                                 iop: { re: '{{ exam.iop_re|escapejs }}', le: '{{ exam.iop_le|escapejs }}' }
                             },
@@ -278,7 +290,13 @@
                                 systemic: '{{ exam.systemic_history|escapejs }}',
                                 screenTime: '{{ exam.screen_time|escapejs }}',
                                 eyeDisease: '{{ exam.history_eye_disease|escapejs }}',
-                                eyeSurgery: '{{ exam.history_eye_surgery|escapejs }}'
+                                eyeSurgery: '{{ exam.history_eye_surgery|escapejs }}',
+                                familyDisease: '{{ exam.family_history_eye_disease|escapejs }}',
+                                outdoor: '{{ exam.outdoor_activity_hours|escapejs }}',
+                                glasses: '{{ exam.glasses_made_when_where|escapejs }}',
+                                eyeMedication: '{{ exam.eye_medication_used|escapejs }}',
+                                systemicMedication: '{{ exam.systemic_medication|escapejs }}',
+                                allergies: '{{ exam.allergies_with_medicine|escapejs }}'
                             },
                             performed: {
                                 ar_assessment: {% if exam.performed_ar_assessment %}true{% else %}false{% endif %},
@@ -483,6 +501,30 @@
                 <div class="detail-label">H/o Eye Surgery</div>
                 <div id="modHistSurgery" class="detail-value" style="font-size: 0.95rem;">-</div>
             </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Family H/o Eye Disease</div>
+                <div id="modHistFamily" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Outdoor Activities (Children)</div>
+                <div id="modHistOutdoor" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Glasses Made When &amp; Where</div>
+                <div id="modHistGlasses" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Medication Used for Eye</div>
+                <div id="modHistEyeMed" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Systemic Medication</div>
+                <div id="modHistSysMed" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
+            <div class="detail-row" style="margin-bottom: 0.5rem;">
+                <div class="detail-label">Allergies with Medicine</div>
+                <div id="modHistAllergies" class="detail-value" style="font-size: 0.95rem;">-</div>
+            </div>
         </div>
 
         <h3
@@ -513,7 +555,85 @@
 
         <h3
             style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
-            Refraction</h3>
+            AR Reading</h3>
+        <table
+            style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
+            <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
+                <td style="padding:0.5rem;"></td>
+                <td colspan="4" style="padding:0.5rem; border-right:1px solid #eee;">Right Eye</td>
+                <td colspan="4" style="padding:0.5rem;">Left Eye</td>
+            </tr>
+            <tr style="background:#f8fafc; color:var(--text-muted); font-size:0.75rem;">
+                <td style="padding:0.2rem;"></td>
+                <td>Sph</td><td>Cyl</td><td>Ax</td><td style="border-right:1px solid #eee;">Vis</td>
+                <td>Sph</td><td>Cyl</td><td>Ax</td><td>Vis</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">DV</td>
+                <td id="modArDvReSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvReCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvReAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
+                <td id="modArDvLeSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvLeCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvLeAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArDvLeVis" style="border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">NV</td>
+                <td id="modArNvReSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvReCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvReAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
+                <td id="modArNvLeSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvLeCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvLeAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modArNvLeVis" style="border-bottom:1px solid #eee;">-</td>
+            </tr>
+        </table>
+
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            POG (Power of Glasses)</h3>
+        <table
+            style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
+            <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
+                <td style="padding:0.5rem;"></td>
+                <td colspan="4" style="padding:0.5rem; border-right:1px solid #eee;">Right Eye</td>
+                <td colspan="4" style="padding:0.5rem;">Left Eye</td>
+            </tr>
+            <tr style="background:#f8fafc; color:var(--text-muted); font-size:0.75rem;">
+                <td style="padding:0.2rem;"></td>
+                <td>Sph</td><td>Cyl</td><td>Ax</td><td style="border-right:1px solid #eee;">Vis</td>
+                <td>Sph</td><td>Cyl</td><td>Ax</td><td>Vis</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">DV</td>
+                <td id="modPogDvReSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvReCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvReAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
+                <td id="modPogDvLeSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvLeCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvLeAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogDvLeVis" style="border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem; text-align:left; font-weight:600; border-bottom:1px solid #eee;">NV</td>
+                <td id="modPogNvReSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvReCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvReAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvReVis" style="border-bottom:1px solid #eee; border-right:1px solid #eee;">-</td>
+                <td id="modPogNvLeSph" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvLeCyl" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvLeAx" style="border-bottom:1px solid #eee;">-</td>
+                <td id="modPogNvLeVis" style="border-bottom:1px solid #eee;">-</td>
+            </tr>
+        </table>
+
+        <h3
+            style="margin-top:1.5rem; margin-bottom:0.5rem; font-size:1.1rem; color:var(--secondary); border-bottom:1px solid #eee; padding-bottom:0.5rem;">
+            Refraction Acceptance</h3>
         <table
             style="width:100%; font-size:0.85rem; margin-bottom:1.5rem; border-collapse: collapse; text-align:center;">
             <tr style="background:#f8fafc; color:var(--text-muted); font-weight:600;">
@@ -584,6 +704,26 @@
                 <td style="padding:0.5rem; border-bottom:1px solid #eee;">Slit Lamp</td>
                 <td id="modSlitRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
                 <td id="modSlitLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 0.5rem 0.5rem 1.5rem; border-bottom:1px solid #eee;">&#8627; Lens</td>
+                <td id="modLensRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modLensLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 0.5rem 0.5rem 1.5rem; border-bottom:1px solid #eee;">&#8627; Cornea</td>
+                <td id="modCorneaRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modCorneaLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 0.5rem 0.5rem 1.5rem; border-bottom:1px solid #eee;">&#8627; Conjunctiva</td>
+                <td id="modConjunctivaRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modConjunctivaLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 0.5rem 0.5rem 1.5rem; border-bottom:1px solid #eee;">&#8627; Iris</td>
+                <td id="modIrisRe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
+                <td id="modIrisLe" style="padding:0.5rem; border-bottom:1px solid #eee;">-</td>
             </tr>
             <tr>
                 <td style="padding:0.5rem; border-bottom:1px solid #eee;">Fundus</td>
@@ -695,6 +835,12 @@
             document.getElementById('modHistScreen').innerText = data.history.screenTime ? `${data.history.screenTime} hrs/day` : 'NA';
             document.getElementById('modHistDisease').innerText = data.history.eyeDisease || 'NA';
             document.getElementById('modHistSurgery').innerText = data.history.eyeSurgery || 'NA';
+            document.getElementById('modHistFamily').innerText = data.history.familyDisease || 'NA';
+            document.getElementById('modHistOutdoor').innerText = data.history.outdoor || 'NA';
+            document.getElementById('modHistGlasses').innerText = data.history.glasses || 'NA';
+            document.getElementById('modHistEyeMed').innerText = data.history.eyeMedication || 'NA';
+            document.getElementById('modHistSysMed').innerText = data.history.systemicMedication || 'NA';
+            document.getElementById('modHistAllergies').innerText = data.history.allergies || 'NA';
         }
 
         // Populate performed tests
@@ -746,6 +892,22 @@
             document.getElementById('modRefNvLeVis').innerText = data.refraction.nv.le.vision || '';
         }
 
+        const fillReadingTable = (prefix, src) => {
+            if (!src) return;
+            ['Dv', 'Nv'].forEach(row => {
+                const r = row.toLowerCase();
+                ['Re', 'Le'].forEach(eye => {
+                    const e = eye.toLowerCase();
+                    document.getElementById(`mod${prefix}${row}${eye}Sph`).innerText = src[r][e].sph || '';
+                    document.getElementById(`mod${prefix}${row}${eye}Cyl`).innerText = src[r][e].cyl || '';
+                    document.getElementById(`mod${prefix}${row}${eye}Ax`).innerText = src[r][e].axis || '';
+                    document.getElementById(`mod${prefix}${row}${eye}Vis`).innerText = src[r][e].vision || '';
+                });
+            });
+        };
+        fillReadingTable('Ar', data.ar);
+        fillReadingTable('Pog', data.pog);
+
         if (data.investigations) {
             document.getElementById('modSchirmerRe').innerText = data.investigations.schirmer.re || '-';
             document.getElementById('modSchirmerLe').innerText = data.investigations.schirmer.le || '-';
@@ -753,6 +915,14 @@
             document.getElementById('modTbutLe').innerText = data.investigations.tbut.le || '-';
             document.getElementById('modSlitRe').innerText = data.investigations.slitlamp.re || '-';
             document.getElementById('modSlitLe').innerText = data.investigations.slitlamp.le || '-';
+            document.getElementById('modLensRe').innerText = data.investigations.lens.re || '-';
+            document.getElementById('modLensLe').innerText = data.investigations.lens.le || '-';
+            document.getElementById('modCorneaRe').innerText = data.investigations.cornea.re || '-';
+            document.getElementById('modCorneaLe').innerText = data.investigations.cornea.le || '-';
+            document.getElementById('modConjunctivaRe').innerText = data.investigations.conjunctiva.re || '-';
+            document.getElementById('modConjunctivaLe').innerText = data.investigations.conjunctiva.le || '-';
+            document.getElementById('modIrisRe').innerText = data.investigations.iris.re || '-';
+            document.getElementById('modIrisLe').innerText = data.investigations.iris.le || '-';
             document.getElementById('modFundusRe').innerText = data.investigations.fundus.re || '-';
             document.getElementById('modFundusLe').innerText = data.investigations.fundus.le || '-';
             document.getElementById('modIopRe').innerText = data.investigations.iop.re || '-';

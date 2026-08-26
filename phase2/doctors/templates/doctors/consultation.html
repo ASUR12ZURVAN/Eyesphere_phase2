@@ -550,6 +550,30 @@
                 <div class="detail-label">H/o Eye Surgery</div>
                 <div class="detail-value">{{ exam.history_eye_surgery|default:"NA" }}</div>
             </div>
+            <div class="detail-item">
+                <div class="detail-label">Family H/o Eye Disease</div>
+                <div class="detail-value">{{ exam.family_history_eye_disease|default:"NA" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Outdoor Activities (Children)</div>
+                <div class="detail-value">{{ exam.outdoor_activity_hours|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Glasses Made When &amp; Where</div>
+                <div class="detail-value">{{ exam.glasses_made_when_where|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Medication Used for Eye</div>
+                <div class="detail-value">{{ exam.eye_medication_used|default:"-" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Systemic Medication</div>
+                <div class="detail-value">{{ exam.systemic_medication|default:"NA" }}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Allergies with Medicine</div>
+                <div class="detail-value">{{ exam.allergies_with_medicine|default:"NA" }}</div>
+            </div>
         </div>
 
         <div class="detail-item">
@@ -588,8 +612,104 @@
             </table>
         </div>
 
-        <!-- Refraction Table -->
-        <h3 class="section-title">Refraction</h3>
+        <!-- AR Reading Table -->
+        <h3 class="section-title">AR Reading</h3>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Type</th>
+                        <th colspan="4" style="text-align: center; border-right: 2px solid #e2e8f0;">Right Eye (RE)</th>
+                        <th colspan="4" style="text-align: center;">Left Eye (LE)</th>
+                    </tr>
+                    <tr>
+                        <th>Sph</th>
+                        <th>Cyl</th>
+                        <th>Axis</th>
+                        <th style="border-right: 2px solid #e2e8f0;">Vision</th>
+                        <th>Sph</th>
+                        <th>Cyl</th>
+                        <th>Axis</th>
+                        <th>Vision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>DV</strong></td>
+                        <td>{{ exam.ar_dv_sph_re|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_cyl_re|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_axis_re|default:"-" }}</td>
+                        <td style="border-right: 2px solid #e2e8f0;">{{ exam.ar_dv_vision_re|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_sph_le|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_cyl_le|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_axis_le|default:"-" }}</td>
+                        <td>{{ exam.ar_dv_vision_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NV</strong></td>
+                        <td>{{ exam.ar_nv_sph_re|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_cyl_re|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_axis_re|default:"-" }}</td>
+                        <td style="border-right: 2px solid #e2e8f0;">{{ exam.ar_nv_vision_re|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_sph_le|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_cyl_le|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_axis_le|default:"-" }}</td>
+                        <td>{{ exam.ar_nv_vision_le|default:"-" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- POG Table -->
+        <h3 class="section-title">POG (Power of Glasses)</h3>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Type</th>
+                        <th colspan="4" style="text-align: center; border-right: 2px solid #e2e8f0;">Right Eye (RE)</th>
+                        <th colspan="4" style="text-align: center;">Left Eye (LE)</th>
+                    </tr>
+                    <tr>
+                        <th>Sph</th>
+                        <th>Cyl</th>
+                        <th>Axis</th>
+                        <th style="border-right: 2px solid #e2e8f0;">Vision</th>
+                        <th>Sph</th>
+                        <th>Cyl</th>
+                        <th>Axis</th>
+                        <th>Vision</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>DV</strong></td>
+                        <td>{{ exam.pog_dv_sph_re|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_cyl_re|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_axis_re|default:"-" }}</td>
+                        <td style="border-right: 2px solid #e2e8f0;">{{ exam.pog_dv_vision_re|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_sph_le|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_cyl_le|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_axis_le|default:"-" }}</td>
+                        <td>{{ exam.pog_dv_vision_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>NV</strong></td>
+                        <td>{{ exam.pog_nv_sph_re|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_cyl_re|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_axis_re|default:"-" }}</td>
+                        <td style="border-right: 2px solid #e2e8f0;">{{ exam.pog_nv_vision_re|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_sph_le|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_cyl_le|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_axis_le|default:"-" }}</td>
+                        <td>{{ exam.pog_nv_vision_le|default:"-" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Refraction Acceptance Table -->
+        <h3 class="section-title">Refraction Acceptance</h3>
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
@@ -709,6 +829,26 @@
                         <td>{{ exam.slit_lamp_le|default:"-" }}</td>
                     </tr>
                     <tr>
+                        <td style="padding-left: 1.5rem;">&#8627; Lens</td>
+                        <td>{{ exam.lens_re|default:"-" }}</td>
+                        <td>{{ exam.lens_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 1.5rem;">&#8627; Cornea</td>
+                        <td>{{ exam.cornea_re|default:"-" }}</td>
+                        <td>{{ exam.cornea_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 1.5rem;">&#8627; Conjunctiva</td>
+                        <td>{{ exam.conjunctiva_re|default:"-" }}</td>
+                        <td>{{ exam.conjunctiva_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding-left: 1.5rem;">&#8627; Iris</td>
+                        <td>{{ exam.iris_re|default:"-" }}</td>
+                        <td>{{ exam.iris_le|default:"-" }}</td>
+                    </tr>
+                    <tr>
                         <td><strong>Fundus</strong></td>
                         <td>{{ exam.fundus_re|default:"-" }}</td>
                         <td>{{ exam.fundus_le|default:"-" }}</td>
@@ -727,6 +867,81 @@
             <div class="detail-label">Optometrist's Notes</div>
             <div class="detail-value">{{ exam.advice }}</div>
         </div>
+        {% endif %}
+
+        <!-- CMP (Chronic Management Program) Details -->
+        {% if is_cmp_patient %}
+        <h3 class="section-title">CMP Details &mdash; {{ cmp_patient.get_cmp_type_display }}</h3>
+        {% if cmp_latest %}
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Latest record: {{ cmp_latest.recorded_at|date:"d M Y, H:i" }}
+            {% if cmp_latest.optometrist %} &bull; by {{ cmp_latest.optometrist.name }}{% endif %}
+        </p>
+        <div class="table-wrapper">
+            <table class="data-table">
+                {% if cmp_patient.is_diabetic_cmp %}
+                <thead>
+                    <tr>
+                        <th>HbA1c</th>
+                        <th>Diabetes Type</th>
+                        <th>Kidney Disease</th>
+                        <th>Exercise</th>
+                        <th>Current Medications</th>
+                        <th>Reports</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ cmp_latest.hba1c_value|default:"-" }}{% if cmp_latest.hba1c_value %} %{% endif %}</td>
+                        <td>{{ cmp_latest.get_diabetes_type_display|default:"-" }}</td>
+                        <td>{% if cmp_latest.has_kidney_disease == True %}Yes{% elif cmp_latest.has_kidney_disease == False %}No{% else %}-{% endif %}</td>
+                        <td>{{ cmp_latest.exercise_frequency|default:"-" }}</td>
+                        <td>{{ cmp_latest.current_diabetes_medications|default:"-" }}</td>
+                        <td>
+                            {% if cmp_latest.hba1c_report %}<a href="{{ cmp_latest.hba1c_report.url }}" target="_blank">HbA1c</a>{% endif %}
+                            {% if cmp_latest.kft_report %} <a href="{{ cmp_latest.kft_report.url }}" target="_blank">KFT</a>{% endif %}
+                            {% if not cmp_latest.hba1c_report and not cmp_latest.kft_report %}-{% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+                {% else %}
+                <thead>
+                    <tr>
+                        <th>School Grade</th>
+                        <th>Axial Length</th>
+                        <th>Dilated Refraction</th>
+                        <th>Screen Time</th>
+                        <th>Outdoor Time</th>
+                        <th>Eye Muscle Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ cmp_latest.school_grade|default:"-" }}</td>
+                        <td>{{ cmp_latest.axial_length|default:"-" }}{% if cmp_latest.axial_length %} mm{% endif %}</td>
+                        <td>{{ cmp_latest.dilated_refraction|default:"-" }}{% if cmp_latest.dilated_refraction %} D{% endif %}</td>
+                        <td>{{ cmp_latest.avg_daily_screen_time|default:"-" }}{% if cmp_latest.avg_daily_screen_time %} hrs{% endif %}</td>
+                        <td>{{ cmp_latest.avg_daily_outdoor_time|default:"-" }}{% if cmp_latest.avg_daily_outdoor_time %} hrs{% endif %}</td>
+                        <td>{{ cmp_latest.eye_muscle_status|default:"-" }}</td>
+                    </tr>
+                </tbody>
+                {% endif %}
+            </table>
+        </div>
+        {% if cmp_latest.notes %}
+        <div class="detail-item" style="margin-top: 1rem;">
+            <div class="detail-label">CMP Notes</div>
+            <div class="detail-value">{{ cmp_latest.notes }}</div>
+        </div>
+        {% endif %}
+        {% if cmp_records.count > 1 %}
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+            {{ cmp_records.count }} CMP records on file (showing the most recent above).
+        </p>
+        {% endif %}
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic;">No CMP clinical records recorded yet.</p>
+        {% endif %}
         {% endif %}
     </div>
 

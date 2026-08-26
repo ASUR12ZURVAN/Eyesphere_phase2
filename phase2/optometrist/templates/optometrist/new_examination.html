@@ -76,6 +76,30 @@
                 <label>H/o Eye Surgery</label>
                 <input type="text" name="history_eye_surgery" value="NA">
             </div>
+            <div class="form-group">
+                <label>Family History of Eye Disease</label>
+                <input type="text" name="family_history_eye_disease" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Outdoor Activities (Children) in hours</label>
+                <input type="text" name="outdoor_activity_hours" placeholder="e.g. 2 hrs/day">
+            </div>
+            <div class="form-group full-width">
+                <label>Glasses Made When &amp; Where</label>
+                <input type="text" name="glasses_made_when_where" placeholder="e.g. 2023, City Optics">
+            </div>
+            <div class="form-group">
+                <label>Medication Used for Eye</label>
+                <input type="text" name="eye_medication_used">
+            </div>
+            <div class="form-group">
+                <label>Systemic Medication</label>
+                <input type="text" name="systemic_medication" value="NA">
+            </div>
+            <div class="form-group">
+                <label>Allergies with Medicine</label>
+                <input type="text" name="allergies_with_medicine" value="NA">
+            </div>
         </div>
 
         <!-- SECTION 3: Visual Acuity -->
@@ -107,8 +131,8 @@
             </tbody>
         </table>
 
-        <!-- SECTION 4: Refraction -->
-        <h3 class="section-title">Refraction</h3>
+        <!-- SECTION 4a: AR Reading -->
+        <h3 class="section-title">AR Reading</h3>
         <table class="data-table">
             <thead>
                 <tr>
@@ -130,7 +154,101 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Distance (DV)</strong></td>
+                    <td><strong>DV</strong></td>
+                    <td><input type="text" name="ar_dv_sph_re" placeholder="-0.00"></td>
+                    <td><input type="text" name="ar_dv_cyl_re"></td>
+                    <td><input type="text" name="ar_dv_axis_re"></td>
+                    <td><input type="text" name="ar_dv_vision_re"></td>
+                    <td><input type="text" name="ar_dv_sph_le" placeholder="-0.00"></td>
+                    <td><input type="text" name="ar_dv_cyl_le"></td>
+                    <td><input type="text" name="ar_dv_axis_le"></td>
+                    <td><input type="text" name="ar_dv_vision_le"></td>
+                </tr>
+                <tr>
+                    <td><strong>NV</strong></td>
+                    <td><input type="text" name="ar_nv_sph_re"></td>
+                    <td><input type="text" name="ar_nv_cyl_re"></td>
+                    <td><input type="text" name="ar_nv_axis_re"></td>
+                    <td><input type="text" name="ar_nv_vision_re"></td>
+                    <td><input type="text" name="ar_nv_sph_le"></td>
+                    <td><input type="text" name="ar_nv_cyl_le"></td>
+                    <td><input type="text" name="ar_nv_axis_le"></td>
+                    <td><input type="text" name="ar_nv_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 4b: POG -->
+        <h3 class="section-title">POG (Power of Glasses)</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="4" style="text-align: center;">Right Eye</th>
+                    <th colspan="4" style="text-align: center;">Left Eye</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DV</strong></td>
+                    <td><input type="text" name="pog_dv_sph_re" placeholder="-0.00"></td>
+                    <td><input type="text" name="pog_dv_cyl_re"></td>
+                    <td><input type="text" name="pog_dv_axis_re"></td>
+                    <td><input type="text" name="pog_dv_vision_re"></td>
+                    <td><input type="text" name="pog_dv_sph_le" placeholder="-0.00"></td>
+                    <td><input type="text" name="pog_dv_cyl_le"></td>
+                    <td><input type="text" name="pog_dv_axis_le"></td>
+                    <td><input type="text" name="pog_dv_vision_le"></td>
+                </tr>
+                <tr>
+                    <td><strong>NV</strong></td>
+                    <td><input type="text" name="pog_nv_sph_re"></td>
+                    <td><input type="text" name="pog_nv_cyl_re"></td>
+                    <td><input type="text" name="pog_nv_axis_re"></td>
+                    <td><input type="text" name="pog_nv_vision_re"></td>
+                    <td><input type="text" name="pog_nv_sph_le"></td>
+                    <td><input type="text" name="pog_nv_cyl_le"></td>
+                    <td><input type="text" name="pog_nv_axis_le"></td>
+                    <td><input type="text" name="pog_nv_vision_le"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- SECTION 4c: Refraction Acceptance -->
+        <h3 class="section-title">Refraction Acceptance</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="4" style="text-align: center;">Right Eye</th>
+                    <th colspan="4" style="text-align: center;">Left Eye</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                    <th>Sph</th>
+                    <th>Cyl</th>
+                    <th>Axis</th>
+                    <th>Vision</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>DV</strong></td>
                     <td><input type="text" name="dv_sph_re" placeholder="-0.00"></td>
                     <td><input type="text" name="dv_cyl_re"></td>
                     <td><input type="text" name="dv_axis_re"></td>
@@ -142,7 +260,7 @@
                     <td><input type="text" name="dv_vision_le"></td>
                 </tr>
                 <tr>
-                    <td><strong>Near (Add)</strong></td>
+                    <td><strong>NV</strong></td>
                     <td><input type="text" name="nv_sph_re"></td>
                     <td><input type="text" name="nv_cyl_re"></td>
                     <td><input type="text" name="nv_axis_re"></td>
@@ -191,6 +309,26 @@
                     <td>Slit Lamp</td>
                     <td><input type="text" name="slit_lamp_re" value="NORMAL"></td>
                     <td><input type="text" name="slit_lamp_le" value="NORMAL"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Lens</td>
+                    <td><input type="text" name="lens_re"></td>
+                    <td><input type="text" name="lens_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Cornea</td>
+                    <td><input type="text" name="cornea_re"></td>
+                    <td><input type="text" name="cornea_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Conjunctiva</td>
+                    <td><input type="text" name="conjunctiva_re"></td>
+                    <td><input type="text" name="conjunctiva_le"></td>
+                </tr>
+                <tr>
+                    <td style="padding-left: 1.5rem;">&#8627; Iris</td>
+                    <td><input type="text" name="iris_re"></td>
+                    <td><input type="text" name="iris_le"></td>
                 </tr>
                 <tr>
                     <td>Fundus</td>
@@ -407,10 +545,17 @@
         // Examination fields
         const fields = [
             'chief_complaints', 'systemic_history', 'screen_time', 'history_eye_disease', 'history_eye_surgery',
+            'family_history_eye_disease', 'outdoor_activity_hours', 'glasses_made_when_where', 'eye_medication_used', 'systemic_medication', 'allergies_with_medicine',
             'uncorrected_vision_re', 'uncorrected_vision_le', 'pinhole_vision_re', 'pinhole_vision_le', 'corrected_vision_re', 'corrected_vision_le',
             'dv_sph_re', 'dv_cyl_re', 'dv_axis_re', 'dv_vision_re', 'dv_sph_le', 'dv_cyl_le', 'dv_axis_le', 'dv_vision_le',
             'nv_sph_re', 'nv_cyl_re', 'nv_axis_re', 'nv_vision_re', 'nv_sph_le', 'nv_cyl_le', 'nv_axis_le', 'nv_vision_le',
-            'schirmer_re', 'schirmer_le', 'tbut_re', 'tbut_le', 'slit_lamp_re', 'slit_lamp_le', 'fundus_re', 'fundus_le', 'iop_re', 'iop_le',
+            'ar_dv_sph_re', 'ar_dv_cyl_re', 'ar_dv_axis_re', 'ar_dv_vision_re', 'ar_dv_sph_le', 'ar_dv_cyl_le', 'ar_dv_axis_le', 'ar_dv_vision_le',
+            'ar_nv_sph_re', 'ar_nv_cyl_re', 'ar_nv_axis_re', 'ar_nv_vision_re', 'ar_nv_sph_le', 'ar_nv_cyl_le', 'ar_nv_axis_le', 'ar_nv_vision_le',
+            'pog_dv_sph_re', 'pog_dv_cyl_re', 'pog_dv_axis_re', 'pog_dv_vision_re', 'pog_dv_sph_le', 'pog_dv_cyl_le', 'pog_dv_axis_le', 'pog_dv_vision_le',
+            'pog_nv_sph_re', 'pog_nv_cyl_re', 'pog_nv_axis_re', 'pog_nv_vision_re', 'pog_nv_sph_le', 'pog_nv_cyl_le', 'pog_nv_axis_le', 'pog_nv_vision_le',
+            'schirmer_re', 'schirmer_le', 'tbut_re', 'tbut_le', 'slit_lamp_re', 'slit_lamp_le',
+            'lens_re', 'lens_le', 'cornea_re', 'cornea_le', 'conjunctiva_re', 'conjunctiva_le', 'iris_re', 'iris_le',
+            'fundus_re', 'fundus_le', 'iop_re', 'iop_le',
             'provisional_diagnosis', 'advice', 'eye_health_rating'
         ];
 

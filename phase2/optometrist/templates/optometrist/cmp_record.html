@@ -1,0 +1,319 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}CMP Clinical Record | EyeSphere{% endblock title %}
+
+{% block content %}
+<div class="glass-card animate-fade-in" style="max-width: 1000px; margin: 2rem auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="text-align: left; font-size: 2rem; margin-bottom: 0.25rem;">CMP Clinical Record</h1>
+            <p style="color: var(--text-muted); margin: 0;">Record Chronic Management Program data. Each save is stored as a new historical entry.</p>
+        </div>
+        <a href="{% url 'optometrist_dashboard' %}" class="btn" style="width: auto; background: rgba(0,0,0,0.05);">Back to Dashboard</a>
+    </div>
+
+    <!-- Patient lookup -->
+    <div class="form-grid">
+        <div class="form-group">
+            <label>Patient Phone Number</label>
+            <input type="tel" id="lookupPhone" placeholder="Enter registered phone number"
+                oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+        </div>
+        <div class="form-group" style="display: flex; align-items: flex-end;">
+            <button type="button" class="btn btn-primary" id="lookupBtn" style="width: 100%;">Load Patient</button>
+        </div>
+    </div>
+
+    <div id="patientBanner" style="display: none; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;
+        background: rgba(5,150,105,0.06); border: 1px solid rgba(5,150,105,0.25);">
+        <strong id="patientNameLabel"></strong>
+        <span id="patientTagLabel" style="margin-left: 0.5rem; font-size: 0.8rem; padding: 2px 10px; border-radius: 999px; background: #059669; color: #fff;"></span>
+    </div>
+
+    <form id="cmpForm" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="phone_number" id="formPhone">
+
+        <h3 class="section-title">CMP Program</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>CMP Type</label>
+                <select name="cmp_type" id="cmpType" required>
+                    <option value="" disabled selected>Select CMP Type</option>
+                    <option value="cmp1">CMP1 — Standard Diabetic CMP</option>
+                    <option value="cmp2">CMP2 — Advanced Diabetic CMP</option>
+                    <option value="cmp3">CMP3 — Pediatric Myopia CMP</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- A. Diabetic CMP fields (CMP1 / CMP2) -->
+        <div id="diabeticSection" style="display: none;">
+            <h3 class="section-title">Diabetic CMP — Clinical Data</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>HbA1c Value (%)</label>
+                    <input type="number" step="0.1" name="hba1c_value" placeholder="e.g. 7.2">
+                </div>
+                <div class="form-group">
+                    <label>Diabetes Type</label>
+                    <select name="diabetes_type">
+                        <option value="">— Select —</option>
+                        <option value="type1">Type 1</option>
+                        <option value="type2">Type 2</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Presence of Kidney Disease</label>
+                    <select name="has_kidney_disease">
+                        <option value="">— Unknown —</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Exercise Frequency</label>
+                    <input type="text" name="exercise_frequency" placeholder="e.g. 3 times/week">
+                </div>
+                <div class="form-group full-width">
+                    <label>Current Diabetes Medications</label>
+                    <textarea name="current_diabetes_medications" rows="2" placeholder="List medications and dosage"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>HbA1c Report (Upload)</label>
+                    <input type="file" name="hba1c_report" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="form-group">
+                    <label>KFT Report (Upload)</label>
+                    <input type="file" name="kft_report" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+            </div>
+        </div>
+
+        <!-- B. Pediatric Myopia CMP fields (CMP3) -->
+        <div id="pediatricSection" style="display: none;">
+            <h3 class="section-title">Pediatric Myopia CMP — Clinical Data</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>School Grade / Class</label>
+                    <input type="text" name="school_grade" placeholder="e.g. Grade 5">
+                </div>
+                <div class="form-group">
+                    <label>Axial Length (mm)</label>
+                    <input type="number" step="0.01" name="axial_length" placeholder="e.g. 24.50">
+                </div>
+                <div class="form-group">
+                    <label>Dilated Refraction (D)</label>
+                    <input type="number" step="0.25" name="dilated_refraction" placeholder="e.g. -2.50">
+                </div>
+                <div class="form-group">
+                    <label>Avg Daily Screen Time (hrs)</label>
+                    <input type="number" step="0.5" name="avg_daily_screen_time" placeholder="e.g. 6">
+                </div>
+                <div class="form-group">
+                    <label>Avg Daily Outdoor Play Time (hrs)</label>
+                    <input type="number" step="0.5" name="avg_daily_outdoor_time" placeholder="e.g. 1.5">
+                </div>
+                <div class="form-group">
+                    <label>Eye Muscle Status</label>
+                    <input type="text" name="eye_muscle_status" placeholder="e.g. Orthophoric / Esophoria">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group full-width">
+            <label>Notes (Optional)</label>
+            <textarea name="notes" rows="2"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;" id="saveBtn">Save CMP Record</button>
+    </form>
+
+    <!-- Historical records -->
+    <div id="historyWrap" style="display: none; margin-top: 2.5rem;">
+        <h3 class="section-title">Recorded History (newest first)</h3>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<style>
+    .section-title {
+        color: var(--secondary);
+        border-bottom: 2px solid var(--glass-border);
+        padding-bottom: 0.5rem;
+        margin: 2rem 0 1rem 0;
+        font-size: 1.2rem;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+    .full-width { grid-column: 1 / -1; }
+    .form-group label { display: block; margin-bottom: 0.4rem; color: var(--text-muted); font-size: 0.9rem; }
+    input, select, textarea {
+        width: 100%; padding: 0.6rem; background: #fff;
+        border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-main); outline: none;
+    }
+    textarea { resize: vertical; font-family: inherit; }
+    .history-card {
+        background: #fff; border: 1px solid var(--glass-border); border-radius: 12px;
+        padding: 1rem 1.25rem; margin-bottom: 1rem; box-shadow: var(--card-shadow);
+    }
+    .history-card .meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+    .history-card .vals { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.4rem 1rem; font-size: 0.85rem; }
+    .history-card .vals span b { color: var(--text-muted); font-weight: 500; }
+</style>
+
+<script>
+    const accessToken = localStorage.getItem('access_token');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const diabeticTypes = ['cmp1', 'cmp2'];
+    const cmpLabels = {
+        cmp1: 'CMP1 · Standard Diabetic CMP',
+        cmp2: 'CMP2 · Advanced Diabetic CMP',
+        cmp3: 'CMP3 · Pediatric Myopia CMP'
+    };
+
+    function toggleSections() {
+        const type = document.getElementById('cmpType').value;
+        document.getElementById('diabeticSection').style.display = diabeticTypes.includes(type) ? 'block' : 'none';
+        document.getElementById('pediatricSection').style.display = (type === 'cmp3') ? 'block' : 'none';
+    }
+    document.getElementById('cmpType').addEventListener('change', toggleSections);
+
+    document.getElementById('lookupBtn').addEventListener('click', loadPatient);
+    document.getElementById('lookupPhone').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); loadPatient(); } });
+
+    async function loadPatient() {
+        const phone = document.getElementById('lookupPhone').value.trim();
+        if (!phone) { alert('Please enter a phone number.'); return; }
+
+        try {
+            const res = await fetch(`/api/patient-info/${phone}/`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+            if (!res.ok) { alert('Patient not found for this phone number.'); return; }
+            const patient = await res.json();
+
+            document.getElementById('formPhone').value = phone;
+            document.getElementById('patientNameLabel').innerText = patient.name || 'Patient';
+
+            const tagEl = document.getElementById('patientTagLabel');
+            if (patient.is_cmp_patient && patient.cmp_type) {
+                tagEl.style.display = 'inline';
+                tagEl.innerText = cmpLabels[patient.cmp_type] || patient.cmp_type.toUpperCase();
+                document.getElementById('cmpType').value = patient.cmp_type;
+            } else {
+                tagEl.style.display = 'none';
+                tagEl.innerText = '';
+                document.getElementById('cmpType').value = '';
+            }
+            toggleSections();
+
+            document.getElementById('patientBanner').style.display = 'block';
+            document.getElementById('cmpForm').style.display = 'block';
+
+            loadHistory(phone);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to load patient.');
+        }
+    }
+
+    async function loadHistory(phone) {
+        const wrap = document.getElementById('historyWrap');
+        const list = document.getElementById('historyList');
+        try {
+            const res = await fetch(`/api/cmp/history/${phone}/`, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+            if (!res.ok) { wrap.style.display = 'none'; return; }
+            const data = await res.json();
+            if (!data.records || data.records.length === 0) {
+                wrap.style.display = 'block';
+                list.innerHTML = '<p style="color: var(--text-muted);">No CMP records yet for this patient.</p>';
+                return;
+            }
+            wrap.style.display = 'block';
+            list.innerHTML = data.records.map(renderRecord).join('');
+        } catch (err) {
+            console.error(err);
+            wrap.style.display = 'none';
+        }
+    }
+
+    function v(label, value, suffix) {
+        if (value === null || value === undefined || value === '') return '';
+        return `<span><b>${label}:</b> ${value}${suffix || ''}</span>`;
+    }
+
+    function renderRecord(r) {
+        let vals = '';
+        if (r.cmp_type === 'cmp3') {
+            vals += v('School Grade', r.school_grade);
+            vals += v('Axial Length', r.axial_length, ' mm');
+            vals += v('Dilated Refraction', r.dilated_refraction, ' D');
+            vals += v('Screen Time', r.avg_daily_screen_time, ' hrs');
+            vals += v('Outdoor Time', r.avg_daily_outdoor_time, ' hrs');
+            vals += v('Eye Muscle Status', r.eye_muscle_status);
+        } else {
+            vals += v('HbA1c', r.hba1c_value, ' %');
+            vals += v('Diabetes Type', r.diabetes_type_display);
+            vals += v('Kidney Disease', r.has_kidney_disease === null ? '' : (r.has_kidney_disease ? 'Yes' : 'No'));
+            vals += v('Exercise', r.exercise_frequency);
+            vals += v('Medications', r.current_diabetes_medications);
+            if (r.hba1c_report) vals += `<span><b>HbA1c Report:</b> <a href="${r.hba1c_report}" target="_blank">View</a></span>`;
+            if (r.kft_report) vals += `<span><b>KFT Report:</b> <a href="${r.kft_report}" target="_blank">View</a></span>`;
+        }
+        return `
+            <div class="history-card">
+                <div class="meta">
+                    <strong style="color: var(--primary);">${r.recorded_at}</strong>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">${r.cmp_type_display} · by ${r.optometrist}</span>
+                </div>
+                <div class="vals">${vals || '<span style="color:var(--text-muted)">No values recorded</span>'}</div>
+            </div>`;
+    }
+
+    document.getElementById('cmpForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const btn = document.getElementById('saveBtn');
+        btn.disabled = true;
+        btn.innerText = 'Saving...';
+
+        try {
+            const fd = new FormData(form);  // multipart -> supports file uploads
+            const res = await fetch('{% url "cmp_create_api" %}', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}`, 'X-CSRFToken': csrfToken },
+                body: fd
+            });
+            const result = await res.json();
+            if (res.ok) {
+                alert('CMP record saved successfully.');
+                // Reset clinical inputs but keep patient loaded; refresh history
+                form.querySelectorAll('input[type=number], input[type=text], input[type=file], textarea').forEach(el => el.value = '');
+                form.querySelectorAll('select[name=diabetes_type], select[name=has_kidney_disease]').forEach(el => el.value = '');
+                loadHistory(document.getElementById('formPhone').value);
+            } else {
+                alert('Error: ' + (result.error || JSON.stringify(result)));
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save CMP record.');
+        } finally {
+            btn.disabled = false;
+            btn.innerText = 'Save CMP Record';
+        }
+    });
+
+    // Prefill phone from query string (e.g. linked from dashboard)
+    document.addEventListener('DOMContentLoaded', () => {
+        const params = new URLSearchParams(window.location.search);
+        const phone = params.get('phone');
+        if (phone) {
+            document.getElementById('lookupPhone').value = phone;
+            loadPatient();
+        }
+    });
+</script>
+{% endblock content %}
