@@ -10,8 +10,8 @@
     <form id="loginForm" method="POST">
         {% csrf_token %}
         <div class="form-group">
-            <label for="phone_number">Phone Number</label>
-            <input type="tel" id="phone_number" name="phone_number" placeholder="+1 (555) 000-0000" required>
+            <label for="phone_number">Patient ID</label>
+            <input type="text" id="phone_number" name="phone_number" placeholder="ES-123456" required>
         </div>
 
         <div class="form-group">

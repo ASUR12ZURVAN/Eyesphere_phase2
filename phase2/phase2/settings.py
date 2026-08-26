@@ -85,8 +85,8 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-'''
 # Local SQLite database configuration (disabled for now).
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -106,6 +106,7 @@ if neon_db and 'postgresql' in neon_db and not use_sqlite:
     }
 
 #test data
+
 
 
 

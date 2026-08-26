@@ -159,6 +159,18 @@ class Patient(models.Model):
         default='not_classified',
         help_text="Categorize patients based on risk for future segregation"
     )
+    is_cmp_patient = models.BooleanField(default=False, help_text="Whether this patient is enrolled in a Chronic Management Program (CMP)")
+    cmp_type = models.CharField(
+        max_length=10,
+        choices=[
+            ('cmp1', 'CMP1 - Standard Diabetic CMP'),
+            ('cmp2', 'CMP2 - Advanced Diabetic CMP'),
+            ('cmp3', 'CMP3 - Pediatric Myopia CMP'),
+        ],
+        blank=True,
+        null=True,
+        help_text="The CMP program the patient is enrolled under (set during onboarding)",
+    )
     has_received_reward = models.BooleanField(default=False, help_text="Track if patient received coins for completing profile")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -276,3 +288,64 @@ class UserLoginStat(models.Model):
 
     def __str__(self):
         return f"{self.user.name} - {self.year_month}: {self.login_count}"
+
+
+class DailyTopTen(models.Model):
+    date = models.DateField(unique=True)
+    top_users_data = models.JSONField(default=list, help_text="Stores a snapshot of the top 10 users for this day")
+
+    class Meta:
+        verbose_name = "Daily Top Ten"
+        verbose_name_plural = "Daily Top Tens"
+        ordering = ['-date']
+
+
+class DailyUserUsage(models.Model):
+    user = models.ForeignKey(Optometrist, on_delete=models.CASCADE, related_name='daily_usages')
+    date = models.DateField()
+    total_seconds = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Daily User Usage"
+        verbose_name_plural = "Daily User Usages"
+        ordering = ['-date', '-total_seconds']
+        unique_together = ('user', 'date')
+
+
+class CMPRecord(models.Model):
+    CMP_TYPES = [
+        ('cmp1', 'CMP1 - Standard Diabetic CMP'),
+        ('cmp2', 'CMP2 - Advanced Diabetic CMP'),
+        ('cmp3', 'CMP3 - Pediatric Myopia CMP'),
+    ]
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='cmp_records')
+    optometrist = models.ForeignKey(
+        Optometrist,
+        on_delete=models.SET_NULL,
+        related_name='cmp_records_entered',
+        limit_choices_to={'role': 'optometrist'},
+        blank=True,
+        null=True,
+        help_text='Optometrist who recorded this entry',
+    )
+    cmp_type = models.CharField(max_length=10, choices=CMP_TYPES)
+    hba1c_value = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True, help_text='HbA1c value (%)')
+    hba1c_report = models.FileField(upload_to='cmp/hba1c_reports/', blank=True, null=True)
+    kft_report = models.FileField(upload_to='cmp/kft_reports/', blank=True, null=True)
+    diabetes_type = models.CharField(max_length=10, choices=[('type1', 'Type 1'), ('type2', 'Type 2')], blank=True, null=True)
+    current_diabetes_medications = models.TextField(blank=True, null=True)
+    has_kidney_disease = models.BooleanField(blank=True, null=True, help_text='Presence of kidney disease (Yes/No)')
+    exercise_frequency = models.CharField(max_length=100, blank=True, null=True)
+    school_grade = models.CharField(max_length=50, blank=True, null=True)
+    axial_length = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True)
+    dilated_refraction = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    avg_daily_screen_time = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    avg_daily_outdoor_time = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    eye_muscle_status = models.CharField(max_length=200, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'CMP Clinical Record'
+        verbose_name_plural = 'CMP Clinical Records'
+        ordering = ['-recorded_at']
