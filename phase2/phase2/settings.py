@@ -93,6 +93,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 '''
 
 neon_db = config('NEON_DB_URL', default=config('DATABASE_URL', default=''))

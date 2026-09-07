@@ -198,7 +198,7 @@ class EyeExamination(models.Model):
     pinhole_vision_re = models.CharField(max_length=20, blank=True)
     corrected_vision_re = models.CharField(max_length=20, blank=True)
     # Left Eye (LE)
-    uncorrected_vision_le = models.CharField(max_length=20, blank=True)
+    uncorrected_vision_le = models.CharField(max_length=21, blank=True)
     pinhole_vision_le = models.CharField(max_length=20, blank=True)
     corrected_vision_le = models.CharField(max_length=20, blank=True)
     

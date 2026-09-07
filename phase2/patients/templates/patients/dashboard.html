@@ -1636,6 +1636,36 @@
 
                 <div class="card" style="margin-top:2rem;">
                     <div class="card-header">
+                        <h2>My Bookings</h2>
+                        <span>Your scheduled eye-care tests</span>
+                    </div>
+                    <div class="card-body">
+                        {% if bookings %}
+                        <div style="overflow-x:auto;">
+                            <table class="results-table">
+                                <thead>
+                                    <tr><th>Date</th><th>Time</th><th>Tests</th><th>Total</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for booking in bookings %}
+                                    <tr>
+                                        <td>{{ booking.booking_date|date:"d,m,Y" }}</td>
+                                        <td>{{ booking.booking_time|time:"H:i" }}</td>
+                                        <td>{% for test_name, price in booking.tests.items %}{{ test_name }} (&#8377;{{ price }}){% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                                        <td style="font-weight:600;">&#8377;{{ booking.total_price|floatformat:2 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div style="text-align:center;padding:1.5rem;color:var(--text-muted);">No bookings yet.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:2rem;">
+                    <div class="card-header">
                         <h2>Send Your Query 💬</h2>
                         <span>Fill in the form below and submit your query to our team</span>
                     </div>

@@ -2,10 +2,11 @@ from django.urls import path
 from .views import (
     RegisterPatient, LoginPatient, PatientDashboardView,
     VisionTestView, ColorBlindTestView, OSDITestView, BlinkTestView,
-    SaveScreeningResultView, PatientLogoutView, RequestOnlineSessionView,
+    SaveScreeningResultView, GetScreeningResultsView, PatientLogoutView, RequestOnlineSessionView,
     DownloadScreeningPDFView, DownloadExamPDFView, UpdateRetentionTimeView,
     UpdatePatientProfileView, RedeemServiceView, GetOptometristsView, BookHomeTestView, GetPatientProfileView,
     SubmitPatientQueryView, RequestOTPView, ResetPasswordView, ChangePasswordView,
+    AppointmentBookingView,
     PatientOnboardingView, OnboardPatientApiView
 )
 
@@ -26,6 +27,7 @@ urlpatterns = [
     # API endpoints
     path('api/onboard/', OnboardPatientApiView.as_view(), name='api_onboard_patient'),
     path('api/save-screening-result/', SaveScreeningResultView.as_view(), name='save_screening_result'),
+    path('api/screening-results/', GetScreeningResultsView.as_view(), name='get_screening_results'),
     path('api/request-session/', RequestOnlineSessionView.as_view(), name='request_online_session'),
     path('api/update-retention/', UpdateRetentionTimeView.as_view(), name='update_retention_time'),
     
@@ -38,6 +40,7 @@ urlpatterns = [
     path('api/book-home-test/', BookHomeTestView.as_view(), name='book_home_test'),
     path('api/get-profile/', GetPatientProfileView.as_view(), name='get_patient_profile_api'),
     path('api/submit-query/', SubmitPatientQueryView.as_view(), name='submit_patient_query'),
+    path('api/bookings/', AppointmentBookingView.as_view(), name='patient_bookings'),
     path('api/request-otp/', RequestOTPView.as_view(), name='request_otp'),
     path('api/reset-password/', ResetPasswordView.as_view(), name='reset_password'),
     path('api/change-password/', ChangePasswordView.as_view(), name='change_password'),

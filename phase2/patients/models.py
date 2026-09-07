@@ -160,3 +160,22 @@ class PatientQuery(models.Model):
 
     def __str__(self):
         return f"Query from {self.name} on {self.created_at.strftime('%d %b %Y')}"
+
+
+class AppointmentBooking(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='appointment_bookings'
+    )
+    booking_date = models.DateField()
+    booking_time = models.TimeField()
+    tests = models.JSONField(help_text="Mapping of test names to prices")
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-booking_date', '-booking_time', '-created_at']
+
+    def __str__(self):
+        return f"Booking for {self.user.name} on {self.booking_date} at {self.booking_time}"
