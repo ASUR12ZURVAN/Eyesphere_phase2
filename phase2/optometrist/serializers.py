@@ -124,16 +124,10 @@ class EyeExaminationSerializer(serializers.ModelSerializer):
             else:
                  raise serializers.ValidationError({"error": "No available doctor to assign."})
         elif not consultant and bypass:
-            # For bypass, we can still assign a doctor as their "assigned" doctor for record, 
-            # but we don't strictly need them for approval. 
-            # Assigning first active doctor for records.
             doctor = Optometrist.objects.filter(role='doctor', is_active=True).first()
             if doctor:
                 validated_data['consultant'] = doctor
         
-        # Check if an examination for this patient already exists for this doctor and is not completed
-        # The prompt says "if it had previously been sent to doctor then replace it with updated one"
-        # We'll update the existing one if it exists.
         existing_exam = EyeExamination.objects.filter(patient=patient, consultant=consultant, is_completed=False).first()
         
         if existing_exam:

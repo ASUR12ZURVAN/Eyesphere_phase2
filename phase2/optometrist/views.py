@@ -133,6 +133,7 @@ class EyeExaminationDetailView(generics.RetrieveUpdateAPIView):
     serializer_class = EyeExaminationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class ExaminationByPhoneView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     

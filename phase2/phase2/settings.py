@@ -22,11 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = 'django-insecure-53(3dg4towtgp1$-sv8)0^^9rmrm2gvvj_65v7zs6nc7@2$i@#'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -85,7 +84,7 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-'''
+
 # Local SQLite database configuration (disabled).
 DATABASES = {
     'default': {
@@ -104,7 +103,7 @@ DATABASES = {
         ssl_require=True
     )
 }
-
+'''
 #test data
 
 
@@ -184,7 +183,7 @@ SIMPLE_JWT = {
 }
 
 # Email Configuration (SMTP)
-# These settings allow Django to send actual emails via an SMTP server (like Gmail, SendGrid, etc.)
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)

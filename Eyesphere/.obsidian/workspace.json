@@ -6,6 +6,7 @@
       {
         "id": "191107ab6bd085b3",
         "type": "tabs",
+        "dimension": 83.43908629441624,
         "children": [
           {
             "id": "052002d36de50aa8",
@@ -13,12 +14,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Compliance and Improvement.md",
+                "file": "ARCHITECTURE_DOCUMENTATION.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Compliance and Improvement"
+              "title": "ARCHITECTURE_DOCUMENTATION"
             },
             "group": "72d98ce1466d887b"
           }
@@ -27,6 +28,7 @@
       {
         "id": "07187afaa98980b5",
         "type": "tabs",
+        "dimension": 16.560913705583758,
         "children": [
           {
             "id": "b214eb2888dd06e1",
@@ -34,7 +36,7 @@
             "state": {
               "type": "localgraph",
               "state": {
-                "file": "Compliance and Improvement.md",
+                "file": "ARCHITECTURE_DOCUMENTATION.md",
                 "options": {
                   "collapse-filter": true,
                   "search": "",
@@ -62,7 +64,7 @@
                 }
               },
               "icon": "lucide-git-fork",
-              "title": "Graph of Compliance and Improvement"
+              "title": "Graph of ARCHITECTURE_DOCUMENTATION"
             },
             "group": "72d98ce1466d887b"
           }
@@ -86,7 +88,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -98,7 +102,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "tag:#EyeSphere",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -228,8 +232,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "b214eb2888dd06e1",
+  "active": "052002d36de50aa8",
   "lastOpenFiles": [
+    "Untitled",
     "Compliance and Improvement.md"
   ]
 }
