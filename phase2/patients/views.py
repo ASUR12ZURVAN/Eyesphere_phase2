@@ -8,11 +8,19 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from optometrist.models import Optometrist, Patient, EyeExamination
-from .models import ScreeningTestResult, OnlineSessionRequest, RedeemableService, RedemptionTicket, HomeTestRequest, PatientQuery
+from .models import (
+    ScreeningTestResult, OnlineSessionRequest, RedeemableService,
+    RedemptionTicket, HomeTestRequest, PatientQuery, AppointmentBooking,
+)
+import logging
 import json
 import random
 import secrets
+import smtplib
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -20,6 +28,11 @@ from datetime import timedelta
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.http import HttpResponse
+from datetime import datetime
+from decimal import Decimal, InvalidOperation
+
+logger = logging.getLogger(__name__)
+
 
 class CsrfExemptSessionAuth(SessionAuthentication):
     """Skip CSRF check for session auth — our templates already send X-CSRFToken header."""
@@ -121,11 +134,18 @@ class LoginPatient(APIView):
     def post(self, request):
         phone_number = request.data.get('phone_number')
         patient_id = request.data.get('patient_id') or request.data.get('username')
+        identifier = str(request.data.get('identifier') or patient_id or phone_number or '').strip()
         password = request.data.get('password')
+
+        if '@' in identifier:
+            patient_account = Optometrist.objects.filter(email__iexact=identifier, role='patient').first()
+            phone_number = patient_account.phone_number if patient_account else None
+        else:
+            phone_number = identifier
 
         # Patient IDs are printed on the onboarding confirmation and are also
         # accepted as usernames; phone-number login remains backwards compatible.
-        supplied_username = patient_id or phone_number
+        supplied_username = identifier
         if supplied_username and str(supplied_username).upper().startswith('ES-'):
             patient = Patient.objects.filter(patient_account_id=supplied_username).first()
             phone_number = patient.phone_number if patient else None
@@ -207,6 +227,7 @@ class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context['examinations'] = examinations
         context['screening_results'] = screening_results
         context['session_requests'] = OnlineSessionRequest.objects.filter(user=user).order_by('-created_at')
+        context['bookings'] = AppointmentBooking.objects.filter(user=user)
         
         # Redemption data
         context['redeemable_services'] = RedeemableService.objects.all()
@@ -277,6 +298,48 @@ class SaveScreeningResultView(APIView):
             return Response({'status': 'success', 'message': 'Result saved successfully!'})
         except Exception as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class GetScreeningResultsView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'patient':
+            return Response({'error': 'Only patients can view screening results.'}, status=status.HTTP_403_FORBIDDEN)
+
+        results = ScreeningTestResult.objects.filter(user=request.user)
+        test_type = request.query_params.get('test_type')
+        if test_type:
+            if test_type not in {'vision', 'colorblind', 'dryeye', 'blink'}:
+                return Response({'error': 'Invalid test type.'}, status=status.HTTP_400_BAD_REQUEST)
+            results = results.filter(test_type=test_type)
+
+        serialized_results = []
+        for result in results:
+            if result.test_type == 'vision':
+                normalized_result = {
+                    'left_eye': result.result_data.get('left_eye'),
+                    'right_eye': result.result_data.get('right_eye'),
+                }
+            else:
+                normalized_result = {
+                    'score': result.score,
+                }
+
+            serialized_results.append({
+                'id': result.id,
+                'test_type': result.test_type,
+                'result': normalized_result,
+                'result_data': result.result_data,
+                'score': result.score,
+                'created_at': result.created_at.isoformat(),
+            })
+
+        return Response({
+            'status': 'success',
+            'results': serialized_results,
+        })
 
 
 class PatientLogoutView(APIView):
@@ -509,11 +572,43 @@ class RedeemServiceView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
+
+
+class PasswordChangeTokenGenerator(PasswordResetTokenGenerator):
+    key_salt = 'patients.PasswordChangeTokenGenerator'
+
+
+password_change_token_generator = PasswordChangeTokenGenerator()
+
+
+def _send_password_verification_email(user, subject, purpose, token_generator=default_token_generator):
+    if not user.email:
+        return False
+
+    token = token_generator.make_token(user)
+    message = (
+        f'Hello {user.name},\n\n'
+        f'Your EyeSphere {purpose} verification code is: {token}\n\n'
+        'If you did not request this, you can ignore this email.'
+    )
+    try:
+        sent = send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+    except (OSError, smtplib.SMTPException):
+        logger.exception('Could not send %s verification email to user %s', purpose, user.pk)
+        return False
+    return sent == 1
+
 
 class RequestOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         phone_number = request.data.get('phone_number')
         if not phone_number:
@@ -524,29 +619,20 @@ class RequestOTPView(APIView):
             
         if not user.email:
             return Response({'error': 'No email address registered for this account. Please contact support.'}, status=400)
-        
-        token = default_token_generator.make_token(user)
-        
-        try:
-            send_mail(
-                'Password Reset Token - EyeSphere',
-                f'Hello {user.name},\n\nYour password reset token is: {token}\n\nPlease copy and paste this token into the portal to securely reset your password.',
-                'noreply@eyesphere.com',
-                [user.email],
-                fail_silently=False,
+
+        if not _send_password_verification_email(
+            user,
+            'Password Reset Verification - EyeSphere',
+            'password reset',
+        ):
+            return Response(
+                {'error': 'Unable to send a verification email. Please try again or contact support.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-            # Print token to console for testing locally
-            print(f"\n========== Sent Email to {user.email} with token: {token} ==========\n")
-            
-            # Mask the email for privacy in the response
-            email_parts = user.email.split('@')
-            masked_email = f"{email_parts[0][:2]}***@{email_parts[1]}"
-            return Response({'message': f'Reset token sent to {masked_email}.'})
-        except Exception as e:
-            print(f"Email failed: {e}")
-            # Fallback for development if email server isn't configured
-            print(f"\n========== Email Failed. Token for {phone_number} is {token} ==========\n")
-            return Response({'message': 'Reset token generated (Check console since email failed).'})
+
+        email_parts = user.email.split('@', 1)
+        masked_email = f'{email_parts[0][:2]}***@{email_parts[1]}'
+        return Response({'message': f'Reset verification code sent to {masked_email}.'})
 
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -564,27 +650,72 @@ class ResetPasswordView(APIView):
             
         if not default_token_generator.check_token(user, token):
             return Response({'error': 'Invalid or expired reset token'}, status=400)
-            
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            return Response({'error': '; '.join(exc.messages)}, status=400)
+
         user.set_password(new_password)
         user.save()
         
         return Response({'message': 'Password reset successfully. You can now login.'})
 
+
+class RequestChangePasswordOTPView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not user.email:
+            return Response(
+                {'error': 'No email address is registered for this account. Please contact support.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not _send_password_verification_email(
+            user,
+            'Password Change Verification - EyeSphere',
+            'password change',
+            password_change_token_generator,
+        ):
+            return Response(
+                {'error': 'Unable to send a verification email. Please try again or contact support.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response({'message': 'Verification code sent to your registered email address.'})
+
+
 class ChangePasswordView(APIView):
     authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
+        old_password = request.data.get('old_password')
+        token = request.data.get('otp')
         new_password = request.data.get('new_password')
         confirm_password = request.data.get('confirm_password')
-        
-        if not all([new_password, confirm_password]):
-            return Response({'error': 'New password and confirm password are required'}, status=400)
-            
+
+        if not all([old_password, token, new_password, confirm_password]):
+            return Response({'error': 'Current password, verification code, and new password fields are required'}, status=400)
+
+        user = request.user
+        if not user.check_password(old_password):
+            return Response({'error': 'Current password is incorrect'}, status=400)
+
+        if not password_change_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired verification code'}, status=400)
+
         if new_password != confirm_password:
             return Response({'error': 'Passwords do not match'}, status=400)
-            
-        user = request.user
-            
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            return Response({'error': '; '.join(exc.messages)}, status=400)
+
         user.set_password(new_password)
         user.save()
         
@@ -662,6 +793,91 @@ class SubmitPatientQueryView(APIView):
             return Response({'status': 'success', 'message': 'Query submitted successfully'})
         except Exception as e:
             return Response({'error': str(e)}, status=400)
+
+
+class AppointmentBookingView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def _patient_only(self, request):
+        if request.user.role != 'patient':
+            return Response({'error': 'Only patients can manage bookings.'}, status=status.HTTP_403_FORBIDDEN)
+        return None
+
+    def _serialize(self, booking):
+        return {
+            'id': booking.id,
+            'date': booking.booking_date.strftime('%d,%m,%Y'),
+            'time': booking.booking_time.strftime('%H:%M'),
+            'tests': booking.tests,
+            'total_price': str(booking.total_price),
+            'created_at': booking.created_at.isoformat(),
+        }
+
+    def get(self, request):
+        unauthorized = self._patient_only(request)
+        if unauthorized:
+            return unauthorized
+
+        bookings = AppointmentBooking.objects.filter(user=request.user)
+        return Response({
+            'status': 'success',
+            'bookings': [self._serialize(booking) for booking in bookings],
+        })
+
+    def post(self, request):
+        unauthorized = self._patient_only(request)
+        if unauthorized:
+            return unauthorized
+
+        date_value = request.data.get('date')
+        time_value = request.data.get('time')
+        tests = request.data.get('tests')
+
+        if not date_value or not time_value or not isinstance(tests, dict) or not tests:
+            return Response({
+                'error': 'date, time, and a non-empty tests dictionary are required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            booking_date = datetime.strptime(str(date_value), '%d,%m,%Y').date()
+        except (TypeError, ValueError):
+            return Response({'error': 'date must use dd,mm,yyyy format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            booking_time = datetime.strptime(str(time_value), '%H:%M').time()
+        except (TypeError, ValueError):
+            try:
+                booking_time = datetime.strptime(str(time_value), '%H:%M:%S').time()
+            except (TypeError, ValueError):
+                return Response({'error': 'time must use HH:MM format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        normalized_tests = {}
+        total_price = Decimal('0.00')
+        for test_name, price in tests.items():
+            if not isinstance(test_name, str) or not test_name.strip():
+                return Response({'error': 'Each test name must be a non-empty string.'}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                decimal_price = Decimal(str(price))
+            except (InvalidOperation, TypeError, ValueError):
+                return Response({'error': f'Invalid price for test: {test_name}.'}, status=status.HTTP_400_BAD_REQUEST)
+            if not decimal_price.is_finite() or decimal_price < 0:
+                return Response({'error': f'Price for {test_name} must be a non-negative number.'}, status=status.HTTP_400_BAD_REQUEST)
+            normalized_tests[test_name.strip()] = str(decimal_price.quantize(Decimal('0.01')))
+            total_price += decimal_price
+
+        booking = AppointmentBooking.objects.create(
+            user=request.user,
+            booking_date=booking_date,
+            booking_time=booking_time,
+            tests=normalized_tests,
+            total_price=total_price.quantize(Decimal('0.01')),
+        )
+        return Response({
+            'status': 'success',
+            'message': 'Booking created successfully.',
+            'booking': self._serialize(booking),
+        }, status=status.HTTP_201_CREATED)
 
 
 def send_patient_credentials_email(
@@ -1011,4 +1227,3 @@ class OnboardPatientApiView(APIView):
             import traceback
             traceback.print_exc()
             return Response({'error': f'Failed to onboard patient: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

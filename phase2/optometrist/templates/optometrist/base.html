@@ -11,15 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --secondary: #db2777;
+            --primary: #0d5962;
+            --primary-hover: #08454d;
+            --secondary: #dc6b91;
             --bg-gradient: #f8fafc;
             --glass-bg: #ffffff;
             --glass-border: #e2e8f0;
             --text-main: #0f172a;
-            --text-muted: #64748b;
-            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --text-muted: #5f7580;
+            --card-shadow: 0 10px 25px -5px rgba(13, 58, 79, 0.06), 0 8px 10px -6px rgba(13, 58, 79, 0.04);
         }
 
         * {
@@ -27,6 +27,18 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Outfit', sans-serif;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         body {
@@ -181,11 +193,11 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--glass-border);
-            padding: 1rem 2rem;
+            padding: 0.65rem max(1.25rem, calc((100vw - 1200px) / 2));
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -222,19 +234,74 @@
 
         .header-nav {
             display: flex;
-            gap: 1.5rem;
+            gap: 1.35rem;
             align-items: center;
         }
 
         .nav-link {
-            color: var(--text-muted);
+            color: var(--text-main);
             text-decoration: none;
-            font-weight: 500;
+            font-size: 0.9rem;
+            font-weight: 600;
             transition: color 0.2s ease;
         }
 
         .nav-link:hover {
             color: var(--primary);
+        }
+
+        .site-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .site-brand img {
+            width: 46px;
+            height: 46px;
+            object-fit: contain;
+        }
+
+        .site-brand-copy {
+            display: grid;
+            line-height: 1.05;
+        }
+
+        .site-brand-copy strong {
+            font-size: 1.2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .site-brand-copy small {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .language-select {
+            border: 1px solid var(--glass-border);
+            border-radius: 9px;
+            background: #fff;
+            color: var(--text-main);
+            padding: 0.45rem 0.55rem;
+            font: inherit;
+            font-size: 0.82rem;
+        }
+
+        .header-cta {
+            color: #fff;
+            background: var(--primary);
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .header-cta:hover {
+            background: var(--primary-hover);
         }
 
         /* Proper Footer Styles */
@@ -301,20 +368,75 @@
             font-weight: 600;
             color: var(--text-main);
         }
+
+        @media (max-width: 760px) {
+            .site-header {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                padding: 0.65rem 1rem;
+            }
+
+            .header-nav {
+                order: 3;
+                width: 100%;
+                overflow-x: auto;
+                gap: 1.15rem;
+                padding: 0.2rem 0 0.35rem;
+            }
+
+            .nav-link {
+                white-space: nowrap;
+            }
+
+            .site-brand {
+                margin-right: auto;
+            }
+
+            .site-brand img {
+                width: 38px;
+                height: 38px;
+            }
+
+            .site-brand-copy strong {
+                font-size: 1.05rem;
+            }
+
+            .header-cta {
+                padding: 0.55rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .container {
+                padding: 1.25rem 1rem;
+            }
+        }
     </style>
     {% block extra_head %}{% endblock extra_head %}
 </head>
 
 <body>
-    <header class="site-header animate-fade-in">
-        <a href="{% url 'landing_page' %}" class="logo-link">
-            <img src="{% static 'eyesphere_logo.jpg' %}" alt="EyeSphere Logo" style="height: 52px; border-radius: 10px; object-fit: contain;">
+    <header class="site-header">
+        <a href="{% url 'landing_page' %}" class="site-brand" aria-label="NetraScreen by Eyesphere">
+            <img src="{% static 'eyesphere_logo.jpg' %}" alt="Eyesphere logo">
+            <span class="site-brand-copy">
+                <strong>NetraScreen</strong>
+                <small>by Eyesphere</small>
+            </span>
         </a>
         <nav class="header-nav">
-            <a href="#" class="nav-link">About Us</a>
-            <a href="#" class="nav-link">Services</a>
-            <a href="#" class="nav-link">Contact</a>
+            <a href="{% url 'landing_page' %}" class="nav-link" data-en="Home" data-hi="होम">Home</a>
+            <a href="{% url 'landing_page' %}#about" class="nav-link" data-en="About Us" data-hi="हमारे बारे में">About Us</a>
+            <a href="{% url 'landing_page' %}#services" class="nav-link" data-en="Services" data-hi="सेवाएँ">Services</a>
+            <a href="{% url 'landing_page' %}#corporates" class="nav-link" data-en="For Corporates" data-hi="कॉर्पोरेट के लिए">For Corporates</a>
+            <a href="{% url 'landing_page' %}#resources" class="nav-link" data-en="Resources" data-hi="संसाधन">Resources</a>
+            <a href="{% url 'landing_page' %}#contact" class="nav-link" data-en="Contact" data-hi="संपर्क">Contact</a>
         </nav>
+        <label class="sr-only" for="site-language">Language</label>
+        <select id="site-language" class="language-select" aria-label="Select language">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी</option>
+        </select>
+        <a href="{% url 'patient_login_page' %}" class="header-cta" data-en="Get Started" data-hi="शुरू करें">Get Started</a>
     </header>
 
     <main class="container">
@@ -347,6 +469,13 @@
                     <li><a href="{% url 'terms_of_service' %}">Terms of Service</a></li>
                 </ul>
             </div>
+            <div class="footer-col">
+                <h4 data-en="Support" data-hi="सहायता">Support</h4>
+                <ul>
+                    <li><a href="{% url 'landing_page' %}#resources" data-en="FAQs & Help" data-hi="अक्सर पूछे जाने वाले प्रश्न">FAQs &amp; Help</a></li>
+                    <li><a href="{% url 'landing_page' %}#contact" data-en="Contact Support" data-hi="सहायता से संपर्क करें">Contact Support</a></li>
+                </ul>
+            </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 EyeSphere. All rights reserved.</p>
@@ -354,6 +483,21 @@
     </footer>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+
+            const languageSelect = document.getElementById('site-language');
+            const savedLanguage = localStorage.getItem('netrascreen-language') || 'en';
+            languageSelect.value = savedLanguage;
+
+            function applyLanguage(language) {
+                document.documentElement.lang = language;
+                document.querySelectorAll('[data-en][data-hi]').forEach((element) => {
+                    element.textContent = element.dataset[language];
+                });
+                localStorage.setItem('netrascreen-language', language);
+            }
+
+            applyLanguage(savedLanguage);
+            languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
 
             // ===== Retention Time Tracking =====
             const RETENTION_URL = '/patient/api/update-retention/';

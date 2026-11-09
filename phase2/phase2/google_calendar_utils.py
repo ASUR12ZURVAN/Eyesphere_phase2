@@ -10,8 +10,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 def get_calendar_service():
     """Builds and returns a Google Calendar service object."""
-    # Try to get credentials from environment variables
-    # This assumes a persistent refresh token is available (configured once)
+    
     client_id = config('GOOGLE_CLIENT_ID', default=None)
     client_secret = config('GOOGLE_CLIENT_SECRET', default=None)
     refresh_token = config('GOOGLE_REFRESH_TOKEN', default=None)
@@ -57,8 +56,7 @@ def create_meet_event(start_time, summary="Online Eye Consultation", duration_mi
     else:
         start_dt = start_time
 
-    # Ensure it's offset-aware if needed, but here we'll assume local/UTC
-    # For simplicity, we'll treat it as standard
+
     end_dt = start_dt + datetime.timedelta(minutes=duration_minutes)
 
     event = {

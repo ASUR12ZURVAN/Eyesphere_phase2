@@ -1,3 +1,14 @@
+import logging
+import smtplib
+from io import BytesIO
+
+import qrcode
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+from django.views import View
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -7,8 +18,11 @@ from .models import Optometrist
 from .serializers import OptometristSerializer, OptometristProfileSerializer
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.urls import reverse
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+logger = logging.getLogger(__name__)
 
 class OptometristDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'optometrist/dashboard.html'
@@ -33,6 +47,90 @@ class OptometristDashboardPageView(LoginRequiredMixin, UserPassesTestMixin, Temp
 
 class LandingPageView(TemplateView):
     template_name = 'optometrist/landing.html'
+
+
+class CorporateCampQRView(View):
+    def get(self, request, *args, **kwargs):
+        registration_url = request.build_absolute_uri(reverse('patient_onboarding'))
+        qr_code = qrcode.make(registration_url)
+        image_buffer = BytesIO()
+        qr_code.save(image_buffer, format='PNG')
+        response = HttpResponse(image_buffer.getvalue(), content_type='image/png')
+        response['Cache-Control'] = 'public, max-age=3600'
+        return response
+
+
+class CorporateEnquiryAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        name = str(request.data.get('name') or '').strip()
+        organization = str(request.data.get('organization') or '').strip()
+        email = str(request.data.get('email') or '').strip()
+        phone = str(request.data.get('phone') or '').strip()
+        message = str(request.data.get('message') or '').strip()
+
+        if not name or not organization or not email:
+            return Response(
+                {'error': 'Name, organization, and work email are required.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if len(name) > 120 or len(organization) > 160 or len(email) > 254 or len(phone) > 30 or len(message) > 2000:
+            return Response(
+                {'error': 'One or more fields exceed the allowed length.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            validate_email(email)
+        except ValidationError:
+            return Response({'error': 'Enter a valid email address.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        recipient = getattr(settings, 'CORPORATE_ENQUIRY_EMAIL', '')
+        if not recipient:
+            return Response(
+                {'error': 'Corporate enquiries are not configured yet. Please contact your site administrator.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        try:
+            validate_email(recipient)
+        except ValidationError:
+            logger.error('Corporate enquiry recipient is not a valid email address')
+            return Response(
+                {'error': 'Corporate enquiries are not configured yet. Please contact your site administrator.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        body = (
+            f'Name: {name}\n'
+            f'Organization: {organization}\n'
+            f'Email: {email}\n'
+            f'Phone: {phone or "Not provided"}\n\n'
+            f'Message:\n{message or "No additional details provided."}'
+        )
+        try:
+            email_message = EmailMessage(
+                subject='NetraScreen corporate eye camp enquiry',
+                body=body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[recipient],
+                reply_to=[email],
+            )
+            sent = email_message.send(fail_silently=False)
+            if not sent:
+                logger.error('Email backend did not deliver corporate enquiry from %s', email)
+                return Response(
+                    {'error': 'We could not deliver your enquiry. Please try again later.'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+        except (OSError, smtplib.SMTPException):
+            logger.exception('Could not deliver a corporate eye camp enquiry from %s', email)
+            return Response(
+                {'error': 'We could not deliver your enquiry. Please try again later.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response({'message': 'Thank you. Your corporate eye camp enquiry has been sent.'})
+
 
 class RegisterOptometrist(generics.CreateAPIView):
     queryset = Optometrist.objects.all()
@@ -132,6 +230,7 @@ class EyeExaminationDetailView(generics.RetrieveUpdateAPIView):
     queryset = EyeExamination.objects.all()
     serializer_class = EyeExaminationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
 class ExaminationByPhoneView(APIView):
     permission_classes = [permissions.IsAuthenticated]

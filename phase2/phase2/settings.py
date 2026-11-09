@@ -22,11 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = 'django-insecure-53(3dg4towtgp1$-sv8)0^^9rmrm2gvvj_65v7zs6nc7@2$i@#'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -84,28 +83,71 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DATABASE_SSL_REQUIRE = config('DATABASE_SSL_REQUIRE', default=True, cast=bool)
 
-# Local SQLite database configuration (disabled for now).
-'''
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-'''
-use_sqlite = config('USE_SQLITE', default=True, cast=bool)
-neon_db = config('NEON_DB_URL', default='')
-if neon_db and 'postgresql' in neon_db and not use_sqlite:
+
+def database_config(database_url):
+    return dj_database_url.parse(
+        database_url,
+        conn_max_age=600,
+        conn_health_checks=True,
+        ssl_require=DATABASE_SSL_REQUIRE,
+    )
+
+
+primary_database_url = config(
+    'NEON_DB_URL',
+    default=config('DATABASE_URL', default=''),
+)
+if primary_database_url:
+    DATABASES = {'default': database_config(primary_database_url)}
+else:
     DATABASES = {
-        'default': dj_database_url.config(
-            default=neon_db,
-            conn_max_age=600,
-            ssl_require=True
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
 
-#test data
+for database_alias, environment_variable in (
+    ('read_replica', 'READ_DATABASE_URL'),
+    ('analytics', 'ANALYTICS_DATABASE_URL'),
+):
+    database_url = config(environment_variable, default='')
+    if database_url:
+        DATABASES[database_alias] = database_config(database_url)
+
+DATABASE_ROUTERS = ['phase2.db_router.PrimaryReplicaRouter']
+
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'KEY_PREFIX': 'eyesphere',
+            'TIMEOUT': 300,
+        }
+    }
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+    SESSION_CACHE_ALIAS = 'default'
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'eyesphere-local',
+        }
+    }
+
+# The broker is consumed only by Celery workers; web requests do not require Redis.
+CELERY_BROKER_URL = config(
+    'CELERY_BROKER_URL',
+    default=REDIS_URL or 'redis://localhost:6379/1',
+)
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 
 
@@ -138,6 +180,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
+CELERY_TIMEZONE = TIME_ZONE
 
 USE_I18N = True
 
@@ -184,7 +227,7 @@ SIMPLE_JWT = {
 }
 
 # Email Configuration (SMTP)
-# These settings allow Django to send actual emails via an SMTP server (like Gmail, SendGrid, etc.)
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
@@ -193,4 +236,6 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 # Your email address and App Password are read from the .env file for security
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='EyeSphere Support <noreply@eyesphere.com>')
+CORPORATE_ENQUIRY_EMAIL = config('CORPORATE_ENQUIRY_EMAIL', default=EMAIL_HOST_USER)
