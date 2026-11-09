@@ -12,10 +12,15 @@ from .models import (
     ScreeningTestResult, OnlineSessionRequest, RedeemableService,
     RedemptionTicket, HomeTestRequest, PatientQuery, AppointmentBooking,
 )
+import logging
 import json
 import random
 import secrets
+import smtplib
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import redirect
 from django.utils import timezone
@@ -25,6 +30,9 @@ from django.views import View
 from django.http import HttpResponse
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
+
+logger = logging.getLogger(__name__)
+
 
 class CsrfExemptSessionAuth(SessionAuthentication):
     """Skip CSRF check for session auth — our templates already send X-CSRFToken header."""
@@ -126,11 +134,18 @@ class LoginPatient(APIView):
     def post(self, request):
         phone_number = request.data.get('phone_number')
         patient_id = request.data.get('patient_id') or request.data.get('username')
+        identifier = str(request.data.get('identifier') or patient_id or phone_number or '').strip()
         password = request.data.get('password')
+
+        if '@' in identifier:
+            patient_account = Optometrist.objects.filter(email__iexact=identifier, role='patient').first()
+            phone_number = patient_account.phone_number if patient_account else None
+        else:
+            phone_number = identifier
 
         # Patient IDs are printed on the onboarding confirmation and are also
         # accepted as usernames; phone-number login remains backwards compatible.
-        supplied_username = patient_id or phone_number
+        supplied_username = identifier
         if supplied_username and str(supplied_username).upper().startswith('ES-'):
             patient = Patient.objects.filter(patient_account_id=supplied_username).first()
             phone_number = patient.phone_number if patient else None
@@ -557,11 +572,43 @@ class RedeemServiceView(APIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
+
+
+class PasswordChangeTokenGenerator(PasswordResetTokenGenerator):
+    key_salt = 'patients.PasswordChangeTokenGenerator'
+
+
+password_change_token_generator = PasswordChangeTokenGenerator()
+
+
+def _send_password_verification_email(user, subject, purpose, token_generator=default_token_generator):
+    if not user.email:
+        return False
+
+    token = token_generator.make_token(user)
+    message = (
+        f'Hello {user.name},\n\n'
+        f'Your EyeSphere {purpose} verification code is: {token}\n\n'
+        'If you did not request this, you can ignore this email.'
+    )
+    try:
+        sent = send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+    except (OSError, smtplib.SMTPException):
+        logger.exception('Could not send %s verification email to user %s', purpose, user.pk)
+        return False
+    return sent == 1
+
 
 class RequestOTPView(APIView):
     permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         phone_number = request.data.get('phone_number')
         if not phone_number:
@@ -572,29 +619,20 @@ class RequestOTPView(APIView):
             
         if not user.email:
             return Response({'error': 'No email address registered for this account. Please contact support.'}, status=400)
-        
-        token = default_token_generator.make_token(user)
-        
-        try:
-            send_mail(
-                'Password Reset Token - EyeSphere',
-                f'Hello {user.name},\n\nYour password reset token is: {token}\n\nPlease copy and paste this token into the portal to securely reset your password.',
-                'noreply@eyesphere.com',
-                [user.email],
-                fail_silently=False,
+
+        if not _send_password_verification_email(
+            user,
+            'Password Reset Verification - EyeSphere',
+            'password reset',
+        ):
+            return Response(
+                {'error': 'Unable to send a verification email. Please try again or contact support.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
-            # Print token to console for testing locally
-            print(f"\n========== Sent Email to {user.email} with token: {token} ==========\n")
-            
-            # Mask the email for privacy in the response
-            email_parts = user.email.split('@')
-            masked_email = f"{email_parts[0][:2]}***@{email_parts[1]}"
-            return Response({'message': f'Reset token sent to {masked_email}.'})
-        except Exception as e:
-            print(f"Email failed: {e}")
-            # Fallback for development if email server isn't configured
-            print(f"\n========== Email Failed. Token for {phone_number} is {token} ==========\n")
-            return Response({'message': 'Reset token generated (Check console since email failed).'})
+
+        email_parts = user.email.split('@', 1)
+        masked_email = f'{email_parts[0][:2]}***@{email_parts[1]}'
+        return Response({'message': f'Reset verification code sent to {masked_email}.'})
 
 class ResetPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -612,27 +650,72 @@ class ResetPasswordView(APIView):
             
         if not default_token_generator.check_token(user, token):
             return Response({'error': 'Invalid or expired reset token'}, status=400)
-            
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            return Response({'error': '; '.join(exc.messages)}, status=400)
+
         user.set_password(new_password)
         user.save()
         
         return Response({'message': 'Password reset successfully. You can now login.'})
 
+
+class RequestChangePasswordOTPView(APIView):
+    authentication_classes = [CsrfExemptSessionAuth]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if not user.email:
+            return Response(
+                {'error': 'No email address is registered for this account. Please contact support.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not _send_password_verification_email(
+            user,
+            'Password Change Verification - EyeSphere',
+            'password change',
+            password_change_token_generator,
+        ):
+            return Response(
+                {'error': 'Unable to send a verification email. Please try again or contact support.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        return Response({'message': 'Verification code sent to your registered email address.'})
+
+
 class ChangePasswordView(APIView):
     authentication_classes = [CsrfExemptSessionAuth]
     permission_classes = [permissions.IsAuthenticated]
+
     def post(self, request):
+        old_password = request.data.get('old_password')
+        token = request.data.get('otp')
         new_password = request.data.get('new_password')
         confirm_password = request.data.get('confirm_password')
-        
-        if not all([new_password, confirm_password]):
-            return Response({'error': 'New password and confirm password are required'}, status=400)
-            
+
+        if not all([old_password, token, new_password, confirm_password]):
+            return Response({'error': 'Current password, verification code, and new password fields are required'}, status=400)
+
+        user = request.user
+        if not user.check_password(old_password):
+            return Response({'error': 'Current password is incorrect'}, status=400)
+
+        if not password_change_token_generator.check_token(user, token):
+            return Response({'error': 'Invalid or expired verification code'}, status=400)
+
         if new_password != confirm_password:
             return Response({'error': 'Passwords do not match'}, status=400)
-            
-        user = request.user
-            
+
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            return Response({'error': '; '.join(exc.messages)}, status=400)
+
         user.set_password(new_password)
         user.save()
         
@@ -1144,4 +1227,3 @@ class OnboardPatientApiView(APIView):
             import traceback
             traceback.print_exc()
             return Response({'error': f'Failed to onboard patient: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-

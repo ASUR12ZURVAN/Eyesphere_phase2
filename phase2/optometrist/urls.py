@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (
     RegisterOptometrist, LoginOptometrist, OptometristListView, OptometristDetailView,
-    OptometristDashboardPageView, LandingPageView, EyeExaminationCreateAPIView, NewExaminationPageView,
+    OptometristDashboardPageView, LandingPageView, CorporateCampQRView, CorporateEnquiryAPIView,
+    EyeExaminationCreateAPIView, NewExaminationPageView,
     EyeExaminationDetailView, ExaminationByPhoneView, PatientHistoryAPIView, PatientInfoByPhoneView,
     OptometristProfileUpdateAPIView, CorporatePatientsAPIView,
     CMPRecordPageView, CMPRecordCreateAPIView, CMPHistoryByPhoneView
@@ -27,6 +28,8 @@ urlpatterns = [
 
     # Template pages
     path('', LandingPageView.as_view(), name='landing_page'),
+    path('corporate/camp-registration-qr.png', CorporateCampQRView.as_view(), name='corporate_camp_qr'),
+    path('corporate/enquiry/', CorporateEnquiryAPIView.as_view(), name='corporate_enquiry_api'),
     path('dashboard/', OptometristDashboardPageView.as_view(), name='optometrist_dashboard'),
     path('new-examination/', NewExaminationPageView.as_view(), name='new_examination_page'),
     path('cmp/new/', CMPRecordPageView.as_view(), name='cmp_record_page'),

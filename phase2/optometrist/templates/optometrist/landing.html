@@ -1,208 +1,834 @@
 {% extends "optometrist/base.html" %}
+{% load static %}
 
-{% block title %}Welcome | EyeSphere Portal{% endblock title %}
+{% block title %}NetraScreen by Eyesphere | Digital Eye Care{% endblock title %}
 
-{% block content %}
-<div class="landing-container animate-fade-in">
-    <div class="landing-header">
-        <h1>Welcome to EyeSphere</h1>
-        <p class="subtitle">Please select your portal to continue</p>
-    </div>
-
-    <div class="options-grid">
-        <!-- Doctor Option -->
-        <a href="{% url 'doctor_login_page' %}" class="option-card doctor-card">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                </svg>
-            </div>
-            <h3>Doctor</h3>
-            <p>Access patient records and specialist tools</p>
-            <div class="card-footer">
-                <span>Enter Portal</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </div>
-        </a>
-
-        <!-- Optometrist Option -->
-        <a href="{% url 'optometrist_login_page' %}" class="option-card optometrist-card">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </div>
-            <h3>Optometrist</h3>
-            <p>Manage eye exams and primary vision care</p>
-            <div class="card-footer">
-                <span>Enter Portal</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </div>
-        </a>
-
-        <!-- Patient Option -->
-        <a href="{% url 'patient_login_page' %}" class="option-card patient-card">
-            <div class="card-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </div>
-            <h3>Patient</h3>
-            <p>View your appointment records and prescriptions</p>
-            <div class="card-footer">
-                <span>Enter Portal</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                    <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-            </div>
-        </a>
-    </div>
-</div>
-
+{% block extra_head %}
 <style>
-    .landing-container {
+    .container:has(.landing-page) {
+        display: block;
+        padding: 0;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .landing-page {
+        --ink: #12222b;
+        --muted: #5f7580;
+        --teal: #0d5962;
+        --cyan: #41aebe;
+        --pink: #dc6b91;
         width: 100%;
-        max-width: 1100px;
+        color: var(--ink);
+    }
+
+    .landing-page a {
+        text-decoration: none;
+    }
+
+    .landing-wrap {
+        width: min(1200px, calc(100% - 48px));
         margin: 0 auto;
     }
 
-    .landing-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
-    .options-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 2rem;
-        padding: 1rem;
-    }
-
-    .option-card {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: 2.5rem;
-        text-decoration: none;
-        color: var(--text-main);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        position: relative;
+    .hero {
         overflow: hidden;
-        box-shadow: var(--card-shadow);
+        position: relative;
+        background:
+            radial-gradient(ellipse at 82% 55%, rgba(80, 188, 198, .32), transparent 38%),
+            linear-gradient(110deg, #f8fbfc 0%, #f5fafb 50%, #e8f5f6 100%);
+        border-bottom: 1px solid #e6eff1;
     }
 
-    .option-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 70%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
+    .hero-grid {
+        min-height: 440px;
+        display: grid;
+        grid-template-columns: 1fr 0.95fr;
+        gap: 1.5rem;
+        align-items: center;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
 
-    .option-card:hover {
-        transform: translateY(-10px);
-        border-color: var(--primary);
-        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+    .hero-copy {
+        position: relative;
+        z-index: 1;
+        max-width: 610px;
     }
 
-    .option-card:hover::before {
-        opacity: 1;
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .4rem .8rem;
+        border: 1px solid #cfe3e7;
+        border-radius: 999px;
+        color: var(--teal);
+        background: rgba(255,255,255,.7);
+        font-size: .79rem;
+        font-weight: 700;
     }
 
-    .card-icon {
-        width: 80px;
-        height: 80px;
-        background: rgba(37, 99, 235, 0.05);
-        border-radius: 20px;
+    .eyebrow::before {
+        content: "";
+        width: .45rem;
+        height: .45rem;
+        border-radius: 50%;
+        background: var(--cyan);
+    }
+
+    .hero h1 {
+        max-width: 620px;
+        margin: 1rem 0 .85rem;
+        text-align: left;
+        font-size: clamp(2.6rem, 5vw, 4.3rem);
+        line-height: .99;
+        letter-spacing: -.055em;
+    }
+
+    .hero h1 span {
+        color: var(--teal);
+    }
+
+    .hero-description {
+        max-width: 540px;
+        color: #536871;
+        font-size: 1.06rem;
+        line-height: 1.65;
+    }
+
+    .hero-actions {
         display: flex;
+        flex-wrap: wrap;
+        gap: .8rem;
+        margin-top: 1.35rem;
+    }
+
+    .action-link {
+        min-height: 46px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 1.5rem;
-        color: var(--primary);
-        transition: all 0.3s ease;
-    }
-
-    .doctor-card .card-icon {
-        background: rgba(219, 39, 119, 0.05);
-        color: var(--secondary);
-    }
-
-    .patient-card .card-icon {
-        background: rgba(5, 150, 105, 0.05);
-        color: #059669;
-    }
-
-    .option-card:hover .card-icon {
-        transform: scale(1.1) rotate(5deg);
-    }
-
-    .option-card h3 {
-        font-size: 1.75rem;
+        gap: .6rem;
+        padding: .75rem 1.2rem;
+        border: 1px solid var(--teal);
+        border-radius: 11px;
+        color: var(--teal);
+        background: #fff;
         font-weight: 700;
-        margin-bottom: 1rem;
-        color: var(--text-main);
+        transition: transform .18s ease, box-shadow .18s ease;
     }
 
-    .option-card p {
-        color: var(--text-muted);
-        line-height: 1.6;
-        margin-bottom: 2rem;
+    .action-link.primary {
+        color: #fff;
+        background: var(--teal);
     }
 
-    .card-footer {
-        margin-top: auto;
+    .action-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(13, 89, 98, .16);
+    }
+
+    .hero-art {
+        min-height: 340px;
+        position: relative;
+        display: grid;
+        place-items: center;
+    }
+
+    .eye-art {
+        width: min(100%, 520px);
+        filter: drop-shadow(0 22px 30px rgba(29, 105, 117, .16));
+    }
+
+    .hero-chip {
+        position: absolute;
+        right: 0;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        font-weight: 600;
-        color: var(--primary);
-        transition: gap 0.3s ease;
+        gap: .65rem;
+        padding: .8rem 1rem;
+        border: 1px solid rgba(255,255,255,.85);
+        border-radius: 14px;
+        background: rgba(255,255,255,.9);
+        box-shadow: 0 10px 24px rgba(17, 69, 78, .12);
+        color: var(--ink);
+        font-size: .88rem;
+        font-weight: 700;
     }
 
-    .doctor-card .card-footer {
-        color: var(--secondary);
+    .hero-chip svg {
+        color: var(--teal);
+        flex: none;
     }
 
-    .patient-card .card-footer {
-        color: #059669;
+    .hero-chip.chip-one { top: 17%; }
+    .hero-chip.chip-two { top: 43%; right: -1rem; }
+    .hero-chip.chip-three { top: 69%; right: 1rem; }
+
+    .benefit-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.15rem;
+        margin-top: 1.7rem;
     }
 
-    .patient-card:hover {
-        border-color: #059669;
+    .benefit {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: #30454e;
+        font-size: .83rem;
+        font-weight: 700;
     }
 
-    .option-card:hover .card-footer {
+    .benefit svg {
+        color: var(--teal);
+        flex: none;
+    }
+
+    .benefit small {
+        display: block;
+        margin-top: .08rem;
+        color: var(--muted);
+        font-size: .7rem;
+        font-weight: 500;
+    }
+
+    .section {
+        padding: 3.65rem 0;
+    }
+
+    .section-heading {
+        max-width: 700px;
+        margin: 0 auto 1.75rem;
+        text-align: center;
+    }
+
+    .section-kicker {
+        margin-bottom: .35rem;
+        color: var(--teal);
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .13em;
+        text-transform: uppercase;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        color: #102838;
+        font-size: clamp(1.8rem, 3vw, 2.45rem);
+        line-height: 1.15;
+        letter-spacing: -.04em;
+    }
+
+    .section-heading p {
+        margin: .55rem auto 0;
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .portal-section {
+        background: linear-gradient(180deg, #fff 0%, #f8fbfc 100%);
+    }
+
+    .portal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
     }
 
+    .portal-card {
+        min-height: 148px;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem;
+        border: 1px solid #e3ebee;
+        border-bottom: 3px solid var(--teal);
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(13, 58, 79, .05);
+        color: var(--ink);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .portal-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(13, 58, 79, .1);
+    }
+
+    .portal-card.optometrist { border-bottom-color: #3a9cbb; }
+    .portal-card.patient { border-bottom-color: var(--pink); }
+
+    .portal-icon {
+        width: 54px;
+        height: 54px;
+        display: grid;
+        place-items: center;
+        flex: none;
+        border-radius: 15px;
+        color: var(--teal);
+        background: #e7f5f2;
+    }
+
+    .optometrist .portal-icon { color: #287e9d; background: #e8f5fa; }
+    .patient .portal-icon { color: #c4547e; background: #fff0f4; }
+
+    .portal-copy {
+        flex: 1;
+    }
+
+    .portal-copy h3 {
+        margin: .1rem 0 .35rem;
+        color: #13293a;
+        font-size: 1.14rem;
+        letter-spacing: -.02em;
+    }
+
+    .portal-copy p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .87rem;
+        line-height: 1.5;
+    }
+
+    .portal-arrow {
+        width: 28px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        flex: none;
+        align-self: center;
+        border-radius: 50%;
+        background: var(--teal);
+        color: #fff;
+    }
+
+    .benefits-section {
+        background: #f5f9fa;
+    }
+
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .benefit-card {
+        padding: 1.3rem;
+        border: 1px solid #e3ebee;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .benefit-card .portal-icon {
+        width: 46px;
+        height: 46px;
+        margin-bottom: .85rem;
+    }
+
+    .benefit-card h3 {
+        margin: 0 0 .35rem;
+        font-size: 1.05rem;
+    }
+
+    .benefit-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .9rem;
+        line-height: 1.55;
+    }
+
+    .corporate-section {
+        background: #fff;
+    }
+
+    .corporate-banner {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr auto;
+        align-items: center;
+        gap: 1.3rem;
+        padding: 1.35rem 1.5rem;
+        border: 1px solid #dcebea;
+        border-radius: 18px;
+        background: linear-gradient(100deg, #eef8f6, #eff7f8);
+    }
+
+    .corporate-intro {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+    }
+
+    .corporate-intro h3 {
+        margin: 0 0 .2rem;
+        font-size: 1.08rem;
+    }
+
+    .corporate-intro p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .85rem;
+    }
+
+    .corporate-perks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .7rem 1rem;
+        padding-left: 1.2rem;
+        border-left: 1px solid #c9dddc;
+        color: #496169;
+        font-size: .78rem;
+    }
+
+    .corporate-perks span::before {
+        content: "✓";
+        margin-right: .35rem;
+        color: var(--teal);
+        font-weight: 800;
+    }
+
+    .camp-layout {
+        display: grid;
+        grid-template-columns: 1.3fr .7fr;
+        gap: 1.25rem;
+        align-items: stretch;
+        margin-top: 1.25rem;
+    }
+
+    .camp-panel, .qr-panel {
+        padding: 1.5rem;
+        border: 1px solid #e3ebee;
+        border-radius: 17px;
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(13, 58, 79, .05);
+    }
+
+    .camp-panel h3, .qr-panel h3 {
+        margin: 0 0 .35rem;
+        font-size: 1.18rem;
+    }
+
+    .camp-panel > p, .qr-panel > p {
+        margin: 0 0 1.1rem;
+        color: var(--muted);
+        font-size: .9rem;
+        line-height: 1.55;
+    }
+
+    .enquiry-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .8rem;
+    }
+
+    .enquiry-form label {
+        margin: 0;
+        color: #4a6068;
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    .enquiry-form input, .enquiry-form textarea {
+        width: 100%;
+        margin-top: .3rem;
+        padding: .7rem .75rem;
+        border: 1px solid #d8e3e6;
+        border-radius: 9px;
+        background: #fbfdfd;
+        color: var(--ink);
+        font: inherit;
+        font-size: .88rem;
+    }
+
+    .enquiry-form textarea {
+        min-height: 78px;
+        resize: vertical;
+    }
+
+    .enquiry-form .full { grid-column: 1 / -1; }
+
+    .enquiry-form input:focus, .enquiry-form textarea:focus {
+        outline: 3px solid rgba(65, 174, 190, .18);
+        border-color: var(--cyan);
+    }
+
+    .form-status {
+        grid-column: 1 / -1;
+        min-height: 1.3em;
+        margin: 0;
+        color: var(--teal);
+        font-size: .86rem;
+    }
+
+    .qr-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        background: #f8fbfc;
+    }
+
+    .qr-panel img {
+        width: 172px;
+        height: 172px;
+        margin: .25rem auto .7rem;
+        border: 8px solid #fff;
+        border-radius: 12px;
+        box-shadow: 0 5px 16px rgba(13,58,79,.1);
+    }
+
+    .qr-caption {
+        color: var(--muted);
+        font-size: .78rem;
+    }
+
+    .resources-section {
+        background: #f5f9fa;
+    }
+
+    .faq-list {
+        max-width: 850px;
+        margin: 0 auto;
+    }
+
+    .faq-list details {
+        margin-bottom: .65rem;
+        padding: 1rem 1.1rem;
+        border: 1px solid #e1eaed;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .faq-list summary {
+        color: #17313e;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .faq-list details p {
+        margin: .7rem 0 0;
+        color: var(--muted);
+        font-size: .9rem;
+        line-height: 1.6;
+    }
+
+    .contact-section {
+        padding-bottom: 3.5rem;
+        background: #fff;
+    }
+
+    .contact-note {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 1.25rem;
+        border: 1px solid #dcebea;
+        border-radius: 15px;
+        background: #f4faf9;
+        text-align: center;
+    }
+
+    .contact-note p {
+        margin: .35rem 0 0;
+        color: var(--muted);
+        font-size: .9rem;
+    }
+
+    .landing-page + * { margin-top: 0; }
+
     @media (max-width: 900px) {
-        .options-grid {
-            grid-template-columns: 1fr;
-        }
+        .hero-grid { grid-template-columns: 1fr .8fr; min-height: 400px; }
+        .hero-art { min-height: 300px; }
+        .hero-chip { right: -.5rem; padding: .65rem .75rem; font-size: .78rem; }
+        .corporate-banner { grid-template-columns: 1fr auto; }
+        .corporate-perks { grid-column: 1 / -1; grid-row: 2; padding: .75rem 0 0; border-top: 1px solid #c9dddc; border-left: 0; }
+    }
+
+    @media (max-width: 680px) {
+        .landing-wrap { width: min(100% - 32px, 540px); }
+        .hero-grid { grid-template-columns: 1fr; gap: .5rem; padding-top: 2.3rem; }
+        .hero h1 { font-size: clamp(2.55rem, 12vw, 3.6rem); }
+        .hero-description { font-size: .98rem; }
+        .hero-art { min-height: 260px; margin: -.25rem -1rem .25rem; }
+        .eye-art { width: min(100%, 390px); }
+        .hero-chip { right: 0; font-size: .72rem; }
+        .hero-chip.chip-one { top: 7%; }
+        .hero-chip.chip-two { top: 39%; right: -.3rem; }
+        .hero-chip.chip-three { top: 71%; right: .15rem; }
+        .benefit-row { gap: .85rem; }
+        .benefit { font-size: .76rem; }
+        .section { padding: 2.8rem 0; }
+        .portal-grid, .benefits-grid { grid-template-columns: 1fr; }
+        .portal-card { min-height: 125px; }
+        .corporate-banner { grid-template-columns: 1fr; padding: 1.15rem; }
+        .corporate-perks { grid-column: auto; grid-row: auto; }
+        .camp-layout { grid-template-columns: 1fr; }
+        .enquiry-form { grid-template-columns: 1fr; }
+        .enquiry-form .full { grid-column: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .action-link, .portal-card { transition: none; }
+        .action-link:hover, .portal-card:hover { transform: none; }
     }
 </style>
+{% endblock extra_head %}
+
+{% block content %}
+<div class="landing-page">
+    <section class="hero" id="home">
+        <div class="landing-wrap hero-grid">
+            <div class="hero-copy">
+                <span class="eyebrow" data-en="A digital eye care platform" data-hi="डिजिटल नेत्र देखभाल प्लेटफ़ॉर्म">A digital eye care platform</span>
+                <h1><span data-en="Comprehensive" data-hi="संपूर्ण">Comprehensive</span><br><span data-en="Eye Care, Simplified." data-hi="आँखों की देखभाल, आसान।">Eye Care, Simplified.</span></h1>
+                <p class="hero-description" data-en="NetraScreen connects patients, optometrists, and doctors on one secure platform for eye screening, clinical records, consultations, and ongoing eye health." data-hi="नेत्रस्क्रीन मरीजों, ऑप्टोमेट्रिस्ट और डॉक्टरों को नेत्र जांच, क्लिनिकल रिकॉर्ड, परामर्श और निरंतर नेत्र स्वास्थ्य के लिए एक सुरक्षित प्लेटफ़ॉर्म पर जोड़ता है।">NetraScreen connects patients, optometrists, and doctors on one secure platform for eye screening, clinical records, consultations, and ongoing eye health.</p>
+                <div class="hero-actions">
+                    <a class="action-link primary" href="#portals"><span data-en="Choose your portal" data-hi="अपना पोर्टल चुनें">Choose your portal</span><span aria-hidden="true">→</span></a>
+                    <a class="action-link" href="#about"><span aria-hidden="true">▷</span><span data-en="Learn more" data-hi="और जानें">Learn more</span></a>
+                </div>
+                <div class="benefit-row" aria-label="Platform benefits">
+                    <div class="benefit">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg>
+                        <span><span data-en="Secure & compliant" data-hi="सुरक्षित और अनुपालन">Secure &amp; compliant</span><small data-en="Your data, always protected" data-hi="आपका डेटा हमेशा सुरक्षित">Your data, always protected</small></span>
+                    </div>
+                    <div class="benefit">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg>
+                        <span><span data-en="Integrated care" data-hi="एकीकृत देखभाल">Integrated care</span><small data-en="Screening to specialist care" data-hi="जांच से विशेषज्ञ देखभाल तक">Screening to specialist care</small></span>
+                    </div>
+                    <div class="benefit">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+                        <span><span data-en="Faster & efficient" data-hi="तेज़ और कुशल">Faster &amp; efficient</span><small data-en="Streamlined eye care workflow" data-hi="सरल नेत्र देखभाल प्रक्रिया">Streamlined eye care workflow</small></span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-art" aria-label="Illustration of digital eye screening">
+                <svg class="eye-art" viewBox="0 0 560 390" role="img" aria-labelledby="eye-title">
+                    <title id="eye-title">Digital eye screening</title>
+                    <defs>
+                        <radialGradient id="iris" cx="48%" cy="48%" r="52%">
+                            <stop offset="0" stop-color="#f6db9a"/><stop offset=".25" stop-color="#58b9b7"/><stop offset=".62" stop-color="#197b88"/><stop offset="1" stop-color="#123c54"/>
+                        </radialGradient>
+                        <linearGradient id="lid" x1="0" x2="1" y1="0" y2="1">
+                            <stop stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#b9e3e5" stop-opacity=".35"/>
+                        </linearGradient>
+                    </defs>
+                    <ellipse cx="273" cy="197" rx="230" ry="153" fill="#dbf0f1" opacity=".8"/>
+                    <path d="M45 195 Q273 16 501 195 Q273 372 45 195Z" fill="url(#lid)" stroke="#fff" stroke-width="4"/>
+                    <ellipse cx="274" cy="195" rx="121" ry="121" fill="#fff" opacity=".65"/>
+                    <circle cx="274" cy="195" r="95" fill="url(#iris)"/>
+                    <circle cx="274" cy="195" r="41" fill="#102b3c"/>
+                    <circle cx="260" cy="178" r="15" fill="#fff" opacity=".85"/>
+                    <circle cx="274" cy="195" r="118" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>
+                    <circle cx="274" cy="195" r="147" fill="none" stroke="#54b8bf" stroke-width="2" stroke-dasharray="4 8" opacity=".85"/>
+                    <path d="M119 195h310M274 40v310" stroke="#fff" stroke-width="1.5" opacity=".62"/>
+                    <path d="M134 134h27v-27M415 134h-27v-27M134 256h27v27M415 256h-27v27" fill="none" stroke="#58b7bd" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="274" cy="195" r="164" fill="none" stroke="#fff" stroke-width="1" opacity=".55"/>
+                </svg>
+                <div class="hero-chip chip-one">
+                    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span data-en="Book appointments" data-hi="अपॉइंटमेंट बुक करें">Book appointments</span>
+                </div>
+                <div class="hero-chip chip-two">
+                    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>
+                    <span data-en="Access reports" data-hi="रिपोर्ट देखें">Access reports</span>
+                </div>
+                <div class="hero-chip chip-three">
+                    <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-4 4"/></svg>
+                    <span data-en="Track eye health" data-hi="नेत्र स्वास्थ्य ट्रैक करें">Track eye health</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section portal-section" id="portals">
+        <div class="landing-wrap">
+            <div class="section-heading">
+                <div class="section-kicker" data-en="Access your workspace" data-hi="अपने कार्यक्षेत्र में प्रवेश करें">Access your workspace</div>
+                <h2 data-en="Choose Your Portal" data-hi="अपना पोर्टल चुनें">Choose Your Portal</h2>
+                <p data-en="A unified platform for every stakeholder in the eye care journey." data-hi="नेत्र देखभाल से जुड़े हर व्यक्ति के लिए एक साझा प्लेटफ़ॉर्म।">A unified platform for every stakeholder in the eye care journey.</p>
+            </div>
+            <div class="portal-grid">
+                <a href="{% url 'doctor_login_page' %}" class="portal-card doctor">
+                    <span class="portal-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 4v5a6 6 0 0 0 12 0V4"/><path d="M4 4h4M16 4h4M12 15v2a4 4 0 0 0 8 0v-1"/><circle cx="20" cy="14" r="1"/></svg></span>
+                    <span class="portal-copy">
+                        <h3 data-en="Doctor Portal" data-hi="डॉक्टर पोर्टल">Doctor Portal</h3>
+                        <p data-en="Clinical records and patient management." data-hi="क्लिनिकल रिकॉर्ड और मरीज प्रबंधन।">Clinical records and patient management.</p>
+                    </span>
+                    <span class="portal-arrow" aria-hidden="true">→</span>
+                </a>
+                <a href="{% url 'optometrist_login_page' %}" class="portal-card optometrist">
+                    <span class="portal-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M1.5 12s3.7-7 10.5-7 10.5 7 10.5 7-3.7 7-10.5 7S1.5 12 1.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                    <span class="portal-copy">
+                        <h3 data-en="Optometrist Portal" data-hi="ऑप्टोमेट्रिस्ट पोर्टल">Optometrist Portal</h3>
+                        <p data-en="Eye examinations and screening reports." data-hi="नेत्र परीक्षण और स्क्रीनिंग रिपोर्ट।">Eye examinations and screening reports.</p>
+                    </span>
+                    <span class="portal-arrow" aria-hidden="true">→</span>
+                </a>
+                <a href="{% url 'patient_login_page' %}" class="portal-card patient">
+                    <span class="portal-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></span>
+                    <span class="portal-copy">
+                        <h3 data-en="Patient Portal" data-hi="मरीज पोर्टल">Patient Portal</h3>
+                        <p data-en="Appointments, prescriptions, and health records." data-hi="अपॉइंटमेंट, प्रिस्क्रिप्शन और स्वास्थ्य रिकॉर्ड।">Appointments, prescriptions, and health records.</p>
+                    </span>
+                    <span class="portal-arrow" aria-hidden="true">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section benefits-section" id="about">
+        <div class="landing-wrap">
+            <div class="section-heading">
+                <div class="section-kicker" data-en="Care that connects" data-hi="जुड़ी हुई देखभाल">Care that connects</div>
+                <h2 data-en="Better eye care, together" data-hi="मिलकर बेहतर नेत्र देखभाल">Better eye care, together</h2>
+                <p data-en="A connected experience designed to make screening, follow-up, and care coordination easier." data-hi="जांच, फॉलो-अप और देखभाल समन्वय को आसान बनाने वाला जुड़ा हुआ अनुभव।">A connected experience designed to make screening, follow-up, and care coordination easier.</p>
+            </div>
+            <div class="benefits-grid" id="services">
+                <article class="benefit-card">
+                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg></span>
+                    <h3 data-en="Secure by design" data-hi="डिज़ाइन से सुरक्षित">Secure by design</h3>
+                    <p data-en="Role-based access helps keep patient and clinical information protected." data-hi="भूमिका-आधारित पहुँच मरीज और क्लिनिकल जानकारी की सुरक्षा में मदद करती है।">Role-based access helps keep patient and clinical information protected.</p>
+                </article>
+                <article class="benefit-card">
+                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/></svg></span>
+                    <h3 data-en="Integrated care" data-hi="एकीकृत देखभाल">Integrated care</h3>
+                    <p data-en="Connect screening, clinical review, and patient follow-up in one workflow." data-hi="एक ही प्रक्रिया में स्क्रीनिंग, क्लिनिकल समीक्षा और मरीज फॉलो-अप जोड़ें।">Connect screening, clinical review, and patient follow-up in one workflow.</p>
+                </article>
+                <article class="benefit-card">
+                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span>
+                    <h3 data-en="Efficient workflows" data-hi="कुशल कार्यप्रवाह">Efficient workflows</h3>
+                    <p data-en="Digital reports and shared records help care teams work with clarity." data-hi="डिजिटल रिपोर्ट और साझा रिकॉर्ड देखभाल टीमों को स्पष्टता से काम करने में मदद करते हैं।">Digital reports and shared records help care teams work with clarity.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="section corporate-section" id="corporates">
+        <div class="landing-wrap">
+            <div class="corporate-banner">
+                <div class="corporate-intro">
+                    <span class="portal-icon"><svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                    <span>
+                        <h3 data-en="Plan an eye camp for your organization" data-hi="अपने संगठन के लिए नेत्र शिविर आयोजित करें">Plan an eye camp for your organization</h3>
+                        <p data-en="Bring convenient, coordinated eye screening to your workplace." data-hi="अपने कार्यस्थल पर सुविधाजनक और समन्वित नेत्र जांच लाएँ।">Bring convenient, coordinated eye screening to your workplace.</p>
+                    </span>
+                </div>
+                <div class="corporate-perks">
+                    <span data-en="On-site screening" data-hi="कार्यस्थल पर जांच">On-site screening</span>
+                    <span data-en="Digital reports" data-hi="डिजिटल रिपोर्ट">Digital reports</span>
+                    <span data-en="Follow-up care" data-hi="फॉलो-अप देखभाल">Follow-up care</span>
+                </div>
+                <a class="action-link primary" href="#corporate-enquiry"><span data-en="Request a corporate camp" data-hi="कॉर्पोरेट शिविर का अनुरोध करें">Request a corporate camp</span><span aria-hidden="true">→</span></a>
+            </div>
+
+            <div class="camp-layout">
+                <div class="camp-panel" id="corporate-enquiry">
+                    <h3 data-en="Corporate eye camp enquiry" data-hi="कॉर्पोरेट नेत्र शिविर पूछताछ">Corporate eye camp enquiry</h3>
+                    <p data-en="Share a few details and our team can follow up about screening at your workplace." data-hi="अपने कार्यस्थल पर जांच के बारे में बातचीत के लिए कुछ जानकारी साझा करें।">Share a few details and our team can follow up about screening at your workplace.</p>
+                    <form id="corporate-enquiry-form" class="enquiry-form">
+                        {% csrf_token %}
+                        <label><span data-en="Your name" data-hi="आपका नाम">Your name</span><input name="name" autocomplete="name" required maxlength="120"></label>
+                        <label><span data-en="Organization" data-hi="संगठन">Organization</span><input name="organization" autocomplete="organization" required maxlength="160"></label>
+                        <label><span data-en="Work email" data-hi="कार्य ईमेल">Work email</span><input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+                        <label><span data-en="Phone number" data-hi="फ़ोन नंबर">Phone number</span><input type="tel" name="phone" autocomplete="tel" maxlength="30"></label>
+                        <label class="full"><span data-en="How can we help?" data-hi="हम आपकी कैसे मदद कर सकते हैं?">How can we help?</span><textarea name="message" maxlength="2000" placeholder="Tell us your preferred location, timing, or team size."></textarea></label>
+                        <button class="action-link primary full" type="submit" id="enquiry-submit"><span data-en="Send enquiry" data-hi="पूछताछ भेजें">Send enquiry</span> <span aria-hidden="true">→</span></button>
+                        <p class="form-status" id="enquiry-status" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+                <aside class="qr-panel">
+                    <h3 data-en="Camp registration QR" data-hi="शिविर पंजीकरण QR">Camp registration QR</h3>
+                    <p data-en="Display this QR at your eye camp so attendees can register for screening." data-hi="जांच के लिए उपस्थित लोगों के पंजीकरण हेतु इस QR को शिविर में दिखाएँ।">Display this QR at your eye camp so attendees can register for screening.</p>
+                    <img src="{% url 'corporate_camp_qr' %}" alt="QR code for NetraScreen eye-camp screening registration">
+                    <span class="qr-caption" data-en="Scan to open the screening registration form" data-hi="स्क्रीनिंग पंजीकरण फ़ॉर्म खोलने के लिए स्कैन करें">Scan to open the screening registration form</span>
+                    <a href="{% url 'patient_onboarding' %}" class="footer-link" data-en="Open registration form" data-hi="पंजीकरण फ़ॉर्म खोलें">Open registration form</a>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="section resources-section" id="resources">
+        <div class="landing-wrap">
+            <div class="section-heading">
+                <div class="section-kicker" data-en="Helpful information" data-hi="उपयोगी जानकारी">Helpful information</div>
+                <h2 data-en="Support & FAQs" data-hi="सहायता और अक्सर पूछे जाने वाले प्रश्न">Support &amp; FAQs</h2>
+                <p data-en="Quick answers to help you get started with NetraScreen." data-hi="नेत्रस्क्रीन शुरू करने में आपकी मदद के लिए त्वरित उत्तर।">Quick answers to help you get started with NetraScreen.</p>
+            </div>
+            <div class="faq-list">
+                <details>
+                    <summary data-en="Which portal should I use?" data-hi="मुझे कौन-सा पोर्टल इस्तेमाल करना चाहिए?">Which portal should I use?</summary>
+                    <p data-en="Doctors use the Doctor Portal, eye-care professionals use the Optometrist Portal, and individuals use the Patient Portal." data-hi="डॉक्टर डॉक्टर पोर्टल, नेत्र देखभाल पेशेवर ऑप्टोमेट्रिस्ट पोर्टल और अन्य व्यक्ति मरीज पोर्टल का उपयोग करें।">Doctors use the Doctor Portal, eye-care professionals use the Optometrist Portal, and individuals use the Patient Portal.</p>
+                </details>
+                <details>
+                    <summary data-en="How do we arrange a corporate eye camp?" data-hi="कॉर्पोरेट नेत्र शिविर कैसे आयोजित करें?">How do we arrange a corporate eye camp?</summary>
+                    <p data-en="Send an enquiry using the corporate form above. Our team can discuss screening options for your organization." data-hi="ऊपर दिए गए कॉर्पोरेट फ़ॉर्म से पूछताछ भेजें। हमारी टीम आपके संगठन के लिए जांच विकल्पों पर चर्चा करेगी।">Send an enquiry using the corporate form above. Our team can discuss screening options for your organization.</p>
+                </details>
+                <details>
+                    <summary data-en="How do patients register at a camp?" data-hi="शिविर में मरीज पंजीकरण कैसे करें?">How do patients register at a camp?</summary>
+                    <p data-en="Scan the camp registration QR code to open the screening registration form on a phone." data-hi="फ़ोन पर स्क्रीनिंग पंजीकरण फ़ॉर्म खोलने के लिए शिविर का QR कोड स्कैन करें।">Scan the camp registration QR code to open the screening registration form on a phone.</p>
+                </details>
+                <details>
+                    <summary data-en="Need help accessing your account?" data-hi="खाते में प्रवेश के लिए सहायता चाहिए?">Need help accessing your account?</summary>
+                    <p data-en="Use the portal that matches your role. For account support, contact your organization's NetraScreen administrator." data-hi="अपनी भूमिका के अनुसार पोर्टल चुनें। खाते की सहायता के लिए अपने संगठन के नेत्रस्क्रीन प्रशासक से संपर्क करें।">Use the portal that matches your role. For account support, contact your organization's NetraScreen administrator.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <section class="section contact-section" id="contact">
+        <div class="landing-wrap">
+            <div class="contact-note">
+                <h2 data-en="We're here to help" data-hi="हम सहायता के लिए यहाँ हैं">We're here to help</h2>
+                <p data-en="For corporate eye camps, send us an enquiry above. For portal access, please contact your organization's administrator." data-hi="कॉर्पोरेट नेत्र शिविर के लिए ऊपर पूछताछ भेजें। पोर्टल एक्सेस के लिए अपने संगठन के प्रशासक से संपर्क करें।">For corporate eye camps, send us an enquiry above. For portal access, please contact your organization's administrator.</p>
+                <a href="#corporate-enquiry" class="action-link primary" style="margin-top: 1rem;" data-en="Contact our team" data-hi="हमारी टीम से संपर्क करें">Contact our team</a>
+            </div>
+        </div>
+    </section>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('corporate-enquiry-form');
+        const status = document.getElementById('enquiry-status');
+        const submit = document.getElementById('enquiry-submit');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            submit.disabled = true;
+            status.textContent = 'Sending your enquiry...';
+
+            try {
+                const response = await fetch('{% url "corporate_enquiry_api" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(Object.fromEntries(new FormData(form).entries()))
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'We could not send your enquiry. Please try again.');
+                }
+                status.textContent = result.message;
+                form.reset();
+            } catch (error) {
+                status.textContent = error.message || 'We could not send your enquiry. Please try again.';
+            } finally {
+                submit.disabled = false;
+            }
+        });
+    });
+</script>
 {% endblock content %}

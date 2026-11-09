@@ -83,28 +83,71 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DATABASE_SSL_REQUIRE = config('DATABASE_SSL_REQUIRE', default=True, cast=bool)
 
 
-# Local SQLite database configuration (disabled).
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-'''
-
-neon_db = config('NEON_DB_URL', default=config('DATABASE_URL', default=''))
-DATABASES = {
-    'default': dj_database_url.config(
-        default=neon_db,
+def database_config(database_url):
+    return dj_database_url.parse(
+        database_url,
         conn_max_age=600,
-        ssl_require=True
+        conn_health_checks=True,
+        ssl_require=DATABASE_SSL_REQUIRE,
     )
-}
-'''
-#test data
+
+
+primary_database_url = config(
+    'NEON_DB_URL',
+    default=config('DATABASE_URL', default=''),
+)
+if primary_database_url:
+    DATABASES = {'default': database_config(primary_database_url)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+for database_alias, environment_variable in (
+    ('read_replica', 'READ_DATABASE_URL'),
+    ('analytics', 'ANALYTICS_DATABASE_URL'),
+):
+    database_url = config(environment_variable, default='')
+    if database_url:
+        DATABASES[database_alias] = database_config(database_url)
+
+DATABASE_ROUTERS = ['phase2.db_router.PrimaryReplicaRouter']
+
+REDIS_URL = config('REDIS_URL', default='')
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+            'KEY_PREFIX': 'eyesphere',
+            'TIMEOUT': 300,
+        }
+    }
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+    SESSION_CACHE_ALIAS = 'default'
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'eyesphere-local',
+        }
+    }
+
+# The broker is consumed only by Celery workers; web requests do not require Redis.
+CELERY_BROKER_URL = config(
+    'CELERY_BROKER_URL',
+    default=REDIS_URL or 'redis://localhost:6379/1',
+)
+CELERY_TASK_IGNORE_RESULT = True
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 
 
@@ -137,6 +180,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
+CELERY_TIMEZONE = TIME_ZONE
 
 USE_I18N = True
 
@@ -192,4 +236,6 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 # Your email address and App Password are read from the .env file for security
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='EyeSphere Support <noreply@eyesphere.com>')
+CORPORATE_ENQUIRY_EMAIL = config('CORPORATE_ENQUIRY_EMAIL', default=EMAIL_HOST_USER)

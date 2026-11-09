@@ -48,17 +48,14 @@ The application is organized into three main Django apps:
 
 ### 2.1 Database Platform
 
-**Primary Database**: PostgreSQL (via Neon Console)
+**Primary Database**: PostgreSQL (via Neon Console in production); SQLite3 locally when no primary URL is configured.
 
-**Development Database**: SQLite3 (local development)
-
-**Database Service**: Neon Console (Serverless PostgreSQL)
-
-**Connection Configuration**:
-- Engine: `django.db.backends.postgresql`
-- Connection Pooling: `conn_max_age=600` seconds
-- SSL Required: `ssl_require=True`
-- Environment Variable: `NEON_DB_URL` or `DATABASE_URL`
+**Optional workload services**:
+- PostgreSQL read replica for ORM reads (`READ_DATABASE_URL`)
+- PostgreSQL analytics store for explicitly selected reporting queries (`ANALYTICS_DATABASE_URL`)
+- Redis for shared caching and cached database sessions (`REDIS_URL`)
+- Celery workers for background jobs, using Redis or a separately configured broker
+- Managed PostgreSQL backups and point-in-time recovery (PITR); backup storage is not a Django database alias
 
 ### 2.2 Database Hosting
 
@@ -66,18 +63,23 @@ The application is organized into three main Django apps:
 
 **Development Database**: Local SQLite3 file (`db.sqlite3`)
 
-**Database URL Configuration**:
-```python
-# Currently commented out in settings.py (lines 97-107)
-# Production uses Neon Console via dj-database-url
-DATABASES = {
-    'default': dj_database_url.config(
-        default=neon_db,
-        conn_max_age=600,
-        ssl_require=True
-    )
-}
+The primary URL is read from `NEON_DB_URL`, falling back to `DATABASE_URL`. Optional `READ_DATABASE_URL` and `ANALYTICS_DATABASE_URL` entries are added only when configured. Connections use a 600-second persistent connection age, health checks, and SSL by default; `DATABASE_SSL_REQUIRE` can override the SSL setting where the database provider requires a different mode.
+
+`phase2.db_router.PrimaryReplicaRouter` sends writes and migrations to `default`; reads use `read_replica` when configured and otherwise use `default`. Replica reads are eventually consistent, so code requiring read-after-write consistency should explicitly use `.using('default')`. Analytics queries must explicitly use `.using('analytics')`; the analytics schema and data loading are owned by ETL/CDC, not Django migrations. Cross-database foreign-key relationships and distributed transactions are not supported.
+
+### 2.3 Cache, Sessions, and Background Jobs
+
+When `REDIS_URL` is configured, Django uses Redis for the shared cache and the `cached_db` session backend (database-backed sessions remain the durable fallback). Without Redis, local development uses an in-process cache and the default database session backend. Redis cache entries are temporary and must not be used as the system of record for clinical or account data.
+
+Celery is initialized by `phase2.celery`; configure `CELERY_BROKER_URL` or use `REDIS_URL` for its broker. The worker process is separate from the web process and can be started from the Django project directory with:
+
+```text
+celery -A phase2 worker --loglevel=INFO
 ```
+
+### 2.4 Backup and Disaster Recovery
+
+Backups are provisioned and operated by the PostgreSQL hosting provider or an external backup job, not through `DATABASES` or ORM routing. Enable automated backups and PITR for the primary database, define retention and recovery-point objectives, and keep encrypted off-provider copies in object storage (for example, S3 or R2) when required. Test restores regularly. A read replica is not a backup because destructive changes replicate.
 
 ---
 
