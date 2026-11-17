@@ -548,12 +548,429 @@
 
     .landing-page + * { margin-top: 0; }
 
+    .landing-page {
+        --ink: #122a36;
+        --muted: #647780;
+        --teal: #0b5b5b;
+        --cyan: #3ca8a5;
+        --pink: #d66b8d;
+    }
+
+    .landing-wrap {
+        width: min(1200px, calc(100% - 64px));
+    }
+
+    .hero {
+        background:
+            radial-gradient(ellipse at 82% 52%, rgba(108, 192, 190, .19), transparent 38%),
+            linear-gradient(110deg, #f8fbfc, #f1f8f8 58%, #e8f3f2);
+    }
+
+    .hero-grid {
+        min-height: 490px;
+        grid-template-columns: 1fr 1.02fr;
+        gap: 2rem;
+        padding-top: 2.4rem;
+        padding-bottom: 2.4rem;
+    }
+
+    .hero h1 {
+        max-width: 570px;
+        color: #102b3b;
+        font-size: clamp(2.85rem, 5vw, 4.35rem);
+        line-height: .98;
+    }
+
+    .hero h1 span:last-child {
+        color: var(--teal);
+    }
+
+    .hero-description {
+        max-width: 485px;
+        font-size: 1rem;
+    }
+
+    .hero-art {
+        min-height: 380px;
+        overflow: visible;
+    }
+
+    .eye-art {
+        width: min(100%, 560px);
+        border-radius: 30px;
+        filter: drop-shadow(0 22px 30px rgba(29, 105, 117, .13));
+    }
+
+    .hero-chip {
+        right: -.25rem;
+        padding: .7rem .85rem;
+        border: 1px solid rgba(255,255,255,.92);
+        border-radius: 13px;
+        font-size: .82rem;
+    }
+
+    .hero-chip.chip-one { top: 12%; }
+    .hero-chip.chip-two { top: 46%; }
+    .hero-chip.chip-three { top: 77%; }
+
+    .section {
+        padding: 4.2rem 0;
+        scroll-margin-top: 82px;
+    }
+
+    .section-heading {
+        margin-bottom: 2rem;
+    }
+
+    .portal-section {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .portal-card,
+    .benefit-card,
+    .service-card,
+    .resource-card,
+    .camp-panel,
+    .qr-panel,
+    .contact-panel {
+        border-color: #e5ecee;
+        border-radius: 16px;
+        box-shadow: 0 7px 22px rgba(24, 55, 66, .06);
+    }
+
+    .portal-card {
+        min-height: 128px;
+        border-bottom-width: 1px;
+    }
+
+    .about-section {
+        background: #f5f9fa;
+    }
+
+    .about-grid {
+        display: grid;
+        grid-template-columns: 1.05fr .95fr;
+        align-items: center;
+        gap: 3rem;
+    }
+
+    .about-art {
+        width: 100%;
+        border: 1px solid #e4ecee;
+        border-radius: 20px;
+        box-shadow: 0 14px 35px rgba(24, 55, 66, .08);
+    }
+
+    .about-copy .section-kicker,
+    .about-copy h2,
+    .about-copy > p {
+        text-align: left;
+    }
+
+    .about-copy h2 {
+        margin: 0;
+        color: #102838;
+        font-size: clamp(1.9rem, 3vw, 2.6rem);
+        line-height: 1.12;
+        letter-spacing: -.04em;
+    }
+
+    .about-copy > p {
+        margin: .8rem 0 1.2rem;
+        color: var(--muted);
+        line-height: 1.65;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .75rem;
+    }
+
+    .value-card {
+        min-height: 130px;
+        padding: 1rem;
+        border: 1px solid #e3ebee;
+        border-radius: 13px;
+        background: #fff;
+    }
+
+    .value-card svg {
+        width: 25px;
+        height: 25px;
+        margin-bottom: .55rem;
+        color: var(--teal);
+    }
+
+    .value-card h3 {
+        margin: 0 0 .25rem;
+        font-size: .94rem;
+    }
+
+    .value-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .78rem;
+        line-height: 1.45;
+    }
+
+    .services-section {
+        background: #fff;
+    }
+
+    .service-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .service-card {
+        min-height: 160px;
+        padding: 1.2rem;
+        border: 1px solid #e5ecee;
+        background: #fff;
+    }
+
+    .service-icon {
+        width: 43px;
+        height: 43px;
+        display: grid;
+        place-items: center;
+        margin-bottom: .8rem;
+        border-radius: 12px;
+        color: #14706e;
+        background: #e5f4f1;
+    }
+
+    .service-card:nth-child(3n + 2) .service-icon { color: #397aa0; background: #e8f2f8; }
+    .service-card:nth-child(3n) .service-icon { color: #a64c75; background: #faedf2; }
+
+    .service-card h3 {
+        margin: 0 0 .35rem;
+        font-size: 1rem;
+    }
+
+    .service-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .85rem;
+        line-height: 1.5;
+    }
+
+    .corporate-feature {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 2.5rem;
+        margin-bottom: 1.35rem;
+        padding: 1.2rem;
+        border: 1px solid #e4eceb;
+        border-radius: 20px;
+        background: linear-gradient(105deg, #f4faf8, #fff);
+    }
+
+    .corporate-feature h2 {
+        margin: .45rem 0 .55rem;
+        color: #102838;
+        font-size: clamp(1.8rem, 3vw, 2.45rem);
+        line-height: 1.08;
+        letter-spacing: -.04em;
+    }
+
+    .corporate-feature p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.55;
+    }
+
+    .corporate-feature .corporate-perks {
+        margin: 1rem 0 1.2rem;
+        padding: 0;
+        border: 0;
+    }
+
+    .corporate-art {
+        width: 100%;
+        border-radius: 15px;
+    }
+
+    .corporate-lower {
+        display: grid;
+        grid-template-columns: 1fr 1.25fr;
+        gap: 1.2rem;
+        align-items: stretch;
+    }
+
+    .qr-panel {
+        min-height: 100%;
+    }
+
+    .resources-section {
+        background: #f5f9fa;
+    }
+
+    .resource-filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: .5rem;
+        margin: -1rem 0 1.4rem;
+    }
+
+    .resource-filter {
+        padding: .48rem .85rem;
+        border: 1px solid #e1eaec;
+        border-radius: 999px;
+        color: #40545c;
+        background: #fff;
+        font: inherit;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .resource-filter.active {
+        border-color: var(--teal);
+        color: #fff;
+        background: var(--teal);
+    }
+
+    .resource-filter:focus-visible {
+        outline: 3px solid rgba(65, 174, 190, .28);
+        outline-offset: 2px;
+    }
+
+    .resource-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .resource-card {
+        overflow: hidden;
+        border: 1px solid #e5ecee;
+        background: #fff;
+    }
+
+    .resource-empty {
+        grid-column: 1 / -1;
+        margin: 0;
+        padding: 1.4rem;
+        border: 1px dashed #cbd9dc;
+        border-radius: 12px;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    .resource-card img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1.83;
+        object-fit: cover;
+    }
+
+    .resource-copy {
+        padding: 1rem;
+    }
+
+    .resource-tag {
+        display: inline-block;
+        margin-bottom: .55rem;
+        padding: .25rem .55rem;
+        border-radius: 999px;
+        color: #155f61;
+        background: #e8f5f1;
+        font-size: .68rem;
+        font-weight: 700;
+    }
+
+    .resource-copy h3 {
+        margin: 0 0 .35rem;
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+
+    .resource-copy p {
+        margin: 0;
+        color: var(--muted);
+        font-size: .83rem;
+        line-height: 1.5;
+    }
+
+    .contact-section {
+        padding-bottom: 4.2rem;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: .9fr 1.1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .contact-copy h2 {
+        margin: 0 0 .45rem;
+        color: #102838;
+        font-size: clamp(1.9rem, 3vw, 2.45rem);
+        letter-spacing: -.04em;
+    }
+
+    .contact-copy > p {
+        margin: 0 0 1.2rem;
+        color: var(--muted);
+        line-height: 1.55;
+    }
+
+    .contact-detail {
+        display: grid;
+        grid-template-columns: 31px 1fr;
+        gap: .7rem;
+        margin: 1rem 0;
+        color: var(--teal);
+    }
+
+    .contact-detail strong {
+        display: block;
+        color: #203841;
+        font-size: .9rem;
+    }
+
+    .contact-detail span {
+        display: block;
+        margin-top: .12rem;
+        color: var(--muted);
+        font-size: .84rem;
+    }
+
+    .contact-panel {
+        padding: 1.25rem;
+        background: #fff;
+    }
+
+    .contact-panel h3 {
+        margin: 0 0 .35rem;
+        font-size: 1.1rem;
+    }
+
+    .contact-panel > p {
+        margin: 0 0 1rem;
+        color: var(--muted);
+        font-size: .86rem;
+    }
+
+    .contact-panel .enquiry-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
     @media (max-width: 900px) {
         .hero-grid { grid-template-columns: 1fr .8fr; min-height: 400px; }
         .hero-art { min-height: 300px; }
         .hero-chip { right: -.5rem; padding: .65rem .75rem; font-size: .78rem; }
         .corporate-banner { grid-template-columns: 1fr auto; }
         .corporate-perks { grid-column: 1 / -1; grid-row: 2; padding: .75rem 0 0; border-top: 1px solid #c9dddc; border-left: 0; }
+        .about-grid { gap: 1.5rem; }
+        .corporate-feature { gap: 1.25rem; }
     }
 
     @media (max-width: 680px) {
@@ -571,11 +988,15 @@
         .benefit { font-size: .76rem; }
         .section { padding: 2.8rem 0; }
         .portal-grid, .benefits-grid { grid-template-columns: 1fr; }
+        .about-grid, .corporate-feature, .corporate-lower, .contact-grid { grid-template-columns: 1fr; }
+        .service-grid, .resource-grid { grid-template-columns: 1fr; }
+        .values-grid { grid-template-columns: 1fr; }
         .portal-card { min-height: 125px; }
         .corporate-banner { grid-template-columns: 1fr; padding: 1.15rem; }
         .corporate-perks { grid-column: auto; grid-row: auto; }
         .camp-layout { grid-template-columns: 1fr; }
         .enquiry-form { grid-template-columns: 1fr; }
+        .contact-panel .enquiry-form { grid-template-columns: 1fr; }
         .enquiry-form .full { grid-column: auto; }
     }
 
@@ -614,28 +1035,7 @@
                 </div>
             </div>
             <div class="hero-art" aria-label="Illustration of digital eye screening">
-                <svg class="eye-art" viewBox="0 0 560 390" role="img" aria-labelledby="eye-title">
-                    <title id="eye-title">Digital eye screening</title>
-                    <defs>
-                        <radialGradient id="iris" cx="48%" cy="48%" r="52%">
-                            <stop offset="0" stop-color="#f6db9a"/><stop offset=".25" stop-color="#58b9b7"/><stop offset=".62" stop-color="#197b88"/><stop offset="1" stop-color="#123c54"/>
-                        </radialGradient>
-                        <linearGradient id="lid" x1="0" x2="1" y1="0" y2="1">
-                            <stop stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#b9e3e5" stop-opacity=".35"/>
-                        </linearGradient>
-                    </defs>
-                    <ellipse cx="273" cy="197" rx="230" ry="153" fill="#dbf0f1" opacity=".8"/>
-                    <path d="M45 195 Q273 16 501 195 Q273 372 45 195Z" fill="url(#lid)" stroke="#fff" stroke-width="4"/>
-                    <ellipse cx="274" cy="195" rx="121" ry="121" fill="#fff" opacity=".65"/>
-                    <circle cx="274" cy="195" r="95" fill="url(#iris)"/>
-                    <circle cx="274" cy="195" r="41" fill="#102b3c"/>
-                    <circle cx="260" cy="178" r="15" fill="#fff" opacity=".85"/>
-                    <circle cx="274" cy="195" r="118" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>
-                    <circle cx="274" cy="195" r="147" fill="none" stroke="#54b8bf" stroke-width="2" stroke-dasharray="4 8" opacity=".85"/>
-                    <path d="M119 195h310M274 40v310" stroke="#fff" stroke-width="1.5" opacity=".62"/>
-                    <path d="M134 134h27v-27M415 134h-27v-27M134 256h27v27M415 256h-27v27" fill="none" stroke="#58b7bd" stroke-width="4" stroke-linecap="round"/>
-                    <circle cx="274" cy="195" r="164" fill="none" stroke="#fff" stroke-width="1" opacity=".55"/>
-                </svg>
+                <img class="eye-art" src="{% static 'optometrist/images/eye-care-hero.svg' %}" alt="Close-up illustration of an eye being screened">
                 <div class="hero-chip chip-one">
                     <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
                     <span data-en="Book appointments" data-hi="अपॉइंटमेंट बुक करें">Book appointments</span>
@@ -688,28 +1088,71 @@
         </div>
     </section>
 
-    <section class="section benefits-section" id="about">
+    <section class="section about-section" id="about">
+        <div class="landing-wrap about-grid">
+            <img class="about-art" src="{% static 'optometrist/images/eye-exam-clinic.svg' %}" alt="Eye examination equipment in a modern clinic">
+            <div class="about-copy">
+                <div class="section-kicker" data-en="About NetraScreen" data-hi="नेत्रस्क्रीन के बारे में">About NetraScreen</div>
+                <h2 data-en="Transforming eye care with technology" data-hi="तकनीक के साथ नेत्र देखभाल में बदलाव">Transforming eye care with technology</h2>
+                <p data-en="NetraScreen is a digital eye-care platform by Eyesphere that brings patients, optometrists, and doctors together for smarter, more accessible, and continuous eye-health management." data-hi="नेत्रस्क्रीन, आईस्फीयर का एक डिजिटल नेत्र देखभाल प्लेटफ़ॉर्म है जो मरीजों, ऑप्टोमेट्रिस्ट और डॉक्टरों को बेहतर, अधिक सुलभ और निरंतर नेत्र स्वास्थ्य प्रबंधन के लिए जोड़ता है।">NetraScreen is a digital eye-care platform by Eyesphere that brings patients, optometrists, and doctors together for smarter, more accessible, and continuous eye-health management.</p>
+                <div class="values-grid">
+                    <article class="value-card">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <h3 data-en="Our Mission" data-hi="हमारा मिशन">Our Mission</h3>
+                        <p data-en="Make quality eye care accessible and data-driven." data-hi="गुणवत्तापूर्ण नेत्र देखभाल को सुलभ और डेटा-आधारित बनाना।">Make quality eye care accessible and data-driven.</p>
+                    </article>
+                    <article class="value-card">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/></svg>
+                        <h3 data-en="Our Vision" data-hi="हमारा दृष्टिकोण">Our Vision</h3>
+                        <p data-en="A healthier, clearer-sighted community through technology." data-hi="तकनीक के माध्यम से एक स्वस्थ, बेहतर दृष्टि वाला समुदाय।">A healthier, clearer-sighted community through technology.</p>
+                    </article>
+                    <article class="value-card">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></svg>
+                        <h3 data-en="Our Values" data-hi="हमारे मूल्य">Our Values</h3>
+                        <p data-en="Care, innovation, trust, and accessibility." data-hi="देखभाल, नवाचार, विश्वास और सुलभता।">Care, innovation, trust, and accessibility.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section services-section" id="services">
         <div class="landing-wrap">
             <div class="section-heading">
-                <div class="section-kicker" data-en="Care that connects" data-hi="जुड़ी हुई देखभाल">Care that connects</div>
-                <h2 data-en="Better eye care, together" data-hi="मिलकर बेहतर नेत्र देखभाल">Better eye care, together</h2>
-                <p data-en="A connected experience designed to make screening, follow-up, and care coordination easier." data-hi="जांच, फॉलो-अप और देखभाल समन्वय को आसान बनाने वाला जुड़ा हुआ अनुभव।">A connected experience designed to make screening, follow-up, and care coordination easier.</p>
+                <div class="section-kicker" data-en="Our Services" data-hi="हमारी सेवाएँ">Our Services</div>
+                <h2 data-en="End-to-end digital eye care" data-hi="शुरू से अंत तक डिजिटल नेत्र देखभाल">End-to-end digital eye care</h2>
+                <p data-en="A comprehensive suite for patients, optometrists, doctors, and organizations." data-hi="मरीजों, ऑप्टोमेट्रिस्ट, डॉक्टरों और संगठनों के लिए व्यापक समाधान।">A comprehensive suite for patients, optometrists, doctors, and organizations.</p>
             </div>
-            <div class="benefits-grid" id="services">
-                <article class="benefit-card">
-                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg></span>
-                    <h3 data-en="Secure by design" data-hi="डिज़ाइन से सुरक्षित">Secure by design</h3>
-                    <p data-en="Role-based access helps keep patient and clinical information protected." data-hi="भूमिका-आधारित पहुँच मरीज और क्लिनिकल जानकारी की सुरक्षा में मदद करती है।">Role-based access helps keep patient and clinical information protected.</p>
+            <div class="service-grid">
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+                    <h3 data-en="Eye Screening" data-hi="नेत्र जांच">Eye Screening</h3>
+                    <p data-en="Standardized and digital eye examinations for accessible first-line screening." data-hi="सुलभ प्राथमिक जांच के लिए मानकीकृत डिजिटल नेत्र परीक्षण।">Standardized and digital eye examinations for accessible first-line screening.</p>
                 </article>
-                <article class="benefit-card">
-                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/></svg></span>
-                    <h3 data-en="Integrated care" data-hi="एकीकृत देखभाल">Integrated care</h3>
-                    <p data-en="Connect screening, clinical review, and patient follow-up in one workflow." data-hi="एक ही प्रक्रिया में स्क्रीनिंग, क्लिनिकल समीक्षा और मरीज फॉलो-अप जोड़ें।">Connect screening, clinical review, and patient follow-up in one workflow.</p>
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5m0 14h17"/><path d="m7 15 4-4 3 2 6-7"/></svg></span>
+                    <h3 data-en="Clinical Records" data-hi="क्लिनिकल रिकॉर्ड">Clinical Records</h3>
+                    <p data-en="Secure, centralized patient records available to the care team." data-hi="देखभाल टीम के लिए सुरक्षित, केंद्रीकृत मरीज रिकॉर्ड।">Secure, centralized patient records available to the care team.</p>
                 </article>
-                <article class="benefit-card">
-                    <span class="portal-icon"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></span>
-                    <h3 data-en="Efficient workflows" data-hi="कुशल कार्यप्रवाह">Efficient workflows</h3>
-                    <p data-en="Digital reports and shared records help care teams work with clarity." data-hi="डिजिटल रिपोर्ट और साझा रिकॉर्ड देखभाल टीमों को स्पष्टता से काम करने में मदद करते हैं।">Digital reports and shared records help care teams work with clarity.</p>
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h3"/></svg></span>
+                    <h3 data-en="Appointment Management" data-hi="अपॉइंटमेंट प्रबंधन">Appointment Management</h3>
+                    <p data-en="Easy booking and follow-ups to keep care on track." data-hi="देखभाल को व्यवस्थित रखने के लिए आसान बुकिंग और फॉलो-अप।">Easy booking and follow-ups to keep care on track.</p>
+                </article>
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>
+                    <h3 data-en="Digital Reports" data-hi="डिजिटल रिपोर्ट">Digital Reports</h3>
+                    <p data-en="Comprehensive, shareable reports that make screening results easy to understand." data-hi="व्यापक, साझा करने योग्य रिपोर्ट से जांच के नतीजे समझना आसान।">Comprehensive, shareable reports that make screening results easy to understand.</p>
+                </article>
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                    <h3 data-en="Referral & Consultation" data-hi="रेफरल और परामर्श">Referral &amp; Consultation</h3>
+                    <p data-en="Seamless collaboration between optometrists and eye-care specialists." data-hi="ऑप्टोमेट्रिस्ट और नेत्र विशेषज्ञों के बीच सहज सहयोग।">Seamless collaboration between optometrists and eye-care specialists.</p>
+                </article>
+                <article class="service-card">
+                    <span class="service-icon"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+                    <h3 data-en="Corporate Eye Camps" data-hi="कॉर्पोरेट नेत्र शिविर">Corporate Eye Camps</h3>
+                    <p data-en="On-site screening and wellness programs designed for organizations." data-hi="संगठनों के लिए कार्यस्थल पर जांच और स्वास्थ्य कार्यक्रम।">On-site screening and wellness programs designed for organizations.</p>
                 </article>
             </div>
         </div>
@@ -717,36 +1160,27 @@
 
     <section class="section corporate-section" id="corporates">
         <div class="landing-wrap">
-            <div class="corporate-banner">
-                <div class="corporate-intro">
-                    <span class="portal-icon"><svg width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-                    <span>
-                        <h3 data-en="Plan an eye camp for your organization" data-hi="अपने संगठन के लिए नेत्र शिविर आयोजित करें">Plan an eye camp for your organization</h3>
-                        <p data-en="Bring convenient, coordinated eye screening to your workplace." data-hi="अपने कार्यस्थल पर सुविधाजनक और समन्वित नेत्र जांच लाएँ।">Bring convenient, coordinated eye screening to your workplace.</p>
-                    </span>
+            <div class="corporate-feature">
+                <div>
+                    <div class="section-kicker" data-en="For Corporates" data-hi="कॉर्पोरेट के लिए">For Corporates</div>
+                    <h2 data-en="Employee eye wellness programs" data-hi="कर्मचारियों के नेत्र स्वास्थ्य कार्यक्रम">Employee eye wellness programs</h2>
+                    <p data-en="Bring comprehensive, hassle-free eye care to your workplace with coordinated on-site screening and digital follow-up." data-hi="समन्वित कार्यस्थल जांच और डिजिटल फॉलो-अप के साथ अपने कार्यस्थल पर सहज नेत्र देखभाल लाएँ।">Bring comprehensive, hassle-free eye care to your workplace with coordinated on-site screening and digital follow-up.</p>
+                    <div class="corporate-perks">
+                        <span data-en="On-site eye screening camps" data-hi="कार्यस्थल पर नेत्र जांच शिविर">On-site eye screening camps</span>
+                        <span data-en="Digital reports and insights" data-hi="डिजिटल रिपोर्ट और जानकारी">Digital reports and insights</span>
+                        <span data-en="Follow-up consultation support" data-hi="फॉलो-अप परामर्श सहायता">Follow-up consultation support</span>
+                        <span data-en="Employee eye-health tracking" data-hi="कर्मचारी नेत्र स्वास्थ्य ट्रैकिंग">Employee eye-health tracking</span>
+                    </div>
+                    <a class="action-link primary" href="#corporate-enquiry"><span data-en="Request a corporate camp" data-hi="कॉर्पोरेट शिविर का अनुरोध करें">Request a corporate camp</span><span aria-hidden="true">→</span></a>
                 </div>
-                <div class="corporate-perks">
-                    <span data-en="On-site screening" data-hi="कार्यस्थल पर जांच">On-site screening</span>
-                    <span data-en="Digital reports" data-hi="डिजिटल रिपोर्ट">Digital reports</span>
-                    <span data-en="Follow-up care" data-hi="फॉलो-अप देखभाल">Follow-up care</span>
-                </div>
-                <a class="action-link primary" href="#corporate-enquiry"><span data-en="Request a corporate camp" data-hi="कॉर्पोरेट शिविर का अनुरोध करें">Request a corporate camp</span><span aria-hidden="true">→</span></a>
+                <img class="corporate-art" src="{% static 'optometrist/images/corporate-eye-camp.svg' %}" alt="Workplace eye-care screening setup">
             </div>
 
-            <div class="camp-layout">
-                <div class="camp-panel" id="corporate-enquiry">
-                    <h3 data-en="Corporate eye camp enquiry" data-hi="कॉर्पोरेट नेत्र शिविर पूछताछ">Corporate eye camp enquiry</h3>
-                    <p data-en="Share a few details and our team can follow up about screening at your workplace." data-hi="अपने कार्यस्थल पर जांच के बारे में बातचीत के लिए कुछ जानकारी साझा करें।">Share a few details and our team can follow up about screening at your workplace.</p>
-                    <form id="corporate-enquiry-form" class="enquiry-form">
-                        {% csrf_token %}
-                        <label><span data-en="Your name" data-hi="आपका नाम">Your name</span><input name="name" autocomplete="name" required maxlength="120"></label>
-                        <label><span data-en="Organization" data-hi="संगठन">Organization</span><input name="organization" autocomplete="organization" required maxlength="160"></label>
-                        <label><span data-en="Work email" data-hi="कार्य ईमेल">Work email</span><input type="email" name="email" autocomplete="email" required maxlength="254"></label>
-                        <label><span data-en="Phone number" data-hi="फ़ोन नंबर">Phone number</span><input type="tel" name="phone" autocomplete="tel" maxlength="30"></label>
-                        <label class="full"><span data-en="How can we help?" data-hi="हम आपकी कैसे मदद कर सकते हैं?">How can we help?</span><textarea name="message" maxlength="2000" placeholder="Tell us your preferred location, timing, or team size."></textarea></label>
-                        <button class="action-link primary full" type="submit" id="enquiry-submit"><span data-en="Send enquiry" data-hi="पूछताछ भेजें">Send enquiry</span> <span aria-hidden="true">→</span></button>
-                        <p class="form-status" id="enquiry-status" role="status" aria-live="polite"></p>
-                    </form>
+            <div class="corporate-lower">
+                <div class="camp-panel">
+                    <h3 data-en="Eye care at work, made simple" data-hi="कार्यस्थल पर आसान नेत्र देखभाल">Eye care at work, made simple</h3>
+                    <p data-en="Make it easy for your team to get screened, understand their results, and access the right next step." data-hi="अपनी टीम के लिए जांच, परिणामों की समझ और अगले सही कदम तक पहुँच आसान बनाएँ।">Make it easy for your team to get screened, understand their results, and access the right next step.</p>
+                    <a href="#corporate-enquiry" class="action-link"><span data-en="Talk to our team" data-hi="हमारी टीम से बात करें">Talk to our team</span><span aria-hidden="true">→</span></a>
                 </div>
                 <aside class="qr-panel">
                     <h3 data-en="Camp registration QR" data-hi="शिविर पंजीकरण QR">Camp registration QR</h3>
@@ -762,43 +1196,108 @@
     <section class="section resources-section" id="resources">
         <div class="landing-wrap">
             <div class="section-heading">
-                <div class="section-kicker" data-en="Helpful information" data-hi="उपयोगी जानकारी">Helpful information</div>
-                <h2 data-en="Support & FAQs" data-hi="सहायता और अक्सर पूछे जाने वाले प्रश्न">Support &amp; FAQs</h2>
-                <p data-en="Quick answers to help you get started with NetraScreen." data-hi="नेत्रस्क्रीन शुरू करने में आपकी मदद के लिए त्वरित उत्तर।">Quick answers to help you get started with NetraScreen.</p>
+                <div class="section-kicker" data-en="Resources" data-hi="संसाधन">Resources</div>
+                <h2 data-en="Insights on eye health" data-hi="नेत्र स्वास्थ्य पर जानकारी">Insights on eye health</h2>
+                <p data-en="Articles and guidance to help you and your organization prioritize eye wellness." data-hi="आपको और आपके संगठन को नेत्र स्वास्थ्य प्राथमिकता देने में मददगार लेख और मार्गदर्शन।">Articles and guidance to help you and your organization prioritize eye wellness.</p>
             </div>
-            <div class="faq-list">
-                <details>
-                    <summary data-en="Which portal should I use?" data-hi="मुझे कौन-सा पोर्टल इस्तेमाल करना चाहिए?">Which portal should I use?</summary>
-                    <p data-en="Doctors use the Doctor Portal, eye-care professionals use the Optometrist Portal, and individuals use the Patient Portal." data-hi="डॉक्टर डॉक्टर पोर्टल, नेत्र देखभाल पेशेवर ऑप्टोमेट्रिस्ट पोर्टल और अन्य व्यक्ति मरीज पोर्टल का उपयोग करें।">Doctors use the Doctor Portal, eye-care professionals use the Optometrist Portal, and individuals use the Patient Portal.</p>
-                </details>
-                <details>
-                    <summary data-en="How do we arrange a corporate eye camp?" data-hi="कॉर्पोरेट नेत्र शिविर कैसे आयोजित करें?">How do we arrange a corporate eye camp?</summary>
-                    <p data-en="Send an enquiry using the corporate form above. Our team can discuss screening options for your organization." data-hi="ऊपर दिए गए कॉर्पोरेट फ़ॉर्म से पूछताछ भेजें। हमारी टीम आपके संगठन के लिए जांच विकल्पों पर चर्चा करेगी।">Send an enquiry using the corporate form above. Our team can discuss screening options for your organization.</p>
-                </details>
-                <details>
-                    <summary data-en="How do patients register at a camp?" data-hi="शिविर में मरीज पंजीकरण कैसे करें?">How do patients register at a camp?</summary>
-                    <p data-en="Scan the camp registration QR code to open the screening registration form on a phone." data-hi="फ़ोन पर स्क्रीनिंग पंजीकरण फ़ॉर्म खोलने के लिए शिविर का QR कोड स्कैन करें।">Scan the camp registration QR code to open the screening registration form on a phone.</p>
-                </details>
-                <details>
-                    <summary data-en="Need help accessing your account?" data-hi="खाते में प्रवेश के लिए सहायता चाहिए?">Need help accessing your account?</summary>
-                    <p data-en="Use the portal that matches your role. For account support, contact your organization's NetraScreen administrator." data-hi="अपनी भूमिका के अनुसार पोर्टल चुनें। खाते की सहायता के लिए अपने संगठन के नेत्रस्क्रीन प्रशासक से संपर्क करें।">Use the portal that matches your role. For account support, contact your organization's NetraScreen administrator.</p>
-                </details>
+            <div class="resource-filters" role="group" aria-label="Filter resources by category">
+                <button class="resource-filter active" type="button" data-filter="all" aria-pressed="true" data-en="All" data-hi="सभी">All</button>
+                <button class="resource-filter" type="button" data-filter="eye-health" aria-pressed="false" data-en="Eye Health" data-hi="नेत्र स्वास्थ्य">Eye Health</button>
+                <button class="resource-filter" type="button" data-filter="workplace-wellness" aria-pressed="false" data-en="Workplace Wellness" data-hi="कार्यस्थल स्वास्थ्य">Workplace Wellness</button>
+                <button class="resource-filter" type="button" data-filter="screening-diagnosis" aria-pressed="false" data-en="Screening & Diagnosis" data-hi="जांच और निदान">Screening &amp; Diagnosis</button>
+                <button class="resource-filter" type="button" data-filter="updates" aria-pressed="false" data-en="Updates" data-hi="अपडेट">Updates</button>
+            </div>
+            <div class="resource-grid">
+                <p class="resource-empty" role="status" hidden data-en="No articles are available in this category yet." data-hi="इस श्रेणी में अभी कोई लेख उपलब्ध नहीं है।">No articles are available in this category yet.</p>
+                <article class="resource-card" data-category="eye-health">
+                    <img src="{% static 'optometrist/images/article-eye-health.svg' %}" alt="Illustration of a healthy eye">
+                    <div class="resource-copy">
+                        <span class="resource-tag">Eye Health</span>
+                        <h3 data-en="Tips for healthy eyes in the digital age" data-hi="डिजिटल युग में स्वस्थ आँखों के लिए सुझाव">Tips for healthy eyes in the digital age</h3>
+                        <p data-en="Simple habits can help protect your vision during screen-heavy days." data-hi="स्क्रीन के अधिक उपयोग वाले दिनों में सरल आदतें आपकी दृष्टि की रक्षा कर सकती हैं।">Simple habits can help protect your vision during screen-heavy days.</p>
+                    </div>
+                </article>
+                <article class="resource-card" data-category="workplace-wellness">
+                    <img src="{% static 'optometrist/images/article-workplace-wellness.svg' %}" alt="Illustration of an eye-wellness workspace">
+                    <div class="resource-copy">
+                        <span class="resource-tag">Workplace Wellness</span>
+                        <h3 data-en="Why employee eye check-ups matter" data-hi="कर्मचारियों की नेत्र जांच क्यों ज़रूरी है">Why employee eye check-ups matter</h3>
+                        <p data-en="Routine screening helps teams stay comfortable, focused, and supported." data-hi="नियमित जांच टीमों को सहज, केंद्रित और समर्थित रहने में मदद करती है।">Routine screening helps teams stay comfortable, focused, and supported.</p>
+                    </div>
+                </article>
+                <article class="resource-card" data-category="screening-diagnosis">
+                    <img src="{% static 'optometrist/images/article-screening.svg' %}" alt="Illustration of a digital eye screening report">
+                    <div class="resource-copy">
+                        <span class="resource-tag">Screening &amp; Diagnosis</span>
+                        <h3 data-en="Understanding your eye test report" data-hi="अपनी नेत्र जांच रिपोर्ट को समझें">Understanding your eye test report</h3>
+                        <p data-en="Learn what common screening results mean and when to seek care." data-hi="जानें कि आम जांच परिणामों का क्या अर्थ है और कब देखभाल लेनी चाहिए।">Learn what common screening results mean and when to seek care.</p>
+                    </div>
+                </article>
             </div>
         </div>
     </section>
 
     <section class="section contact-section" id="contact">
-        <div class="landing-wrap">
-            <div class="contact-note">
-                <h2 data-en="We're here to help" data-hi="हम सहायता के लिए यहाँ हैं">We're here to help</h2>
-                <p data-en="For corporate eye camps, send us an enquiry above. For portal access, please contact your organization's administrator." data-hi="कॉर्पोरेट नेत्र शिविर के लिए ऊपर पूछताछ भेजें। पोर्टल एक्सेस के लिए अपने संगठन के प्रशासक से संपर्क करें।">For corporate eye camps, send us an enquiry above. For portal access, please contact your organization's administrator.</p>
-                <a href="#corporate-enquiry" class="action-link primary" style="margin-top: 1rem;" data-en="Contact our team" data-hi="हमारी टीम से संपर्क करें">Contact our team</a>
+        <div class="landing-wrap contact-grid">
+            <div class="contact-copy">
+                <div class="section-kicker" data-en="Contact Us" data-hi="संपर्क करें">Contact Us</div>
+                <h2 data-en="Get in touch" data-hi="संपर्क में रहें">Get in touch</h2>
+                <p data-en="Have a question, need support, or want to partner with us? We’re here to help." data-hi="कोई सवाल है, सहायता चाहिए या हमारे साथ साझेदारी करना चाहते हैं? हम मदद के लिए हैं।">Have a question, need support, or want to partner with us? We’re here to help.</p>
+                <div class="contact-detail">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                    <div><strong data-en="Our Office" data-hi="हमारा कार्यालय">Our Office</strong><span>Noida, Uttar Pradesh, India</span></div>
+                </div>
+                <div class="contact-detail">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+                    <div><strong data-en="Email Us" data-hi="ईमेल करें">Email Us</strong><span>info@netrascreen.in</span></div>
+                </div>
+                <div class="contact-detail">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7l.5 2.8a2 2 0 0 1-.6 1.8L7.7 9.6a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 1.8-.6l2.8.5a2 2 0 0 1 1.7 2Z"/></svg>
+                    <div><strong data-en="Call Us" data-hi="कॉल करें">Call Us</strong><span>+91 120 000 0000</span></div>
+                </div>
+                <div class="contact-detail">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                    <div><strong data-en="Working Hours" data-hi="काम के घंटे">Working Hours</strong><span data-en="Mon – Sat, 9:00 AM – 6:00 PM" data-hi="सोम – शनि, सुबह 9:00 – शाम 6:00">Mon – Sat, 9:00 AM – 6:00 PM</span></div>
+                </div>
+            </div>
+            <div class="contact-panel" id="corporate-enquiry">
+                <h3 data-en="Send us a message" data-hi="हमें संदेश भेजें">Send us a message</h3>
+                <p data-en="For corporate screening programs, share your details and our team will be in touch." data-hi="कॉर्पोरेट जांच कार्यक्रमों के लिए अपनी जानकारी साझा करें, हमारी टीम आपसे संपर्क करेगी।">For corporate screening programs, share your details and our team will be in touch.</p>
+                <form id="corporate-enquiry-form" class="enquiry-form">
+                    {% csrf_token %}
+                    <label><span data-en="Your name" data-hi="आपका नाम">Your name</span><input name="name" autocomplete="name" required maxlength="120"></label>
+                    <label><span data-en="Organization" data-hi="संगठन">Organization</span><input name="organization" autocomplete="organization" required maxlength="160"></label>
+                    <label><span data-en="Email address" data-hi="ईमेल पता">Email address</span><input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+                    <label><span data-en="Phone number" data-hi="फ़ोन नंबर">Phone number</span><input type="tel" name="phone" autocomplete="tel" maxlength="30"></label>
+                    <label class="full"><span data-en="Your message" data-hi="आपका संदेश">Your message</span><textarea name="message" maxlength="2000" placeholder="Tell us how we can help."></textarea></label>
+                    <button class="action-link primary full" type="submit" id="enquiry-submit"><span data-en="Send message" data-hi="संदेश भेजें">Send message</span> <span aria-hidden="true">→</span></button>
+                    <p class="form-status" id="enquiry-status" role="status" aria-live="polite"></p>
+                </form>
             </div>
         </div>
     </section>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const resourceFilters = document.querySelectorAll('.resource-filter');
+        const resourceCards = document.querySelectorAll('.resource-card');
+        const resourceEmpty = document.querySelector('.resource-empty');
+
+        resourceFilters.forEach((filter) => {
+            filter.addEventListener('click', () => {
+                resourceFilters.forEach((item) => {
+                    const isActive = item === filter;
+                    item.classList.toggle('active', isActive);
+                    item.setAttribute('aria-pressed', String(isActive));
+                });
+
+                resourceCards.forEach((card) => {
+                    card.hidden = filter.dataset.filter !== 'all' && card.dataset.category !== filter.dataset.filter;
+                });
+                resourceEmpty.hidden = Array.from(resourceCards).some((card) => !card.hidden);
+            });
+        });
+
         const form = document.getElementById('corporate-enquiry-form');
         const status = document.getElementById('enquiry-status');
         const submit = document.getElementById('enquiry-submit');

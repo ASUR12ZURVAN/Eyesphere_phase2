@@ -95,7 +95,7 @@
         label {
             display: block;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 500;
             color: var(--text-muted);
         }
@@ -197,10 +197,11 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--glass-border);
-            padding: 0.65rem max(1.25rem, calc((100vw - 1200px) / 2));
+            padding: 0.55rem max(2rem, calc((100vw - 1200px) / 2));
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 1.25rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
@@ -234,8 +235,9 @@
 
         .header-nav {
             display: flex;
-            gap: 1.35rem;
+            gap: 1.05rem;
             align-items: center;
+            margin-left: auto;
         }
 
         .nav-link {
@@ -259,8 +261,8 @@
         }
 
         .site-brand img {
-            width: 46px;
-            height: 46px;
+            width: 116px;
+            height: 42px;
             object-fit: contain;
         }
 
@@ -270,7 +272,7 @@
         }
 
         .site-brand-copy strong {
-            font-size: 1.2rem;
+            font-size: 1.05rem;
             letter-spacing: -0.04em;
         }
 
@@ -293,11 +295,12 @@
         .header-cta {
             color: #fff;
             background: var(--primary);
-            padding: 0.7rem 1rem;
+            padding: 0.62rem 0.85rem;
             border-radius: 10px;
             text-decoration: none;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         .header-cta:hover {
@@ -429,7 +432,7 @@
             <a href="{% url 'landing_page' %}#services" class="nav-link" data-en="Services" data-hi="सेवाएँ">Services</a>
             <a href="{% url 'landing_page' %}#corporates" class="nav-link" data-en="For Corporates" data-hi="कॉर्पोरेट के लिए">For Corporates</a>
             <a href="{% url 'landing_page' %}#resources" class="nav-link" data-en="Resources" data-hi="संसाधन">Resources</a>
-            <a href="{% url 'landing_page' %}#contact" class="nav-link" data-en="Contact" data-hi="संपर्क">Contact</a>
+            <a href="{% url 'landing_page' %}#contact" class="nav-link" data-en="Contact Us" data-hi="संपर्क करें">Contact Us</a>
         </nav>
         <label class="sr-only" for="site-language">Language</label>
         <select id="site-language" class="language-select" aria-label="Select language">

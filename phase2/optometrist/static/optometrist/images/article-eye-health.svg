@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 230" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="31" y1="12" x2="389" y2="227" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D8EEEA"/>
+      <stop offset="1" stop-color="#A9D1CE"/>
+    </linearGradient>
+    <radialGradient id="iris" cx="0" cy="0" r="1" gradientTransform="matrix(1 85 -85 1 212 115)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E7CC8D"/>
+      <stop offset=".37" stop-color="#68AFA2"/>
+      <stop offset="1" stop-color="#135768"/>
+    </radialGradient>
+  </defs>
+  <rect width="420" height="230" rx="20" fill="url(#bg)"/>
+  <ellipse cx="211" cy="116" rx="167" ry="83" fill="#FFF" fill-opacity=".63"/>
+  <path d="M44 115c42-53 98-80 167-80s125 27 167 80c-42 53-98 80-167 80s-125-27-167-80Z" fill="#F7F1E9"/>
+  <circle cx="211" cy="115" r="69" fill="url(#iris)"/>
+  <circle cx="211" cy="115" r="29" fill="#102D39"/>
+  <circle cx="190" cy="95" r="11" fill="#FFF" fill-opacity=".8"/>
+  <path d="M58 110c40-47 91-71 153-71s113 24 153 71" stroke="#7D5B4D" stroke-width="12" stroke-linecap="round"/>
+  <path d="M61 125c43 43 93 64 150 64s107-21 150-64" stroke="#C28974" stroke-width="7" stroke-linecap="round"/>
+</svg>
