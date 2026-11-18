@@ -276,7 +276,7 @@ class PatientRegistrationView(View):
 
 
 class PatientRegistrationQRView(View):
-    registration_url = 'https://eyesphere-phase2.onrender.com/'
+    registration_url = 'https://eyesphere-phase2.onrender.com/patient/register/'
 
     def get(self, request):
         qr_code = qrcode.make(self.registration_url)

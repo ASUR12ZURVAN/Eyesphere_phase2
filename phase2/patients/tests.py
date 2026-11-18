@@ -66,7 +66,7 @@ class PatientRegistrationPageTests(TestCase):
         with patch('patients.views.qrcode.make', wraps=__import__('qrcode').make) as make_qr:
             qr_response = self.client.get(reverse('patient_registration_qr'))
 
-        make_qr.assert_called_once_with('https://eyesphere-phase2.onrender.com/')
+        make_qr.assert_called_once_with('https://eyesphere-phase2.onrender.com/patient/register/')
         self.assertEqual(qr_response.status_code, 200)
         self.assertEqual(qr_response['Content-Type'], 'image/png')
         self.assertTrue(qr_response.content.startswith(b'\x89PNG\r\n\x1a\n'))
