@@ -6,8 +6,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db import transaction
 from optometrist.models import Optometrist, Patient, EyeExamination
+from .forms import PatientRegistrationForm
 from .models import (
     ScreeningTestResult, OnlineSessionRequest, RedeemableService,
     RedemptionTicket, HomeTestRequest, PatientQuery, AppointmentBooking,
@@ -17,6 +20,8 @@ import json
 import random
 import secrets
 import smtplib
+from io import BytesIO
+import qrcode
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
@@ -188,6 +193,99 @@ class LoginPatient(APIView):
             })
 
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class PatientRegistrationView(View):
+    template_name = 'patients/patient_registration.html'
+
+    def get(self, request):
+        return self._render(request, {'form': PatientRegistrationForm()})
+
+    def post(self, request):
+        form = PatientRegistrationForm(request.POST)
+        if not form.is_valid():
+            return self._render(request, {'form': form}, status=400)
+
+        data = form.cleaned_data
+        if Optometrist.objects.filter(phone_number=data['phone_number']).exists():
+            form.add_error('phone_number', 'This phone number is already registered.')
+            return self._render(request, {'form': form}, status=400)
+        if Optometrist.objects.filter(email__iexact=data['email']).exists():
+            form.add_error('email', 'This email address is already registered.')
+            return self._render(request, {'form': form}, status=400)
+
+        today = timezone.localdate()
+        date_of_birth = data['date_of_birth']
+        age = today.year - date_of_birth.year - (
+            (today.month, today.day) < (date_of_birth.month, date_of_birth.day)
+        )
+        password = secrets.token_urlsafe(18)
+
+        with transaction.atomic():
+            user = Optometrist.objects.create_user(
+                phone_number=data['phone_number'],
+                name=data['name'],
+                password=password,
+                email=data['email'],
+                role='patient',
+            )
+            Patient.objects.create(
+                name=data['name'],
+                age=age,
+                date_of_birth=date_of_birth,
+                gender=data['gender'],
+                phone_number=data['phone_number'],
+                address=data['address'],
+                email=data['email'],
+                diabetes=data['diabetes'],
+                patient_account_id=data['phone_number'],
+            )
+
+        email_sent = False
+        try:
+            email_sent = send_mail(
+                'Your EyeSphere patient account',
+                (
+                    f"Hello {data['name']},\n\n"
+                    "Your EyeSphere patient account has been created.\n\n"
+                    f"Login ID (phone number): {data['phone_number']}\n"
+                    f"Password: {password}\n"
+                    f"Sign in: {request.build_absolute_uri(reverse('patient_login_page'))}\n\n"
+                    "Please change your password after signing in."
+                ),
+                settings.DEFAULT_FROM_EMAIL,
+                [data['email']],
+                fail_silently=False,
+            ) == 1
+        except (OSError, smtplib.SMTPException):
+            logger.exception('Could not send registration credentials to patient user %s', user.pk)
+
+        return self._render(request, {
+            'form': PatientRegistrationForm(),
+            'registration_complete': True,
+            'email_sent': email_sent,
+            'patient_id': data['phone_number'],
+            'password': password,
+            'email': data['email'],
+        })
+
+    def _render(self, request, context, status=200):
+        response = render(request, self.template_name, context, status=status)
+        response['Cache-Control'] = 'no-store'
+        return response
+
+
+class PatientRegistrationQRView(View):
+    registration_url = 'https://eyesphere-phase2.onrender.com/'
+
+    def get(self, request):
+        qr_code = qrcode.make(self.registration_url)
+        image_buffer = BytesIO()
+        qr_code.save(image_buffer, format='PNG')
+
+        response = HttpResponse(image_buffer.getvalue(), content_type='image/png')
+        response['Cache-Control'] = 'public, max-age=3600'
+        return response
 
 
 class PatientDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):

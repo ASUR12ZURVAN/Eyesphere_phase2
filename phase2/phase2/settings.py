@@ -84,6 +84,7 @@ WSGI_APPLICATION = 'phase2.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASE_SSL_REQUIRE = config('DATABASE_SSL_REQUIRE', default=True, cast=bool)
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
 
 def database_config(database_url):
@@ -95,19 +96,27 @@ def database_config(database_url):
     )
 
 
-primary_database_url = config(
-    'NEON_DB_URL',
-    default=config('DATABASE_URL', default=''),
-)
-if primary_database_url:
-    DATABASES = {'default': database_config(primary_database_url)}
-else:
+if USE_SQLITE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+else:
+    primary_database_url = config(
+        'NEON_DB_URL',
+        default=config('DATABASE_URL', default=''),
+    )
+    if primary_database_url:
+        DATABASES = {'default': database_config(primary_database_url)}
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 for database_alias, environment_variable in (
     ('read_replica', 'READ_DATABASE_URL'),

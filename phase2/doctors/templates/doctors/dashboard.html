@@ -1218,10 +1218,12 @@
             <div style="margin-bottom: 1rem;">
                 <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Current Password</label>
                 <input type="password" id="cpOldPass" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
+                <button type="button" class="password-visibility-toggle" data-password-toggle="cpOldPass" aria-controls="cpOldPass" aria-label="Show password" aria-pressed="false">Show password</button>
             </div>
             <div style="margin-bottom: 1.5rem;">
                 <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">New Password</label>
                 <input type="password" id="cpNewPass" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main);">
+                <button type="button" class="password-visibility-toggle" data-password-toggle="cpNewPass" aria-controls="cpNewPass" aria-label="Show password" aria-pressed="false">Show password</button>
             </div>
             <div style="display: flex; gap: 1rem;">
                 <button type="button" class="btn" style="flex: 1; background: var(--glass-border); color: var(--text-main);" onclick="closeChangePasswordModal()">Cancel</button>

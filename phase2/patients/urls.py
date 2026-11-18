@@ -9,11 +9,14 @@ from .views import (
     AppointmentBookingView,
     PatientOnboardingView, OnboardPatientApiView
 )
+from .views import PatientRegistrationQRView, PatientRegistrationView
 
 urlpatterns = [
     # Template pages
     path('', PatientDashboardView.as_view(), name='patient_dashboard'),
     path('onboard/', PatientOnboardingView.as_view(), name='patient_onboarding'),
+    path('register/', PatientRegistrationView.as_view(), name='patient_registration'),
+    path('register/qr.png', PatientRegistrationQRView.as_view(), name='patient_registration_qr'),
     path('api/login/', LoginPatient.as_view(), name='patient_login_page'),
     path('api/register/', RegisterPatient.as_view(), name='patient_register_page'),
     path('logout/', PatientLogoutView.as_view(), name='patient_logout'),

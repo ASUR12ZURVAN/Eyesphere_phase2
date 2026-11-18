@@ -1,0 +1,61 @@
+{% extends "optometrist/base.html" %}
+
+{% block title %}Patient Registration | EyeSphere{% endblock title %}
+
+{% block content %}
+<main class="glass-card animate-fade-in" style="max-width: 640px; margin: 2rem auto; padding: 2rem;">
+    {% if registration_complete %}
+        <h1 style="color: #059669;">Account created</h1>
+        <p>Your patient account is ready. Save these credentials and change your password after signing in.</p>
+        <div role="status" style="margin: 1.25rem 0; padding: 1rem; border-radius: 8px; background: #f0fdf4;">
+            <p><strong>Login ID:</strong> {{ patient_id }}</p>
+            <p><strong>Password:</strong> <code>{{ password }}</code></p>
+            <p>
+                {% if email_sent %}
+                    Credentials were emailed to {{ email }}.
+                {% else %}
+                    We could not send the email. Save the credentials above and contact support if needed.
+                {% endif %}
+            </p>
+        </div>
+        <a class="btn" href="{% url 'patient_login_page' %}" style="display: inline-block; background: #059669; color: white; padding: .75rem 1rem; text-decoration: none; border-radius: 8px;">
+            Sign in
+        </a>
+    {% else %}
+        <h1 style="color: #059669;">Patient registration</h1>
+        <p class="subtitle">Enter your details to create your EyeSphere patient account.</p>
+
+        <section aria-labelledby="registrationQrTitle" style="display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; padding: 1rem; border: 1px solid var(--border-color); border-radius: 10px;">
+            <img src="{% url 'patient_registration_qr' %}" alt="QR code linking to patient registration"
+                width="112" height="112" style="image-rendering: pixelated;">
+            <div>
+                <h2 id="registrationQrTitle" style="font-size: 1rem;">Share registration</h2>
+                <p>Scan this code on another device to open this registration form.</p>
+                <a href="{% url 'patient_registration_qr' %}" download="eyesphere-patient-registration.png">
+                    Download QR code
+                </a>
+            </div>
+        </section>
+
+        {% if form.non_field_errors %}
+            <div role="alert" style="color: #b91c1c; margin: 1rem 0;">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-group" style="margin: 1rem 0;">
+                    <label for="{{ field.id_for_label }}" style="display: block; margin-bottom: .35rem;">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div role="alert" style="color: #b91c1c; margin-top: .25rem;">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn" style="background: #059669; color: white; margin-top: 1rem;">
+                Create patient account
+            </button>
+        </form>
+    {% endif %}
+</main>
+{% endblock content %}

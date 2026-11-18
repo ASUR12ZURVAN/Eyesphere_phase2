@@ -39,7 +39,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" placeholder="John Doe" required>
+                <input type="text" id="name" name="name" placeholder="Full name" required>
             </div>
             <div class="form-group">
                 <label for="phone_number">Phone Number</label>
@@ -62,7 +62,7 @@
 
         <div class="form-group">
             <label for="email">Email Address (Optional)</label>
-            <input type="email" id="email" name="email" placeholder="john.doe@example.com">
+            <input type="email" id="email" name="email" placeholder="Email address">
         </div>
 
         <!-- CMP (Chronic Management Program) Identification -->
@@ -98,11 +98,13 @@
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <button type="button" class="password-visibility-toggle" data-password-toggle="password" aria-controls="password" aria-label="Show password" aria-pressed="false">Show password</button>
         </div>
 
         <div class="form-group">
             <label for="confirm_password">Confirm Password</label>
             <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+            <button type="button" class="password-visibility-toggle" data-password-toggle="confirm_password" aria-controls="confirm_password" aria-label="Show password" aria-pressed="false">Show password</button>
         </div>
 
         <button type="submit" class="btn" style="background: #059669; color: white; margin-top: 1rem;" id="registerBtn">

@@ -20,6 +20,7 @@
                 <!-- <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 0.8rem; color: var(--secondary); text-decoration: none;">Forgot Password?</a> -->
             </div>
             <input type="password" id="password" name="password" placeholder="••••••••" required style="margin-top: 0.4rem;">
+            <button type="button" class="password-visibility-toggle" data-password-toggle="password" aria-controls="password" aria-label="Show password" aria-pressed="false">Show password</button>
         </div>
 
         <button type="submit" class="btn" style="background: var(--secondary); color: white;" id="loginBtn">
@@ -59,6 +60,7 @@
             <div class="form-group">
                 <input type="text" id="forgotOtp" placeholder="Enter Reset Token" style="width: 100%; padding: 0.75rem; border: 1px solid var(--glass-border); border-radius: 8px; margin-bottom: 1rem;">
                 <input type="password" id="forgotNewPass" placeholder="Enter New Password" style="width: 100%; padding: 0.75rem; border: 1px solid var(--glass-border); border-radius: 8px;">
+                <button type="button" class="password-visibility-toggle" data-password-toggle="forgotNewPass" aria-controls="forgotNewPass" aria-label="Show password" aria-pressed="false">Show password</button>
             </div>
             <button onclick="resetPassword()" class="btn" style="background: var(--secondary); color: white; width: 100%;" id="btnResetPass">Reset Password</button>
         </div>

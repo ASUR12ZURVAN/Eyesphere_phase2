@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard | EyeSphere</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'patients/password_toggle.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -1722,10 +1723,12 @@
                                 <div style="margin-bottom: 1rem;">
                                     <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">New Password</label>
                                     <input type="password" id="cpNewPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                    <button type="button" class="password-visibility-toggle" data-password-toggle="cpNewPass" aria-controls="cpNewPass" aria-label="Show password" aria-pressed="false">Show password</button>
                                 </div>
                                 <div style="margin-bottom: 1.5rem;">
                                     <label style="display:block; font-size: 0.85rem; font-weight: 600; color:var(--text-muted); margin-bottom: 0.3rem;">Confirm New Password</label>
                                     <input type="password" id="cpConfirmPass" required style="width:100%; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border); font-family: inherit;">
+                                    <button type="button" class="password-visibility-toggle" data-password-toggle="cpConfirmPass" aria-controls="cpConfirmPass" aria-label="Show password" aria-pressed="false">Show password</button>
                                 </div>
                                 <button type="submit" class="btn" style="width: 100%; background:var(--primary);color:#fff;border:none;padding:0.8rem;border-radius:10px;font-weight:600;cursor:pointer;" id="btnChangePass">Update Password</button>
                             </form>
@@ -3394,6 +3397,7 @@
         {% endwith %}
     {% endif %}
     {% include 'patients/tracking_script.html' %}
+    <script src="{% static 'patients/password_toggle.js' %}" defer></script>
 </body>
 
 </html>
