@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 
-SECRET_KEY = 'django-insecure-53(3dg4towtgp1$-sv8)0^^9rmrm2gvvj_65v7zs6nc7@2$i@#'
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = False
 
